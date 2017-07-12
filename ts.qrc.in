@@ -1,0 +1,7 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+<qresource prefix="/ts">
+	<file alias="fr.qm">@PROJECT_BINARY_DIR@/fr.qm</file>
+</qresource>
+</RCC>
+
