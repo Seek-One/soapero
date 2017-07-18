@@ -12,10 +12,51 @@
 #include <version.h>
 #endif
 
+#include <QFile>
+#include <QBuffer>
+#include <QXmlInputSource>
+#include <QXmlSimpleReader>
 #include <QCoreApplication>
+
+#include "Builder/TypeListBuilder.h"
+#include "Parser/QWSDLParserHandler.h"
 
 int main(int argc, char **argv)
 {
-	qDebug("Jet1oeil Soapero");
-	return 0;
+	int iRes = 0;
+
+	QCoreApplication::setApplicationName(APPLICATION_NAME);
+	QCoreApplication::setApplicationVersion(APPLICATION_VERSION);
+
+
+	QFile file("./doorcontrol.wsdl");
+
+	if(file.open(QFile::ReadOnly)) {
+
+		QByteArray bytes = file.readAll();
+		QBuffer buffer;
+		buffer.setData(bytes);
+
+		QXmlInputSource source(&buffer);
+		QXmlSimpleReader reader;
+		QWSDLParserHandler handler;
+		reader.setContentHandler(&handler);
+		reader.setErrorHandler(&handler);
+		if(!reader.parse(source)){
+			qWarning("[ServerController::getDevicesList] Error to parse data (error: %s)", qPrintable(reader.errorHandler()->errorString()));
+		}else{
+
+
+			TypeListBuilder builder(handler.getTypeList());
+			builder.setPrefix("Onvif");
+			builder.setFilename("doorcontrol");
+			builder.buildHeaderFile();
+
+		}
+	}else{
+		qWarning("Error for opening file (%s)", qPrintable(file.errorString()));
+	}
+
+
+	return iRes;
 }

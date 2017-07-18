@@ -164,6 +164,12 @@ include_directories (${PROJECT_SOURCE_DIR}/src)
 
 # src directory
 set (APP_SOURCES
+	src/Builder/TypeListBuilder.cpp
+	src/Builder/TypeListBuilder.h
+	src/Model/Type.h
+	src/Model/Type.cpp
+	src/Parser/QWSDLParserHandler.h
+	src/Parser/QWSDLParserHandler.cpp
 )
 
 # Creating MOC file for sources file using "slots" or Q_OBJECT macro
