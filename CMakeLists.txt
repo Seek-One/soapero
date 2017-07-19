@@ -166,6 +166,10 @@ include_directories (${PROJECT_SOURCE_DIR}/src)
 set (APP_SOURCES
 	src/Builder/TypeListBuilder.cpp
 	src/Builder/TypeListBuilder.h
+	src/Model/ComplexType.h
+	src/Model/ComplexType.cpp
+	src/Model/SimpleType.h
+	src/Model/SimpleType.cpp
 	src/Model/Type.h
 	src/Model/Type.cpp
 	src/Parser/QWSDLParserHandler.h

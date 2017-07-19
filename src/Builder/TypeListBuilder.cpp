@@ -139,65 +139,83 @@ void TypeListBuilder::buildHeaderClassComplexType(QTextStream& os, const Complex
 	AttributeListSharedPtr pListAttributes = pComplexType->getAttributeList();
 	AttributeList::const_iterator attr;
 
-	if(pListAttributes->count() > 0) {
+	ElementListSharedPtr pListElements = pComplexType->getElementList();
+	ElementList::const_iterator element;
+
+	if(pListAttributes->count() > 0 || pListElements->count()) {
 
 		os << "public:" << CRLF;
 		for(attr = pListAttributes->constBegin(); attr != pListAttributes->constEnd(); ++attr) {
-
 			if(!(*attr)->getType()) {
 				qWarning("[TypeListBuilder] Attribute %s in %s has no type", qPrintable((*attr)->getName()), qPrintable(pComplexType->getName()));
 				continue;
 			}
-
 			if( (*attr)->getType()->getClassType() == Type::SimpleType) {
 				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>((*attr)->getType());
 
-				QString szName = pSimpleType->getName();
-				QString szNameCapitalized = szName.left(1).toUpper()+szName.mid(1);
-				QString szVarName = szName.left(1).toLower()+szName.mid(1);
-
-				os << "\tvoid" << " set" << szNameCapitalized << "(" << pSimpleType->getVariableTypeString() << " " << szVarName << ");" << CRLF ;
-				os << "\t" << pSimpleType->getVariableTypeString() << " get" << szNameCapitalized << "() const;" << CRLF ;
+				os << "\t" << pSimpleType->getSetterDeclaration() << CRLF ;
+				os << "\t" << pSimpleType->getGetterDeclaration() << CRLF ;
 				os << CRLF;
 
 			}else if( (*attr)->getType()->getClassType() == Type::ComplexType) {
 				ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>((*attr)->getType());
 
-				QString szName = pComplexType->getName();
-				QString szNameCapitalized = szName.left(1).toUpper()+szName.mid(1);
-				QString szVarName = szName.left(1).toLower()+szName.mid(1);
-
-				os << "\tvoid" << " set" << szNameCapitalized << "(" << szNameCapitalized << " " << szVarName << ");" << CRLF ;
-				os << "\t" << szNameCapitalized << " get" << szNameCapitalized << "() const;" << CRLF ;
+				os << "\t" << pComplexType->getSetterDeclaration() << CRLF ;
+				os << "\t" << pComplexType->getGetterDeclaration() << CRLF ;
 				os << CRLF;
 			}
-
 		}
+		for(element = pListElements->constBegin(); element != pListElements->constEnd(); ++element) {
+			if(!(*element)->getType()) {
+				qWarning("[TypeListBuilder] Element %s in %s has no type", qPrintable((*element)->getName()), qPrintable(pComplexType->getName()));
+				continue;
+			}
+			if( (*element)->getType()->getClassType() == Type::SimpleType) {
+				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>((*element)->getType());
+
+				os << "\t" << pSimpleType->getSetterDeclaration() << CRLF ;
+				os << "\t" << pSimpleType->getGetterDeclaration() << CRLF ;
+				os << CRLF;
+
+			}else if( (*element)->getType()->getClassType() == Type::ComplexType) {
+				ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>((*element)->getType());
+
+				os << "\t" << pComplexType->getSetterDeclaration() << CRLF ;
+				os << "\t" << pComplexType->getGetterDeclaration() << CRLF ;
+				os << CRLF;
+			}
+		}
+
 
 		os << "private:" << CRLF;
 		for(attr = pListAttributes->constBegin(); attr != pListAttributes->constEnd(); ++attr) {
-
 			if(!(*attr)->getType()) {
 				continue;
 			}
-
 			if( (*attr)->getType()->getClassType() == Type::SimpleType) {
 				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>((*attr)->getType());
-
-				QString szName = pSimpleType->getName();
-				QString szNameCapitalized = szName.left(1).toUpper()+szName.mid(1);
-				QString szVarName = szName.left(1).toLower()+szName.mid(1);
-
-				os << "\t" << pSimpleType->getVariableTypeString() << " _" << szVarName << ";" << CRLF ;
+				os << "\t" << pSimpleType->getVariableDeclaration() << CRLF ;
 
 			}else if( (*attr)->getType()->getClassType() == Type::ComplexType) {
 				ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>((*attr)->getType());
+				os << "\t" << pComplexType->getVariableDeclaration() << CRLF ;
 
-				QString szName = pComplexType->getName();
-				QString szNameCapitalized = szName.left(1).toUpper()+szName.mid(1);
-				QString szVarName = szName.left(1).toLower()+szName.mid(1);
 
-				os << "\t" << szNameCapitalized << " _" << szVarName << ";" << CRLF ;
+			}
+		}
+		for(element = pListElements->constBegin(); element != pListElements->constEnd(); ++element) {
+
+			if(!(*element)->getType()) {
+				continue;
+			}
+
+			if( (*element)->getType()->getClassType() == Type::SimpleType) {
+				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>((*element)->getType());
+				os << "\t" << pSimpleType->getVariableDeclaration() << CRLF ;
+
+			}else if( (*element)->getType()->getClassType() == Type::ComplexType) {
+				ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>((*element)->getType());
+				os << "\t" << pComplexType->getVariableDeclaration() << CRLF ;
 
 			}
 		}

@@ -7,6 +7,8 @@
 
 #include <QBuffer>
 
+#include "Model/ComplexType.h"
+#include "Model/SimpleType.h"
 #include "Model/Type.h"
 
 #include "QWSDLParserHandler.h"
@@ -52,14 +54,13 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 					for(type = pList->constBegin(); type != pList->constEnd(); ++type) {
 						m_pListTypes->add(*type);
 					}
-					qDebug("%d", m_pListTypes->count());
 				}else{
 					qWarning("[QWSDLParserHandler::startElement] Error to parse file %s (error: %s)",
 							qPrintable(szLocation),
 							qPrintable(reader.errorHandler()->errorString()));
 				}
 			}else{
-				qWarning("Error for opening file %s (error: %s)",
+				qWarning("[QWSDLParserHandler::startElement] Error for opening file %s (error: %s)",
 						qPrintable(szLocation),
 						qPrintable(file.errorString()));
 			}
@@ -71,11 +72,16 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 	if(qName == "xs:simpleType") {
 		m_szCurrentSection = qName;
 
-		m_pCurrentType = SimpleType::create();
-
 		iRes = attributes.index("name");
 		if(iRes != -1) {
 			QString szName = attributes.value("name");
+
+			if(!m_pListTypes->getByName(szName).isNull()) {
+				m_pCurrentType = m_pListTypes->getByName(szName);
+			}else{
+				m_pCurrentType = SimpleType::create();
+			}
+
 			m_pCurrentType->setName(szName);
 		}
 	}
@@ -83,18 +89,23 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 	if(qName == "xs:complexType") {
 		m_szCurrentSection = qName;
 
-		m_pCurrentType = ComplexType::create();
-
 		iRes = attributes.index("name");
 		if(iRes != -1) {
 			QString szName = attributes.value("name");
+
+			if(!m_pListTypes->getByName(szName).isNull()) {
+				m_pCurrentType = m_pListTypes->getByName(szName);
+			}else{
+				m_pCurrentType = ComplexType::create();
+			}
+
 			m_pCurrentType->setName(szName);
 		}
 	}
 
 
 
-	if(m_szCurrentSection == "xs:simpleType") {
+	if(m_szCurrentSection == "xs:simpleType" && !m_pCurrentType.isNull()) {
 		if(qName == "xs:restriction") {
 			iRes = attributes.index("base");
 			if(iRes != -1) {
@@ -122,7 +133,7 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 	}
 
 
-	if(m_szCurrentSection == "xs:complexType") {
+	if(m_szCurrentSection == "xs:complexType" && !m_pCurrentType.isNull()) {
 		if(qName == "xs:extension") {
 
 			iRes = attributes.index("base");
@@ -155,6 +166,20 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 					pType->setVariableTypeFromString(szValue);
 					pType->setName(attr->getName());
 					attr->setType(pType);
+				}else{
+					if(szValue.contains(":")) {
+						TypeSharedPtr pType = m_pListTypes->getByName(szValue.split(":")[1]);
+
+						if(!pType.isNull()){
+							attr->setType(pType);
+						}else{
+							qWarning("[QWSDLParserHandler::endElement] Type %s is not found, we create it", qPrintable(szValue));
+							ComplexTypeSharedPtr pComplexType = ComplexType::create();
+							pComplexType->setName(szValue.split(":")[1]);
+							m_pListTypes->append(pComplexType);
+							attr->setType(pComplexType);
+						}
+					}
 				}
 			}
 
@@ -169,6 +194,49 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 			ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(m_pCurrentType);
 			pComplexType->addAttribute(attr);
 		}
+		if(qName == "xs:element") {
+			ElementSharedPtr element = Element::create();
+
+			iRes = attributes.index("name");
+			qDebug(qPrintable(attributes.value("name")));
+			if(iRes != -1) {
+				element->setName(attributes.value("name"));
+				if(attributes.value("name") == "tdc:DoorFaultState") {
+					qDebug("TEST");
+				}
+			}
+
+			iRes = attributes.index("type");
+			if(iRes != -1) {
+				QString szValue = attributes.value("type");
+				if(szValue.startsWith("pt:")) {
+					TypeSharedPtr pType = m_pListTypes->getByName(szValue.split(":")[1]);
+					element->setType(pType);
+				}else if(szValue.startsWith("xs:")) {
+					SimpleTypeSharedPtr pType = SimpleType::create();
+					pType->setVariableTypeFromString(szValue);
+					pType->setName(element->getName());
+					element->setType(pType);
+				}else{
+					if(szValue.contains(":")) {
+						TypeSharedPtr pType = m_pListTypes->getByName(szValue.split(":")[1]);
+
+						if(!pType.isNull()){
+							element->setType(pType);
+						}else{
+							qWarning("[QWSDLParserHandler::endElement] Type %s is not found, we create it", qPrintable(szValue));
+							ComplexTypeSharedPtr pComplexType = ComplexType::create();
+							pComplexType->setName(szValue.split(":")[1]);
+							m_pListTypes->append(pComplexType);
+							element->setType(pComplexType);
+						}
+					}
+				}
+			}
+
+			ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(m_pCurrentType);
+			pComplexType->addElement(element);
+		}
 	}
 
 	return true;
@@ -180,15 +248,17 @@ QWSDLParserHandler::endElement(const QString &namespaceURI,
 		const QString &qName)
 {
 
-	if(qName == "xs:simpleType") {
+	if(qName == "xs:simpleType" && !m_pCurrentType.isNull()) {
 		m_szCurrentSection = "";
 		m_pListTypes->add(m_pCurrentType);
+		m_pCurrentType.clear();
 
 	}
 
-	if(qName == "xs:complexType") {
+	if(qName == "xs:complexType" && !m_pCurrentType.isNull()) {
 		m_szCurrentSection = "";
 		m_pListTypes->add(m_pCurrentType);
+		m_pCurrentType.clear();
 
 	}
 

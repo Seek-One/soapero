@@ -11,6 +11,8 @@
 #include <QFile>
 #include <QTextStream>
 
+#include "Model/ComplexType.h"
+#include "Model/SimpleType.h"
 #include "Model/Type.h"
 
 class TypeListBuilder
