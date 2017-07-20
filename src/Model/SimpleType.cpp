@@ -63,12 +63,11 @@ QString SimpleType::getVariableTypeString()const
 
 QString SimpleType::getSetterDeclaration() const
 {
-	QString szNameCapitalized = m_szName.left(1).toUpper()+m_szName.mid(1);
-	QString szVarName = m_szName.left(1).toLower()+m_szName.mid(1);
+	QString szVarName = getLocalName().left(1).toLower() + getLocalName().mid(1);
 
 	QString szDeclaration;
 	szDeclaration += "void set";
-	szDeclaration += szNameCapitalized;
+	szDeclaration += getLocalName();
 	szDeclaration += "(";
 	if(getVariableTypeString().startsWith('Q')) {
 		szDeclaration += "const ";
@@ -86,13 +85,10 @@ QString SimpleType::getSetterDeclaration() const
 
 QString SimpleType::getGetterDeclaration() const
 {
-	QString szNameCapitalized = m_szName.left(1).toUpper()+m_szName.mid(1);
-	QString szVarName = m_szName.left(1).toLower()+m_szName.mid(1);
-
 	QString szDeclaration;
 	szDeclaration += getVariableTypeString();
 	szDeclaration += " get";
-	szDeclaration += szNameCapitalized;
+	szDeclaration += getLocalName();
 	szDeclaration += "() const;";
 
 	return szDeclaration;
@@ -100,8 +96,7 @@ QString SimpleType::getGetterDeclaration() const
 
 QString SimpleType::getVariableDeclaration() const
 {
-	QString szNameCapitalized = m_szName.left(1).toUpper()+m_szName.mid(1);
-	QString szVarName = m_szName.left(1).toLower()+m_szName.mid(1);
+	QString szVarName = getLocalName().left(1).toLower() + getLocalName().mid(1);
 
 	QString szDeclaration;
 	szDeclaration += getVariableTypeString();

@@ -5,6 +5,8 @@
  *      Author: lgruber
  */
 
+#include <QStringList>
+
 #include "Type.h"
 
 Type::Type(ClassType type)
@@ -17,14 +19,49 @@ Type::~Type()
 
 }
 
-void Type::setName(const QString& szName)
+void Type::setQualifedName(const QString& szNamespace, const QString& szLocalName)
 {
-	m_szName = szName;
+	m_szNamespace = szNamespace;
+	m_szLocalName = szLocalName;
 }
 
-QString Type::getName() const
+void Type::setNamespace(const QString& szNamespace)
 {
-	return m_szName;
+	m_szNamespace = szNamespace;
+}
+
+void Type::setLocalName(const QString& szLocalName)
+{
+	m_szLocalName = szLocalName;
+}
+
+void Type::setName(const QString& szName)
+{
+	if(szName.contains(":")) {
+		m_szNamespace = szName.split(":")[0];
+		m_szLocalName = szName.split(":")[1];
+	}else{
+		m_szLocalName = szName;
+	}
+}
+
+QString Type::getQualifiedName() const
+{
+	if(m_szNamespace.isEmpty()) {
+		return m_szLocalName;
+	}else{
+		return m_szNamespace.toUpper() + m_szLocalName;
+	}
+}
+
+QString Type::getNamespace() const
+{
+	return m_szNamespace;
+}
+
+QString Type::getLocalName() const
+{
+	return m_szLocalName;
 }
 
 void Type::setClassType(Type::ClassType type)
@@ -54,11 +91,12 @@ TypeListSharedPtr TypeList::create()
 	return TypeListSharedPtr(new TypeList());
 }
 
-TypeSharedPtr TypeList::getByName(const QString szName)
+TypeSharedPtr TypeList::getByName(const QString& szLocalName, const QString& szNamespace)
 {
 	TypeList::const_iterator type;
 	for(type = constBegin(); type != constEnd(); ++type) {
-		if((*type)->getName() == szName) {
+		if((*type)->getLocalName() == szLocalName &&
+				(*type)->getNamespace() == szNamespace) {
 			return *type;
 		}
 	}

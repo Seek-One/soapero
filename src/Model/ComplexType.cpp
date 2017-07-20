@@ -173,15 +173,14 @@ ElementListSharedPtr ComplexType::getElementList() const
 
 QString ComplexType::getSetterDeclaration() const
 {
-	QString szNameCapitalized = m_szName.left(1).toUpper()+m_szName.mid(1);
-	QString szVarName = m_szName.left(1).toLower()+m_szName.mid(1);
+	QString szVarName = getLocalName().left(1).toLower() + getLocalName().mid(1);
 
 	QString szDeclaration;
 	szDeclaration += "void set";
-	szDeclaration += szNameCapitalized;
+	szDeclaration += getLocalName();
 	szDeclaration += "(";
 	szDeclaration += "const ";
-	szDeclaration += szNameCapitalized;
+	szDeclaration += getQualifiedName();
 	szDeclaration += "& ";
 	szDeclaration += szVarName;
 	szDeclaration += ");";
@@ -191,13 +190,10 @@ QString ComplexType::getSetterDeclaration() const
 
 QString ComplexType::getGetterDeclaration() const
 {
-	QString szNameCapitalized = m_szName.left(1).toUpper()+m_szName.mid(1);
-	QString szVarName = m_szName.left(1).toLower()+m_szName.mid(1);
-
 	QString szDeclaration;
-	szDeclaration += szNameCapitalized;
+	szDeclaration += getQualifiedName();
 	szDeclaration += " get";
-	szDeclaration += szNameCapitalized;
+	szDeclaration += getLocalName();
 	szDeclaration += "() const;";
 
 	return szDeclaration;
@@ -205,11 +201,10 @@ QString ComplexType::getGetterDeclaration() const
 
 QString ComplexType::getVariableDeclaration() const
 {
-	QString szNameCapitalized = m_szName.left(1).toUpper()+m_szName.mid(1);
-	QString szVarName = m_szName.left(1).toLower()+m_szName.mid(1);
+	QString szVarName = getLocalName().left(1).toLower() + getLocalName().mid(1);
 
 	QString szDeclaration;
-	szDeclaration += szNameCapitalized;
+	szDeclaration += getQualifiedName();
 	szDeclaration += " _";
 	szDeclaration += szVarName;
 

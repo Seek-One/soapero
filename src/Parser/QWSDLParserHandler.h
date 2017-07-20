@@ -36,6 +36,8 @@ private:
     QString m_szCurrentSection;
     QString m_szCurrentText;
 
+    QString m_szTargetNamespacePrefix;
+
     TypeListSharedPtr m_pListTypes;
 
     TypeSharedPtr m_pCurrentType;

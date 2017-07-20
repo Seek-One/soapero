@@ -7,6 +7,7 @@
 
 #include <QDateTime>
 #include <QCoreApplication>
+#include <QStringList>
 
 #include "TypeListBuilder.h"
 
@@ -74,11 +75,9 @@ void TypeListBuilder::buildHeaderFile()
 
 		for(type = m_pListType->constBegin(); type != m_pListType->constEnd(); ++type) {
 
-			if(!(*type)->getName().isEmpty()) {
+			if(!(*type)->getLocalName().isEmpty()) {
 				buildHeaderClass(os, *type);
 			}
-
-
 
 		}
 
@@ -91,7 +90,7 @@ void TypeListBuilder::buildHeaderFile()
 
 void TypeListBuilder::buildHeaderClass(QTextStream& os, const TypeSharedPtr& pType) const
 {
-	QString szClassname = (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pType->getName();
+	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pType->getQualifiedName();
 
 	if(pType->getClassType() == Type::SimpleType) {
 		os << "class " << szClassname << CRLF;
@@ -112,7 +111,9 @@ void TypeListBuilder::buildHeaderClass(QTextStream& os, const TypeSharedPtr& pTy
 		if(pComplexType->getExtensionType().isNull()) {
 			os << "class " << szClassname << CRLF;
 		}else{
-			QString szExtendedClassname = (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pComplexType->getExtensionType()->getName();
+			QString szExtensionName = pComplexType->getExtensionType()->getQualifiedName();
+
+			QString szExtendedClassname = (!m_szPrefix.isEmpty() ? m_szPrefix : "") + szExtensionName;
 			os << "class " << szClassname << " : public " << szExtendedClassname << CRLF;
 		}
 		os << "{" << CRLF;
@@ -135,7 +136,7 @@ void TypeListBuilder::buildHeaderClassSimpleType(QTextStream& os, const SimpleTy
 
 void TypeListBuilder::buildHeaderClassComplexType(QTextStream& os, const ComplexTypeSharedPtr& pComplexType) const
 {
-	QString szClassname = (m_szPrefix.isEmpty() ? "" : m_szPrefix) + pComplexType->getName();
+	QString szClassname = (m_szPrefix.isEmpty() ? "" : m_szPrefix) + pComplexType->getQualifiedName();
 	AttributeListSharedPtr pListAttributes = pComplexType->getAttributeList();
 	AttributeList::const_iterator attr;
 
@@ -147,7 +148,7 @@ void TypeListBuilder::buildHeaderClassComplexType(QTextStream& os, const Complex
 		os << "public:" << CRLF;
 		for(attr = pListAttributes->constBegin(); attr != pListAttributes->constEnd(); ++attr) {
 			if(!(*attr)->getType()) {
-				qWarning("[TypeListBuilder] Attribute %s in %s has no type", qPrintable((*attr)->getName()), qPrintable(pComplexType->getName()));
+				qWarning("[TypeListBuilder] Attribute %s in %s has no type", qPrintable((*attr)->getName()), qPrintable(pComplexType->getQualifiedName()));
 				continue;
 			}
 			if( (*attr)->getType()->getClassType() == Type::SimpleType) {
@@ -167,7 +168,7 @@ void TypeListBuilder::buildHeaderClassComplexType(QTextStream& os, const Complex
 		}
 		for(element = pListElements->constBegin(); element != pListElements->constEnd(); ++element) {
 			if(!(*element)->getType()) {
-				qWarning("[TypeListBuilder] Element %s in %s has no type", qPrintable((*element)->getName()), qPrintable(pComplexType->getName()));
+				qWarning("[TypeListBuilder] Element %s in %s has no type", qPrintable((*element)->getName()), qPrintable(pComplexType->getQualifiedName()));
 				continue;
 			}
 			if( (*element)->getType()->getClassType() == Type::SimpleType) {

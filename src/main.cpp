@@ -42,13 +42,15 @@ int main(int argc, char **argv)
 		QWSDLParserHandler handler;
 		reader.setContentHandler(&handler);
 		reader.setErrorHandler(&handler);
+		reader.setFeature("http://xml.org/sax/features/namespace-prefixes", true);
+		reader.setFeature("http://xml.org/sax/features/namespaces", true);
 		if(!reader.parse(source)){
 			qWarning("[ServerController::getDevicesList] Error to parse data (error: %s)", qPrintable(reader.errorHandler()->errorString()));
 		}else{
 
 
 			TypeListBuilder builder(handler.getTypeList());
-			builder.setPrefix("Onvif");
+			//builder.setPrefix("Onvif");
 			builder.setFilename("doorcontrol");
 			builder.buildHeaderFile();
 

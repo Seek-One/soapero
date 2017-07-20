@@ -47,15 +47,21 @@ protected:
 public:
 	virtual ~Type();
 
-
+	void setQualifedName(const QString& szNamespace, const QString& szName);
+	void setNamespace(const QString& szNamespace);
+	void setLocalName(const QString& szLocalName);
 	void setName(const QString& szName);
+	QString getQualifiedName() const;
+	QString getNamespace() const;
+	QString getLocalName() const;
 	QString getName() const;
 
 	void setClassType(ClassType type);
 	ClassType getClassType() const;
 
 protected:
-	QString m_szName;
+	QString m_szLocalName;
+	QString m_szNamespace;
 	ClassType m_classType;
 };
 
@@ -70,7 +76,7 @@ public:
 	void add(const TypeListSharedPtr& pList);
 	void add(const TypeSharedPtr& pType);
 
-	TypeSharedPtr getByName(const QString szName);
+	TypeSharedPtr getByName(const QString& szLocalName, const QString& szNamespace = QString());
 };
 
 #endif /* TYPE_H_ */
