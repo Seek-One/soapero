@@ -93,14 +93,25 @@ void TypeListBuilder::buildHeaderClass(QTextStream& os, const TypeSharedPtr& pTy
 	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pType->getQualifiedName();
 
 	if(pType->getClassType() == Type::SimpleType) {
+		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pType);
+
 		os << "class " << szClassname << CRLF;
 		os << "{" << CRLF;
 		os << "public:" << CRLF;
+
+		if(pSimpleType->isRestricted()) {
+			if(pSimpleType->getVariableType() == SimpleType::string &&
+					pSimpleType->getEnumerationValues().count() > 0) {
+				os << "\t" << pSimpleType->getEnumerationDeclaration() << CRLF;
+				os << CRLF;
+			}
+		}
+
 		os << "\t" << szClassname << "();" << CRLF;
 		os << "\tvirtual ~" << szClassname << "();" << CRLF;
 		os << CRLF;
 
-		//buildHeaderClassSimpleType(os, qSharedPointerCast<SimpleType>(pType));
+		buildHeaderClassSimpleType(os, pSimpleType);
 
 		os << "};" << CRLF;
 		os << CRLF;
@@ -132,6 +143,11 @@ void TypeListBuilder::buildHeaderClass(QTextStream& os, const TypeSharedPtr& pTy
 void TypeListBuilder::buildHeaderClassSimpleType(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const
 {
 
+	os << "\t" << pSimpleType->getSetterDeclaration() << CRLF ;
+	os << "\t" << pSimpleType->getGetterDeclaration() << CRLF ;
+	os << CRLF;
+	os << "private:" << CRLF;
+	os << "\t" << pSimpleType->getVariableDeclaration() << CRLF;
 }
 
 void TypeListBuilder::buildHeaderClassComplexType(QTextStream& os, const ComplexTypeSharedPtr& pComplexType) const

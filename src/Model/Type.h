@@ -37,6 +37,7 @@ class Type
 {
 public:
 	enum ClassType {
+		Unknown,
 		ComplexType,
 		SimpleType,
 	};
@@ -46,6 +47,8 @@ protected:
 
 public:
 	virtual ~Type();
+
+	static TypeSharedPtr create();
 
 	void setQualifedName(const QString& szNamespace, const QString& szName);
 	void setNamespace(const QString& szNamespace);

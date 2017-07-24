@@ -14,6 +14,7 @@ SimpleType::SimpleType()
 	m_iMaxLength = -1;
 	m_iMinLength = -1;
 	m_iMinInclusive = -1;
+	m_bRestricted = false;
 }
 
 SimpleType::~SimpleType() {}
@@ -46,18 +47,24 @@ SimpleType::VariableType SimpleType::getVariableType()const
 
 QString SimpleType::getVariableTypeString()const
 {
-	switch(m_variableType) {
-	case string:
-		return "QString";
-		break;
-	case unsignedInt:
-		return "unsigned int";
-		break;
-	case Boolean:
-		return "bool";
-		break;
-	default:
-		return QString();
+	if(m_bRestricted && m_variableType == string &&
+			m_listEnumerationValues.count() > 0) {
+		return getLocalName() + "::Values";
+
+	}else{
+		switch(m_variableType) {
+		case string:
+			return "QString";
+			break;
+		case unsignedInt:
+			return "unsigned int";
+			break;
+		case Boolean:
+			return "bool";
+			break;
+		default:
+			return QString();
+		}
 	}
 }
 
@@ -107,6 +114,43 @@ QString SimpleType::getVariableDeclaration() const
 	return szDeclaration;
 }
 
+QString SimpleType::getEnumerationDeclaration() const
+{
+	QString szDeclaration;
+	if(m_bRestricted) {
+		szDeclaration += "enum Values {";
+		for(int i=0; i < m_listEnumerationValues.count(); ++i) {
+			if(i==0) {
+				szDeclaration += m_listEnumerationValues[i];
+			} else {
+				szDeclaration += ", " + m_listEnumerationValues[i];
+			}
+		}
+		szDeclaration += "}";
+	}
+	return szDeclaration;
+}
+
+void SimpleType::setRestricted(bool bRestricted)
+{
+	m_bRestricted = bRestricted;
+}
+
+bool SimpleType::isRestricted() const
+{
+	return m_bRestricted;
+}
+
+void SimpleType::addEnumerationValue(const QString& szValue)
+{
+	m_listEnumerationValues.append(szValue);
+}
+
+QStringList SimpleType::getEnumerationValues() const
+{
+	return m_listEnumerationValues;
+}
+
 void SimpleType::setMaxLength(int iMaxLength)
 {
 	m_iMaxLength = iMaxLength;
@@ -116,7 +160,6 @@ int SimpleType::getMaxLength() const
 {
 	return m_iMaxLength;
 }
-
 
 void SimpleType::setMinLength(int iMinLength)
 {

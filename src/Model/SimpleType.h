@@ -11,6 +11,7 @@
 #include <QSharedPointer>
 #include <QList>
 #include <QString>
+#include <QStringList>
 
 #include "Type.h"
 
@@ -37,6 +38,13 @@ public:
 	QString getSetterDeclaration() const;
 	QString getGetterDeclaration() const;
 	QString getVariableDeclaration() const;
+	QString getEnumerationDeclaration() const;
+
+	void setRestricted(bool bRestricted);
+	bool isRestricted() const;
+
+	void addEnumerationValue(const QString& szValue);
+	QStringList getEnumerationValues() const;
 
 	void setMaxLength(int iMaxLength);
 	int getMaxLength()const;
@@ -56,6 +64,9 @@ private:
 
 	//For base unsigned int
 	int m_iMinInclusive;
+
+	bool m_bRestricted;
+	QStringList m_listEnumerationValues;
 
 };
 

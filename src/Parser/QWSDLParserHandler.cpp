@@ -38,7 +38,6 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 		}
 
 		for(int i=0; i < attributes.length(); ++i) {
-			qDebug("%s %s", qPrintable(attributes.qName(i)), qPrintable(attributes.value(i)));
 			if(attributes.value(i) == szTargetNamespace && attributes.qName(i) != "targetNamespace") {
 				m_szTargetNamespacePrefix = attributes.localName(i);
 				qDebug("[QWSDLParserHandler::startElement] Target namespace prefix found: %s", qPrintable(m_szTargetNamespacePrefix));
@@ -96,13 +95,18 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 
 			if(!m_pListTypes->getByName(szName, m_szTargetNamespacePrefix).isNull()) {
 				m_pCurrentType = m_pListTypes->getByName(szName, m_szTargetNamespacePrefix);
+				if(m_pCurrentType->getClassType() == Type::Unknown) {
+
+					m_pCurrentType = SimpleType::create();
+					m_pCurrentType->setLocalName(szName);
+					m_pCurrentType->setNamespace(m_szTargetNamespacePrefix);
+				}
+
 			}else{
 				m_pCurrentType = SimpleType::create();
 				m_pCurrentType->setLocalName(szName);
 				m_pCurrentType->setNamespace(m_szTargetNamespacePrefix);
 			}
-
-
 		}
 	}
 
@@ -115,6 +119,13 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 
 			if(!m_pListTypes->getByName(szName, m_szTargetNamespacePrefix).isNull()) {
 				m_pCurrentType = m_pListTypes->getByName(szName, m_szTargetNamespacePrefix);
+				if(m_pCurrentType->getClassType() == Type::Unknown) {
+
+					m_pCurrentType = ComplexType::create();
+					m_pCurrentType->setLocalName(szName);
+					m_pCurrentType->setNamespace(m_szTargetNamespacePrefix);
+				}
+
 			}else{
 				m_pCurrentType = ComplexType::create();
 				m_pCurrentType->setLocalName(szName);
@@ -131,6 +142,7 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 			if(iRes != -1) {
 				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pCurrentType);
 				pSimpleType->setVariableTypeFromString(attributes.value("base"));
+				pSimpleType->setRestricted(true);
 			}
 
 		}
@@ -147,6 +159,15 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 			if(iRes != -1) {
 				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pCurrentType);
 				pSimpleType->setMinLength(attributes.value("value").toUInt());
+			}
+
+		}
+		if(qName == "xs:enumeration") {
+			if(attributes.index("value") != -1) {
+
+				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pCurrentType);
+				QString szVal = attributes.value("value");
+				pSimpleType->addEnumerationValue(szVal);
 			}
 
 		}
@@ -192,11 +213,11 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 						pType->setName(attr->getName());
 						attr->setType(pType);
 					}else{
-						ComplexTypeSharedPtr pComplexType = ComplexType::create();
-						pComplexType->setLocalName(szLocalName);
-						pComplexType->setNamespace(szNamespace);
-						m_pListTypes->append(pComplexType);
-						attr->setType(pComplexType);
+						TypeSharedPtr pType = Type::create();
+						pType->setLocalName(szLocalName);
+						pType->setNamespace(szNamespace);
+						m_pListTypes->append(pType);
+						attr->setType(pType);
 					}
 				}
 			}
@@ -208,6 +229,8 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 					attr->setRequired(true);
 				}
 			}
+
+			qDebug(qPrintable(m_pCurrentType->getQualifiedName()));
 
 			ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(m_pCurrentType);
 			pComplexType->addAttribute(attr);
@@ -237,11 +260,11 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 						pType->setName(element->getName());
 						element->setType(pType);
 					}else{
-						ComplexTypeSharedPtr pComplexType = ComplexType::create();
-						pComplexType->setLocalName(szLocalName);
-						pComplexType->setNamespace(szNamespace);
-						m_pListTypes->append(pComplexType);
-						element->setType(pComplexType);
+						TypeSharedPtr pType = Type::create();
+						pType->setLocalName(szLocalName);
+						pType->setNamespace(szNamespace);
+						m_pListTypes->append(pType);
+						element->setType(pType);
 					}
 				}
 			}
@@ -260,6 +283,12 @@ QWSDLParserHandler::endElement(const QString &namespaceURI,
 		const QString &localName,
 		const QString &qName)
 {
+	TypeSharedPtr pType;
+	TypeListSharedPtr pListTypes;
+	TypeList::const_iterator type;
+
+	ElementList::const_iterator element;
+	AttributeList::const_iterator attr;
 
 	if(qName == "xs:simpleType" && !m_pCurrentType.isNull()) {
 		m_szCurrentSection = "";
@@ -272,6 +301,57 @@ QWSDLParserHandler::endElement(const QString &namespaceURI,
 		m_szCurrentSection = "";
 		m_pListTypes->add(m_pCurrentType);
 		m_pCurrentType.clear();
+
+	}
+
+	if(qName == "wsdl:types") {
+
+		for(type = m_pListTypes->constBegin(); type != m_pListTypes->constEnd(); ++type) {
+
+			if( (*type)->getClassType() == Type::ComplexType) {
+
+				ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(*type);
+				if(pComplexType->getExtensionType()) {
+					if(pComplexType->getExtensionType()->getClassType() == Type::Unknown) {
+						pType = m_pListTypes->getByName(
+								pComplexType->getExtensionType()->getLocalName(),
+								pComplexType->getExtensionType()->getNamespace());
+						pComplexType->setExtensionType(pType);
+					}
+				}
+				if(pComplexType->getElementList()->count() > 0) {
+					//Parcours elment list
+
+					for(element = pComplexType->getElementList()->constBegin();
+							element != pComplexType->getElementList()->constEnd(); ++element) {
+
+						if( (*element)->getType()->getClassType() == Type::Unknown) {
+							pType = m_pListTypes->getByName((*element)->getType()->getLocalName(), (*element)->getType()->getNamespace());
+							(*element)->setType(pType);
+						}
+					}
+
+				}
+				if(pComplexType->getAttributeList()->count() > 0) {
+					//Parcours attr list
+
+					for(attr = pComplexType->getAttributeList()->constBegin();
+							attr != pComplexType->getAttributeList()->constEnd(); ++attr) {
+
+						if( (*attr)->getType()->getClassType() == Type::Unknown) {
+							pType = m_pListTypes->getByName((*attr)->getType()->getLocalName(), (*attr)->getType()->getNamespace());
+							(*attr)->setType(pType);
+						}
+
+
+					}
+
+				}
+
+			}
+
+		}
+
 
 	}
 

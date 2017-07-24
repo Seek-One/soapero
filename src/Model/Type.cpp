@@ -19,6 +19,11 @@ Type::~Type()
 
 }
 
+TypeSharedPtr Type::create()
+{
+	return TypeSharedPtr(new Type(Unknown));
+}
+
 void Type::setQualifedName(const QString& szNamespace, const QString& szLocalName)
 {
 	m_szNamespace = szNamespace;
