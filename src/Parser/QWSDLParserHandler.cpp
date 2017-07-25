@@ -16,6 +16,7 @@
 QWSDLParserHandler::QWSDLParserHandler()
 {
 	m_pListTypes = TypeList::create();
+	m_pListElements = RequestResponseElementList::create();
 }
 
 QWSDLParserHandler::~QWSDLParserHandler()
@@ -30,110 +31,121 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 {
 	int iRes;
 
-	if(qName == "xs:schema") {
-		QString szTargetNamespace;
+	if(m_szCurrentSection == "") {
+		if(qName == "xs:schema") {
+			QString szTargetNamespace;
 
-		if(attributes.index("targetNamespace") != -1) {
-			szTargetNamespace = attributes.value("targetNamespace");
-		}
+			if(attributes.index("targetNamespace") != -1) {
+				szTargetNamespace = attributes.value("targetNamespace");
+			}
 
-		for(int i=0; i < attributes.length(); ++i) {
-			if(attributes.value(i) == szTargetNamespace && attributes.qName(i) != "targetNamespace") {
-				m_szTargetNamespacePrefix = attributes.localName(i);
-				qDebug("[QWSDLParserHandler::startElement] Target namespace prefix found: %s", qPrintable(m_szTargetNamespacePrefix));
+			for(int i=0; i < attributes.length(); ++i) {
+				if(attributes.value(i) == szTargetNamespace && attributes.qName(i) != "targetNamespace") {
+					m_szTargetNamespacePrefix = attributes.localName(i);
+					qDebug("[QWSDLParserHandler::startElement] Target namespace prefix found: %s", qPrintable(m_szTargetNamespacePrefix));
+				}
 			}
 		}
-	}
 
-	if(qName == "xs:import") {
-		iRes = attributes.index("schemaLocation");
-		if(iRes != -1) {
+		if(qName == "xs:import") {
+			iRes = attributes.index("schemaLocation");
+			if(iRes != -1) {
 
-			QString szLocation(attributes.value("schemaLocation"));
-			QFile file(szLocation);
+				QString szLocation(attributes.value("schemaLocation"));
+				QFile file(szLocation);
 
-			if(file.open(QFile::ReadOnly)) {
+				if(file.open(QFile::ReadOnly)) {
 
-				QByteArray bytes = file.readAll();
-				QBuffer buffer;
-				buffer.setData(bytes);
+					QByteArray bytes = file.readAll();
+					QBuffer buffer;
+					buffer.setData(bytes);
 
-				QXmlInputSource source(&buffer);
-				QXmlSimpleReader reader;
-				QWSDLParserHandler handler;
-				reader.setContentHandler(&handler);
-				reader.setErrorHandler(&handler);
-				reader.setFeature("http://xml.org/sax/features/namespace-prefixes", true);
-				reader.setFeature("http://xml.org/sax/features/namespaces", true);
-				if(reader.parse(source)){
-					TypeListSharedPtr pList = handler.getTypeList();
-					TypeList::const_iterator type;
-					for(type = pList->constBegin(); type != pList->constEnd(); ++type) {
-						m_pListTypes->add(*type);
+					QXmlInputSource source(&buffer);
+					QXmlSimpleReader reader;
+					QWSDLParserHandler handler;
+					reader.setContentHandler(&handler);
+					reader.setErrorHandler(&handler);
+					reader.setFeature("http://xml.org/sax/features/namespace-prefixes", true);
+					reader.setFeature("http://xml.org/sax/features/namespaces", true);
+					if(reader.parse(source)){
+						TypeListSharedPtr pList = handler.getTypeList();
+						TypeList::const_iterator type;
+						for(type = pList->constBegin(); type != pList->constEnd(); ++type) {
+							m_pListTypes->add(*type);
+						}
+					}else{
+						qWarning("[QWSDLParserHandler::startElement] Error to parse file %s (error: %s)",
+								qPrintable(szLocation),
+								qPrintable(reader.errorHandler()->errorString()));
 					}
 				}else{
-					qWarning("[QWSDLParserHandler::startElement] Error to parse file %s (error: %s)",
+					qWarning("[QWSDLParserHandler::startElement] Error for opening file %s (error: %s)",
 							qPrintable(szLocation),
-							qPrintable(reader.errorHandler()->errorString()));
+							qPrintable(file.errorString()));
 				}
-			}else{
-				qWarning("[QWSDLParserHandler::startElement] Error for opening file %s (error: %s)",
-						qPrintable(szLocation),
-						qPrintable(file.errorString()));
 			}
 		}
-	}
 
 
 
-	if(qName == "xs:simpleType") {
-		m_szCurrentSection = qName;
+		if(qName == "xs:simpleType") {
+			m_szCurrentSection = qName;
 
-		iRes = attributes.index("name");
-		if(iRes != -1) {
-			QString szName = attributes.value("name");
+			iRes = attributes.index("name");
+			if(iRes != -1) {
+				QString szName = attributes.value("name");
 
-			if(!m_pListTypes->getByName(szName, m_szTargetNamespacePrefix).isNull()) {
-				m_pCurrentType = m_pListTypes->getByName(szName, m_szTargetNamespacePrefix);
-				if(m_pCurrentType->getClassType() == Type::Unknown) {
+				if(!m_pListTypes->getByName(szName, m_szTargetNamespacePrefix).isNull()) {
+					m_pCurrentType = m_pListTypes->getByName(szName, m_szTargetNamespacePrefix);
+					if(m_pCurrentType->getClassType() == Type::Unknown) {
 
+						m_pCurrentType = SimpleType::create();
+						m_pCurrentType->setLocalName(szName);
+						m_pCurrentType->setNamespace(m_szTargetNamespacePrefix);
+					}
+
+				}else{
 					m_pCurrentType = SimpleType::create();
 					m_pCurrentType->setLocalName(szName);
 					m_pCurrentType->setNamespace(m_szTargetNamespacePrefix);
 				}
-
-			}else{
-				m_pCurrentType = SimpleType::create();
-				m_pCurrentType->setLocalName(szName);
-				m_pCurrentType->setNamespace(m_szTargetNamespacePrefix);
 			}
 		}
-	}
 
-	if(qName == "xs:complexType") {
-		m_szCurrentSection = qName;
+		if(qName == "xs:complexType") {
+			m_szCurrentSection = qName;
 
-		iRes = attributes.index("name");
-		if(iRes != -1) {
-			QString szName = attributes.value("name");
+			iRes = attributes.index("name");
+			if(iRes != -1) {
+				QString szName = attributes.value("name");
 
-			if(!m_pListTypes->getByName(szName, m_szTargetNamespacePrefix).isNull()) {
-				m_pCurrentType = m_pListTypes->getByName(szName, m_szTargetNamespacePrefix);
-				if(m_pCurrentType->getClassType() == Type::Unknown) {
+				if(!m_pListTypes->getByName(szName, m_szTargetNamespacePrefix).isNull()) {
+					m_pCurrentType = m_pListTypes->getByName(szName, m_szTargetNamespacePrefix);
+					if(m_pCurrentType->getClassType() == Type::Unknown) {
 
+						m_pCurrentType = ComplexType::create();
+						m_pCurrentType->setLocalName(szName);
+						m_pCurrentType->setNamespace(m_szTargetNamespacePrefix);
+					}
+
+				}else{
 					m_pCurrentType = ComplexType::create();
 					m_pCurrentType->setLocalName(szName);
 					m_pCurrentType->setNamespace(m_szTargetNamespacePrefix);
 				}
-
-			}else{
-				m_pCurrentType = ComplexType::create();
-				m_pCurrentType->setLocalName(szName);
-				m_pCurrentType->setNamespace(m_szTargetNamespacePrefix);
 			}
 		}
-	}
 
+		if(qName == "xs:element" &&
+				attributes.index("name") != -1 &&
+				attributes.count() == 1) {
+			//We are in Message Request/Response elements list section
+			m_szCurrentSection = qName;
+
+			m_pCurrentElement = RequestResponseElement::create();
+			m_pCurrentElement->setName(attributes.value("name"));
+		}
+	}
 
 
 	if(m_szCurrentSection == "xs:simpleType" && !m_pCurrentType.isNull()) {
@@ -174,7 +186,7 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 	}
 
 
-	if(m_szCurrentSection == "xs:complexType" && !m_pCurrentType.isNull()) {
+	if( (m_szCurrentSection == "xs:complexType" || m_szCurrentType == "xs:complexType") && !m_pCurrentType.isNull()) {
 		if(qName == "xs:extension") {
 
 			iRes = attributes.index("base");
@@ -205,7 +217,7 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 				if(!pType.isNull()){
 					attr->setType(pType);
 				}else{
-					qWarning("[QWSDLParserHandler::endElement] Type %s is not found at this moment, we create it", qPrintable(szValue));
+					qWarning("[QWSDLParserHandler::startElement] Type %s is not found at this moment, we create it", qPrintable(szValue));
 
 					if(szValue.startsWith("xs:")) {
 						SimpleTypeSharedPtr pType = SimpleType::create();
@@ -230,8 +242,6 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 				}
 			}
 
-			qDebug(qPrintable(m_pCurrentType->getQualifiedName()));
-
 			ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(m_pCurrentType);
 			pComplexType->addAttribute(attr);
 		}
@@ -252,7 +262,7 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 				if(!pType.isNull()){
 					element->setType(pType);
 				}else{
-					qWarning("[QWSDLParserHandler::endElement] Type %s is not found at this moment, we create it", qPrintable(szValue));
+					qWarning("[QWSDLParserHandler::startElement] Type %s is not found at this moment, we create it", qPrintable(szValue));
 
 					if(szValue.startsWith("xs:")) {
 						SimpleTypeSharedPtr pType = SimpleType::create();
@@ -275,6 +285,13 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 		}
 	}
 
+	if(m_szCurrentSection == "xs:element" && !m_pCurrentElement.isNull()) {
+		if(qName == "xs:complexType") {
+			m_szCurrentType = qName;
+			m_pCurrentType = ComplexType::create();
+		}
+	}
+
 	return true;
 }
 
@@ -287,6 +304,7 @@ QWSDLParserHandler::endElement(const QString &namespaceURI,
 	TypeListSharedPtr pListTypes;
 	TypeList::const_iterator type;
 
+	RequestResponseElementList::const_iterator requestResponseElement;
 	ElementList::const_iterator element;
 	AttributeList::const_iterator attr;
 
@@ -298,9 +316,22 @@ QWSDLParserHandler::endElement(const QString &namespaceURI,
 	}
 
 	if(qName == "xs:complexType" && !m_pCurrentType.isNull()) {
+		if(m_szCurrentSection == "xs:element" && !m_pCurrentElement.isNull()) {
+			m_szCurrentType = "";
+			m_pCurrentElement->setComplexType(qSharedPointerCast<ComplexType>(m_pCurrentType));
+			m_pCurrentType.clear();
+		}else{
+			m_szCurrentSection = "";
+			m_pListTypes->add(m_pCurrentType);
+			m_pCurrentType.clear();
+		}
+
+	}
+
+	if(qName == "xs:element" && !m_pCurrentElement.isNull() && m_szCurrentType != "xs:complexType") {
 		m_szCurrentSection = "";
-		m_pListTypes->add(m_pCurrentType);
-		m_pCurrentType.clear();
+		m_pListElements->append(m_pCurrentElement);
+		m_pCurrentElement.clear();
 
 	}
 
@@ -345,14 +376,52 @@ QWSDLParserHandler::endElement(const QString &namespaceURI,
 
 
 					}
+				}
+			}
+		}
 
+		for(requestResponseElement = m_pListElements->constBegin();
+				requestResponseElement != m_pListElements->constEnd(); ++requestResponseElement) {
+
+			ComplexTypeSharedPtr pComplexType = (*requestResponseElement)->getComplexType();
+			if(pComplexType->getExtensionType()) {
+				if(pComplexType->getExtensionType()->getClassType() == Type::Unknown) {
+					pType = m_pListTypes->getByName(
+							pComplexType->getExtensionType()->getLocalName(),
+							pComplexType->getExtensionType()->getNamespace());
+					pComplexType->setExtensionType(pType);
+				}
+			}
+			if(pComplexType->getElementList()->count() > 0) {
+				//Parcours elment list
+
+				for(element = pComplexType->getElementList()->constBegin();
+						element != pComplexType->getElementList()->constEnd(); ++element) {
+
+					if( (*element)->getType()->getClassType() == Type::Unknown) {
+						pType = m_pListTypes->getByName((*element)->getType()->getLocalName(),
+								(*element)->getType()->getNamespace());
+						(*element)->setType(pType);
+					}
 				}
 
 			}
+			if(pComplexType->getAttributeList()->count() > 0) {
+				//Parcours attr list
 
+				for(attr = pComplexType->getAttributeList()->constBegin();
+						attr != pComplexType->getAttributeList()->constEnd(); ++attr) {
+
+					if( (*attr)->getType()->getClassType() == Type::Unknown) {
+						pType = m_pListTypes->getByName((*attr)->getType()->getLocalName(),
+								(*attr)->getType()->getNamespace());
+						(*attr)->setType(pType);
+					}
+
+
+				}
+			}
 		}
-
-
 	}
 
 	return true;
@@ -375,4 +444,9 @@ QWSDLParserHandler::fatalError(const QXmlParseException &exception)
 TypeListSharedPtr QWSDLParserHandler::getTypeList() const
 {
 	return m_pListTypes;
+}
+
+RequestResponseElementListSharedPtr QWSDLParserHandler::getElementList() const
+{
+	return m_pListElements;
 }

@@ -32,9 +32,9 @@ void SimpleType::setVariableType(VariableType type)
 void SimpleType::setVariableTypeFromString(const QString& szType)
 {
 	if(szType == "xs:string") {
-		m_variableType = string;
+		m_variableType = String;
 	} else if(szType == "xs:unsignedInt") {
-		m_variableType = unsignedInt;
+		m_variableType = UnsignedInt;
 	} else if(szType == "xs:boolean") {
 		m_variableType = Boolean;
 	}
@@ -47,20 +47,20 @@ SimpleType::VariableType SimpleType::getVariableType()const
 
 QString SimpleType::getVariableTypeString()const
 {
-	if(m_bRestricted && m_variableType == string &&
+	if(m_bRestricted && m_variableType == String &&
 			m_listEnumerationValues.count() > 0) {
 		return getLocalName() + "::Values";
 
 	}else{
 		switch(m_variableType) {
-		case string:
+		case String:
 			return "QString";
 			break;
-		case unsignedInt:
-			return "unsigned int";
+		case UnsignedInt:
+			return "XSUnsignedInt";
 			break;
 		case Boolean:
-			return "bool";
+			return "XSBoolean";
 			break;
 		default:
 			return QString();
@@ -76,14 +76,14 @@ QString SimpleType::getSetterDeclaration() const
 	szDeclaration += "void set";
 	szDeclaration += getLocalName();
 	szDeclaration += "(";
-	if(getVariableTypeString().startsWith('Q')) {
+	//if(getVariableTypeString().startsWith('Q')) {
 		szDeclaration += "const ";
 		szDeclaration += getVariableTypeString();
 		szDeclaration += "& ";
-	}else{
+	/*}else{
 		szDeclaration += getVariableTypeString();
 		szDeclaration += " ";
-	}
+	}*/
 	szDeclaration += szVarName;
 	szDeclaration += ");";
 

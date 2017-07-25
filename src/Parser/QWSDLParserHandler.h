@@ -12,6 +12,7 @@
 #include <QXmlDefaultHandler>
 #include <QXmlAttributes>
 
+#include "Model/RequestResponseElement.h"
 #include "Model/Type.h"
 
 class QWSDLParserHandler : public QXmlDefaultHandler
@@ -31,16 +32,20 @@ public:
 	virtual bool fatalError(const QXmlParseException &exception);
 
 	TypeListSharedPtr getTypeList() const;
+	RequestResponseElementListSharedPtr getElementList() const;
 
 private:
+    QString m_szCurrentType;
     QString m_szCurrentSection;
     QString m_szCurrentText;
 
     QString m_szTargetNamespacePrefix;
 
     TypeListSharedPtr m_pListTypes;
+    RequestResponseElementListSharedPtr m_pListElements;
 
     TypeSharedPtr m_pCurrentType;
+    RequestResponseElementSharedPtr m_pCurrentElement;
 
 };
 

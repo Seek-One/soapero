@@ -20,9 +20,11 @@ class SimpleType : public Type
 public:
 	enum VariableType {
 		Unknown,
-		string,
-		unsignedInt,
+		String,
+		Int,
+		UnsignedInt,
 		Boolean,
+		Duration,
 	};
 
 	SimpleType();

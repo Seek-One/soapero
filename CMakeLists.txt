@@ -168,6 +168,8 @@ set (APP_SOURCES
 	src/Builder/TypeListBuilder.h
 	src/Model/ComplexType.h
 	src/Model/ComplexType.cpp
+	src/Model/RequestResponseElement.h
+	src/Model/RequestResponseElement.cpp
 	src/Model/SimpleType.h
 	src/Model/SimpleType.cpp
 	src/Model/Type.h

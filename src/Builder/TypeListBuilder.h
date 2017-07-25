@@ -11,6 +11,7 @@
 #include <QFile>
 #include <QTextStream>
 
+#include "Model/RequestResponseElement.h"
 #include "Model/ComplexType.h"
 #include "Model/SimpleType.h"
 #include "Model/Type.h"
@@ -18,7 +19,7 @@
 class TypeListBuilder
 {
 public:
-	TypeListBuilder(const TypeListSharedPtr& type);
+	TypeListBuilder(const TypeListSharedPtr& type, const RequestResponseElementListSharedPtr& element);
 	virtual ~TypeListBuilder();
 
 	void setPrefix(const QString& szPrefix);
@@ -31,11 +32,14 @@ public:
 
 
 private:
-	void buildHeaderClass(QTextStream& os, const TypeSharedPtr& pType) const;
+	void buildHeaderClassType(QTextStream& os, const TypeSharedPtr& pType) const;
 	void buildHeaderClassSimpleType(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const;
 	void buildHeaderClassComplexType(QTextStream& os, const ComplexTypeSharedPtr& pComplexType) const;
 
+	void buildHeaderClassElement(QTextStream& os, const RequestResponseElementSharedPtr& pElement) const;
+
 	TypeListSharedPtr m_pListType;
+	RequestResponseElementListSharedPtr m_pListElement;
 
 	QString m_szPrefix;
 	QString m_szFilename;
