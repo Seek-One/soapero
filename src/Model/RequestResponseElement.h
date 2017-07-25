@@ -25,14 +25,19 @@ public:
 
 	static RequestResponseElementSharedPtr create();
 
-	void setName(const QString& szName);
-	QString getName() const;
+
+	void setNamespace(const QString& szNamespace);
+	void setLocalName(const QString& szLocalName);
+	QString getQualifedName() const;
+	QString getNamespace() const;
+	QString getLocalName() const;
 
 	void setComplexType(const ComplexTypeSharedPtr& pComplexType);
 	ComplexTypeSharedPtr getComplexType() const;
 
 private:
-	QString m_szName;
+	QString m_szLocalName;
+	QString m_szNamespace;
 
 	ComplexTypeSharedPtr m_pComplexType;
 

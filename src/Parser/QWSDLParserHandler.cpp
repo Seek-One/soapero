@@ -143,7 +143,8 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 			m_szCurrentSection = qName;
 
 			m_pCurrentElement = RequestResponseElement::create();
-			m_pCurrentElement->setName(attributes.value("name"));
+			m_pCurrentElement->setLocalName(attributes.value("name"));
+			m_pCurrentElement->setNamespace(m_szTargetNamespacePrefix);
 		}
 	}
 

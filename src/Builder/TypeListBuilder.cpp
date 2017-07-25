@@ -82,7 +82,7 @@ void TypeListBuilder::buildHeaderFile()
 		}
 
 		for(element = m_pListElement->constBegin(); element != m_pListElement->constEnd(); ++element) {
-			if(!(*element)->getName().isEmpty()) {
+			if(!(*element)->getLocalName().isEmpty()) {
 				buildHeaderClassElement(os, *element);
 			}
 		}
@@ -249,7 +249,7 @@ void TypeListBuilder::buildHeaderClassComplexType(QTextStream& os, const Complex
 
 void TypeListBuilder::buildHeaderClassElement(QTextStream& os, const RequestResponseElementSharedPtr& pElement) const
 {
-	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pElement->getName();
+	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pElement->getQualifedName();
 	ComplexTypeSharedPtr pComplexType = pElement->getComplexType();
 
 	if(!pComplexType.isNull()) {

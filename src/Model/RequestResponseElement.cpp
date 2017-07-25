@@ -22,14 +22,33 @@ RequestResponseElementSharedPtr RequestResponseElement::create()
 	return RequestResponseElementSharedPtr(new RequestResponseElement());
 }
 
-void RequestResponseElement::setName(const QString& szName)
+void RequestResponseElement::setNamespace(const QString& szNamespace)
 {
-	m_szName = szName;
+	m_szNamespace = szNamespace;
 }
 
-QString RequestResponseElement::getName() const
+void RequestResponseElement::setLocalName(const QString& szLocalName)
 {
-	return m_szName;
+	m_szLocalName = szLocalName;
+}
+
+QString RequestResponseElement::getQualifedName() const
+{
+	if(m_szNamespace.isEmpty()) {
+		return m_szLocalName;
+	}else{
+		return m_szNamespace.toUpper() + m_szLocalName;
+	}
+}
+
+QString RequestResponseElement::getNamespace() const
+{
+	return m_szNamespace;
+}
+
+QString RequestResponseElement::getLocalName() const
+{
+	return m_szLocalName;
 }
 
 void RequestResponseElement::setComplexType(const ComplexTypeSharedPtr& pComplexType)
