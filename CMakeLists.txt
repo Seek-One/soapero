@@ -166,6 +166,8 @@ include_directories (${PROJECT_SOURCE_DIR}/src)
 set (APP_SOURCES
 	src/Builder/TypeListBuilder.cpp
 	src/Builder/TypeListBuilder.h
+	src/Model/Classname.h
+	src/Model/Classname.cpp
 	src/Model/ComplexType.h
 	src/Model/ComplexType.cpp
 	src/Model/RequestResponseElement.h

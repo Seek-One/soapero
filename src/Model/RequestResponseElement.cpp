@@ -8,6 +8,7 @@
 #include "RequestResponseElement.h"
 
 RequestResponseElement::RequestResponseElement()
+	:Classname()
 {
 
 }
@@ -20,35 +21,6 @@ RequestResponseElement::~RequestResponseElement()
 RequestResponseElementSharedPtr RequestResponseElement::create()
 {
 	return RequestResponseElementSharedPtr(new RequestResponseElement());
-}
-
-void RequestResponseElement::setNamespace(const QString& szNamespace)
-{
-	m_szNamespace = szNamespace;
-}
-
-void RequestResponseElement::setLocalName(const QString& szLocalName)
-{
-	m_szLocalName = szLocalName;
-}
-
-QString RequestResponseElement::getQualifedName() const
-{
-	if(m_szNamespace.isEmpty()) {
-		return m_szLocalName;
-	}else{
-		return m_szNamespace.toUpper() + m_szLocalName;
-	}
-}
-
-QString RequestResponseElement::getNamespace() const
-{
-	return m_szNamespace;
-}
-
-QString RequestResponseElement::getLocalName() const
-{
-	return m_szLocalName;
 }
 
 void RequestResponseElement::setComplexType(const ComplexTypeSharedPtr& pComplexType)

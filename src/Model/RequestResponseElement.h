@@ -10,6 +10,7 @@
 
 #include <QList>
 
+#include "Classname.h"
 #include "ComplexType.h"
 
 class RequestResponseElement;
@@ -17,7 +18,7 @@ typedef QSharedPointer<RequestResponseElement> RequestResponseElementSharedPtr;
 class RequestResponseElementList;
 typedef QSharedPointer<RequestResponseElementList> RequestResponseElementListSharedPtr;
 
-class RequestResponseElement
+class RequestResponseElement : public Classname
 {
 public:
 	RequestResponseElement();
@@ -25,20 +26,10 @@ public:
 
 	static RequestResponseElementSharedPtr create();
 
-
-	void setNamespace(const QString& szNamespace);
-	void setLocalName(const QString& szLocalName);
-	QString getQualifedName() const;
-	QString getNamespace() const;
-	QString getLocalName() const;
-
 	void setComplexType(const ComplexTypeSharedPtr& pComplexType);
 	ComplexTypeSharedPtr getComplexType() const;
 
 private:
-	QString m_szLocalName;
-	QString m_szNamespace;
-
 	ComplexTypeSharedPtr m_pComplexType;
 
 };

@@ -12,6 +12,8 @@
 #include <QList>
 #include <QString>
 
+#include "Model/Classname.h"
+
 class Type;
 typedef QSharedPointer<Type> TypeSharedPtr;
 class TypeList;
@@ -33,7 +35,7 @@ typedef QSharedPointer<ComplexType> ComplexTypeSharedPtr;
 class ComplexTypeList;
 typedef QSharedPointer<ComplexTypeList> ComplexTypeListSharedPtr;
 
-class Type
+class Type : public Classname
 {
 public:
 	enum ClassType {
@@ -50,21 +52,10 @@ public:
 
 	static TypeSharedPtr create();
 
-	void setQualifedName(const QString& szNamespace, const QString& szName);
-	void setNamespace(const QString& szNamespace);
-	void setLocalName(const QString& szLocalName);
-	void setName(const QString& szName);
-	QString getQualifiedName() const;
-	QString getNamespace() const;
-	QString getLocalName() const;
-	QString getName() const;
-
 	void setClassType(ClassType type);
 	ClassType getClassType() const;
 
 protected:
-	QString m_szLocalName;
-	QString m_szNamespace;
 	ClassType m_classType;
 };
 

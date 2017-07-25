@@ -249,7 +249,7 @@ void TypeListBuilder::buildHeaderClassComplexType(QTextStream& os, const Complex
 
 void TypeListBuilder::buildHeaderClassElement(QTextStream& os, const RequestResponseElementSharedPtr& pElement) const
 {
-	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pElement->getQualifedName();
+	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pElement->getQualifiedName();
 	ComplexTypeSharedPtr pComplexType = pElement->getComplexType();
 
 	if(!pComplexType.isNull()) {
