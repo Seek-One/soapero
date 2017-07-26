@@ -97,7 +97,10 @@ public:
 
 	QString getSetterDeclaration() const;
 	QString getGetterDeclaration() const;
+	QString getSetterDefinition(const QString& szClassname) const;
+	QString getGetterDefinition(const QString& szClassname) const;
 	QString getVariableDeclaration() const;
+	QString getVariableName() const;
 
 private:
 	AttributeListSharedPtr m_pListAttribute;

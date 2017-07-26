@@ -7,6 +7,9 @@
 
 #include "ComplexType.h"
 
+#ifndef CRLF
+#define CRLF "\r\n"
+#endif
 
 Element::Element()
 {
@@ -175,40 +178,54 @@ QString ComplexType::getSetterDeclaration() const
 {
 	QString szVarName = getLocalName().left(1).toLower() + getLocalName().mid(1);
 
-	QString szDeclaration;
-	szDeclaration += "void set";
-	szDeclaration += getLocalName();
-	szDeclaration += "(";
-	szDeclaration += "const ";
-	szDeclaration += getQualifiedName();
-	szDeclaration += "& ";
-	szDeclaration += szVarName;
-	szDeclaration += ");";
-
-	return szDeclaration;
+	QString szDeclaration = "void set%0(const %1& %2);";
+	return szDeclaration.arg(getLocalName()).arg(getQualifiedName()).arg(szVarName);
 }
 
 QString ComplexType::getGetterDeclaration() const
 {
-	QString szDeclaration;
-	szDeclaration += getQualifiedName();
-	szDeclaration += " get";
-	szDeclaration += getLocalName();
-	szDeclaration += "() const;";
+	QString szDeclaration = "%0 get%1() const;";
+	return szDeclaration.arg(getQualifiedName()).arg(getLocalName());
+}
 
-	return szDeclaration;
+QString ComplexType::getSetterDefinition(const QString& szClassname) const
+{
+	QString szVarName = getLocalName().left(1).toLower() + getLocalName().mid(1);
+
+	QString szDeclaration = ""
+	"void %0::set%1(const %2& %3)" CRLF
+	"{" CRLF
+	"\t%4 = %5;" CRLF
+	"}" CRLF;
+
+	return szDeclaration.arg(szClassname).arg(getLocalName()).arg(getQualifiedName())
+			.arg(szVarName).arg(getVariableName()).arg(szVarName);
+}
+
+QString ComplexType::getGetterDefinition(const QString& szClassname) const
+{
+	QString szDefinition = ""
+	"void %0::get%1() const" CRLF
+	"{" CRLF
+	"\treturn %2;" CRLF
+	"}" CRLF;
+
+	return szDefinition.arg(szClassname).arg(getLocalName()).arg(getVariableName());
 }
 
 QString ComplexType::getVariableDeclaration() const
 {
-	QString szVarName = getLocalName().left(1).toLower() + getLocalName().mid(1);
-
 	QString szDeclaration;
 	szDeclaration += getQualifiedName();
-	szDeclaration += " _";
-	szDeclaration += szVarName;
+	szDeclaration += " ";
+	szDeclaration += getVariableName();
 
 	return szDeclaration;
+}
+
+QString ComplexType::getVariableName() const
+{
+	return "_" + getLocalName().left(1).toLower() + getLocalName().mid(1);
 }
 
 ComplexTypeList::ComplexTypeList()

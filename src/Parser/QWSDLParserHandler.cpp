@@ -15,8 +15,11 @@
 
 QWSDLParserHandler::QWSDLParserHandler()
 {
+	m_pService = Service::create();
 	m_pListTypes = TypeList::create();
 	m_pListElements = RequestResponseElementList::create();
+	m_pListMessages = MessageList::create();
+	m_pListOperations = OperationList::create();
 }
 
 QWSDLParserHandler::~QWSDLParserHandler()
@@ -32,6 +35,12 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 	int iRes;
 
 	if(m_szCurrentSection == "") {
+		if(qName == "wsdl:definitions") {
+			if(attributes.index("name") != -1) {
+				m_pService->setName(attributes.value("name"));
+			}
+		}
+
 		if(qName == "xs:schema") {
 			QString szTargetNamespace;
 
@@ -145,6 +154,30 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 			m_pCurrentElement = RequestResponseElement::create();
 			m_pCurrentElement->setLocalName(attributes.value("name"));
 			m_pCurrentElement->setNamespace(m_szTargetNamespacePrefix);
+		}
+
+		if(qName == "wsdl:message") {
+			m_szCurrentSection = qName;
+
+			m_pCurrentMessage = Message::create();
+			if(attributes.index("name") != -1) {
+				m_pCurrentMessage->setLocalName(attributes.value("name"));
+				m_pCurrentMessage->setNamespace(m_szTargetNamespacePrefix);
+			}
+		}
+
+		if(qName == "wsdl:operation") {
+			m_szCurrentSection = qName;
+
+			if(attributes.index("name") != -1) {
+				QString szName = attributes.value("name");
+
+				OperationSharedPtr pOperation = m_pListOperations->getByName(szName);
+				if(pOperation.isNull()) {
+					m_pCurrentOperation = Operation::create();
+					m_pCurrentOperation->setName(szName);
+				}
+			}
 		}
 	}
 
@@ -293,6 +326,47 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 		}
 	}
 
+	if(m_szCurrentSection == "wsdl:message" && !m_pCurrentMessage.isNull()) {
+		if(qName == "wsdl:part") {
+			if(attributes.index("name") != -1 && attributes.index("element") != -1) {
+				if(attributes.value("name") == "parameters") {
+					QString qualifiedName = attributes.value("element");
+
+					if(qualifiedName.contains(":")) {
+						RequestResponseElementSharedPtr pElement;
+						pElement = m_pListElements->getByName(qualifiedName.split(":")[1], qualifiedName.split(":")[0]);
+						m_pCurrentMessage->setParameter(pElement);
+					}
+				}
+			}
+		}
+	}
+
+	if(m_szCurrentSection == "wsdl:operation" && !m_pCurrentOperation.isNull()) {
+		if(qName == "wsdl:input") {
+			if(attributes.index("message") != -1) {
+				QString qualifiedName = attributes.value("message");
+
+				if(qualifiedName.contains(":")) {
+					MessageSharedPtr pMessage;
+					pMessage = m_pListMessages->getByName(qualifiedName.split(":")[1], qualifiedName.split(":")[0]);
+					m_pCurrentOperation->setInputMessage(pMessage);
+				}
+			}
+		}
+		if(qName == "wsdl:output") {
+			if(attributes.index("message") != -1) {
+				QString qualifiedName = attributes.value("message");
+
+				if(qualifiedName.contains(":")) {
+					MessageSharedPtr pMessage;
+					pMessage = m_pListMessages->getByName(qualifiedName.split(":")[1], qualifiedName.split(":")[0]);
+					m_pCurrentOperation->setOutputMessage(pMessage);
+				}
+			}
+		}
+	}
+
 	return true;
 }
 
@@ -308,6 +382,7 @@ QWSDLParserHandler::endElement(const QString &namespaceURI,
 	RequestResponseElementList::const_iterator requestResponseElement;
 	ElementList::const_iterator element;
 	AttributeList::const_iterator attr;
+
 
 	if(qName == "xs:simpleType" && !m_pCurrentType.isNull()) {
 		m_szCurrentSection = "";
@@ -333,6 +408,21 @@ QWSDLParserHandler::endElement(const QString &namespaceURI,
 		m_szCurrentSection = "";
 		m_pListElements->append(m_pCurrentElement);
 		m_pCurrentElement.clear();
+
+	}
+
+	if(qName == "wsdl:message") {
+		m_szCurrentSection = "";
+		m_pListMessages->append(m_pCurrentMessage);
+		m_pCurrentMessage.clear();
+
+	}
+
+	if(qName == "wsdl:operation" && !m_pCurrentOperation.isNull()) {
+		m_szCurrentSection = "";
+		m_pListOperations->append(m_pCurrentOperation);
+		m_pService->addOperation(m_pCurrentOperation);
+		m_pCurrentOperation.clear();
 
 	}
 
@@ -450,4 +540,9 @@ TypeListSharedPtr QWSDLParserHandler::getTypeList() const
 RequestResponseElementListSharedPtr QWSDLParserHandler::getElementList() const
 {
 	return m_pListElements;
+}
+
+ServiceSharedPtr QWSDLParserHandler::getService() const
+{
+	return m_pService;
 }

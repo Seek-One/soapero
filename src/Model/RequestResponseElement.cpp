@@ -49,3 +49,14 @@ RequestResponseElementListSharedPtr RequestResponseElementList::create()
 	return RequestResponseElementListSharedPtr(new RequestResponseElementList());
 }
 
+RequestResponseElementSharedPtr RequestResponseElementList::getByName(const QString& szLocalName, const QString& szNamespace)
+{
+	RequestResponseElementList::const_iterator element;
+	for(element = constBegin(); element != constEnd(); ++element) {
+		if( (*element)->getLocalName() == szLocalName &&
+				(*element)->getNamespace() == szNamespace) {
+			return *element;
+		}
+	}
+	return RequestResponseElementSharedPtr();
+}

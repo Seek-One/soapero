@@ -41,6 +41,8 @@ public:
 	virtual ~RequestResponseElementList();
 
 	static RequestResponseElementListSharedPtr create();
+
+	RequestResponseElementSharedPtr getByName(const QString& szLocalName, const QString& szNamespace);
 };
 
 #endif /* REQUESTRESPONSEELEMENT_H_ */

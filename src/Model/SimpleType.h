@@ -39,8 +39,13 @@ public:
 
 	QString getSetterDeclaration() const;
 	QString getGetterDeclaration() const;
+	QString getSerializerDeclaration() const;
+	QString getSetterDefinition(const QString& szClassname) const;
+	QString getGetterDefinition(const QString& szClassname) const;
+	QString getSerializerDefinition() const;
 	QString getVariableDeclaration() const;
 	QString getEnumerationDeclaration() const;
+	QString getVariableName() const;
 
 	void setRestricted(bool bRestricted);
 	bool isRestricted() const;

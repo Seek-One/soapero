@@ -49,10 +49,11 @@ int main(int argc, char **argv)
 		}else{
 
 
-			TypeListBuilder builder(handler.getTypeList(), handler.getElementList());
+			TypeListBuilder builder(handler.getService(), handler.getTypeList(), handler.getElementList());
 			//builder.setPrefix("Onvif");
 			builder.setFilename("doorcontrol");
 			builder.buildHeaderFile();
+			builder.buildCppFile();
 
 		}
 	}else{

@@ -170,8 +170,14 @@ set (APP_SOURCES
 	src/Model/Classname.cpp
 	src/Model/ComplexType.h
 	src/Model/ComplexType.cpp
+	src/Model/Message.h
+	src/Model/Message.cpp
+	src/Model/Operation.h
+	src/Model/Operation.cpp
 	src/Model/RequestResponseElement.h
 	src/Model/RequestResponseElement.cpp
+	src/Model/Service.h
+	src/Model/Service.cpp
 	src/Model/SimpleType.h
 	src/Model/SimpleType.cpp
 	src/Model/Type.h

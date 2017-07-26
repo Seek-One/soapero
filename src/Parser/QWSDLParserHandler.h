@@ -13,6 +13,9 @@
 #include <QXmlAttributes>
 
 #include "Model/RequestResponseElement.h"
+#include "Model/Message.h"
+#include "Model/Operation.h"
+#include "Model/Service.h"
 #include "Model/Type.h"
 
 class QWSDLParserHandler : public QXmlDefaultHandler
@@ -33,6 +36,7 @@ public:
 
 	TypeListSharedPtr getTypeList() const;
 	RequestResponseElementListSharedPtr getElementList() const;
+	ServiceSharedPtr getService() const;
 
 private:
     QString m_szCurrentType;
@@ -43,9 +47,15 @@ private:
 
     TypeListSharedPtr m_pListTypes;
     RequestResponseElementListSharedPtr m_pListElements;
+    MessageListSharedPtr m_pListMessages;
+    OperationListSharedPtr m_pListOperations;
+
+    ServiceSharedPtr m_pService;
 
     TypeSharedPtr m_pCurrentType;
     RequestResponseElementSharedPtr m_pCurrentElement;
+    MessageSharedPtr m_pCurrentMessage;
+    OperationSharedPtr m_pCurrentOperation;
 
 };
 

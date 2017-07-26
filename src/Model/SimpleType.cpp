@@ -7,6 +7,10 @@
 
 #include "SimpleType.h"
 
+#ifndef CRLF
+#define CRLF "\r\n"
+#endif
+
 SimpleType::SimpleType()
 	:Type(Type::SimpleType)
 {
@@ -73,42 +77,66 @@ QString SimpleType::getSetterDeclaration() const
 	QString szVarName = getLocalName().left(1).toLower() + getLocalName().mid(1);
 
 	QString szDeclaration;
-	szDeclaration += "void set";
-	szDeclaration += getLocalName();
-	szDeclaration += "(";
-	//if(getVariableTypeString().startsWith('Q')) {
-		szDeclaration += "const ";
-		szDeclaration += getVariableTypeString();
-		szDeclaration += "& ";
-	/*}else{
-		szDeclaration += getVariableTypeString();
-		szDeclaration += " ";
-	}*/
-	szDeclaration += szVarName;
-	szDeclaration += ");";
-
-	return szDeclaration;
+	if(m_bRestricted && m_variableType == String && m_listEnumerationValues.count() > 0) {
+		szDeclaration = "void set%0(%1 %2);";
+	}else{
+		szDeclaration = "void set%0(const %1& %2);";
+	}
+	return szDeclaration.arg(getLocalName()).arg(getVariableTypeString()).arg(szVarName);
 }
 
 QString SimpleType::getGetterDeclaration() const
 {
-	QString szDeclaration;
-	szDeclaration += getVariableTypeString();
-	szDeclaration += " get";
-	szDeclaration += getLocalName();
-	szDeclaration += "() const;";
+	QString szDeclaration = "%0 get%1() const;";
+	return szDeclaration.arg(getVariableTypeString()).arg(getLocalName());
+}
 
-	return szDeclaration;
+QString SimpleType::getSerializerDeclaration() const
+{
+	return "QString serialize() const;";
+}
+
+QString SimpleType::getSetterDefinition(const QString& szClassname) const
+{
+	QString szVarName = getLocalName().left(1).toLower() + getLocalName().mid(1);
+
+	QString szDefinition = "";
+	if(m_bRestricted && m_variableType == String && m_listEnumerationValues.count() > 0) {
+		szDefinition = "void %0::set%1(%2 %3);" CRLF;
+	}else{
+		szDefinition = "void %0::set%1(const %2& %3);" CRLF;
+	}
+	szDefinition += ""
+	"{" CRLF
+	"\t%4 = %5;" CRLF
+	"}" CRLF;
+
+	return szDefinition.arg(szClassname).arg(getLocalName()).arg(getVariableTypeString())
+						.arg(szVarName).arg(getVariableName()).arg(szVarName);
+}
+
+QString SimpleType::getGetterDefinition(const QString& szClassname) const
+{
+	QString szDefinition = ""
+	"%0 %1::get%2() const" CRLF
+	"{" CRLF
+	"\treturn %3;" CRLF
+	"}" CRLF;
+
+	return szDefinition.arg(getVariableTypeString()).arg(szClassname).arg(getLocalName()).arg(getVariableName());
+}
+
+QString SimpleType::getSerializerDefinition() const
+{
+	return "";
 }
 
 QString SimpleType::getVariableDeclaration() const
 {
-	QString szVarName = getLocalName().left(1).toLower() + getLocalName().mid(1);
-
 	QString szDeclaration;
 	szDeclaration += getVariableTypeString();
-	szDeclaration += " _";
-	szDeclaration += szVarName;
+	szDeclaration += " ";
+	szDeclaration += getVariableName();
 	szDeclaration += ";";
 
 	return szDeclaration;
@@ -129,6 +157,11 @@ QString SimpleType::getEnumerationDeclaration() const
 		szDeclaration += "}";
 	}
 	return szDeclaration;
+}
+
+QString SimpleType::getVariableName() const
+{
+	return "_" + getLocalName().left(1).toLower() + getLocalName().mid(1);
 }
 
 void SimpleType::setRestricted(bool bRestricted)
