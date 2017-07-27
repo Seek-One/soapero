@@ -200,6 +200,8 @@ void TypeListBuilder::buildHeaderClassSimpleType(QTextStream& os, const SimpleTy
 {
 	os << "\t" << pSimpleType->getSetterDeclaration() << CRLF ;
 	os << "\t" << pSimpleType->getGetterDeclaration() << CRLF ;
+	os << "\t" << pSimpleType->getSerializerDeclaration() << CRLF;
+	os << "\t" << pSimpleType->getEnumConvertDeclaration() << CRLF;
 	os << CRLF;
 	os << "private:" << CRLF;
 	os << "\t" << pSimpleType->getVariableDeclaration() << CRLF;
@@ -378,8 +380,10 @@ void TypeListBuilder::buildCppClassSimpleType(QTextStream& os, const SimpleTypeS
 {
 	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pSimpleType->getQualifiedName();
 
-	os << pSimpleType->getSetterDefinition(szClassname) << CRLF ;
-	os << pSimpleType->getGetterDefinition(szClassname) << CRLF ;
+	os << pSimpleType->getSetterDefinition(szClassname) << CRLF;
+	os << pSimpleType->getGetterDefinition(szClassname) << CRLF;
+	os << pSimpleType->getSerializerDefinition(szClassname) << CRLF;
+	os << pSimpleType->getEnumConvertDefinition(szClassname) << CRLF;
 	os << CRLF;
 }
 

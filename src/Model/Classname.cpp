@@ -45,6 +45,15 @@ void Classname::setName(const QString& szName)
 	}
 }
 
+QString Classname::getTagQualifiedName() const
+{
+	if(m_szNamespace.isEmpty()) {
+		return m_szLocalName;
+	}else{
+		return m_szNamespace + ":" + m_szLocalName;
+	}
+}
+
 QString Classname::getQualifiedName() const
 {
 	if(m_szNamespace.isEmpty()) {
