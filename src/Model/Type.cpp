@@ -22,7 +22,7 @@ Type::~Type()
 
 TypeSharedPtr Type::create()
 {
-	return TypeSharedPtr(new Type(Unknown));
+	return TypeSharedPtr(new Type(TypeUnknown));
 }
 
 void Type::setClassType(Type::ClassType type)

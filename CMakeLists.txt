@@ -164,6 +164,20 @@ include_directories (${PROJECT_SOURCE_DIR}/src)
 
 # src directory
 set (APP_SOURCES
+	generated/doorcontrol.cpp
+	generated/doorcontrol.h
+
+	src/Base/XSBoolean.cpp
+	src/Base/XSBoolean.h
+	src/Base/XSDuration.cpp
+	src/Base/XSDuration.h
+	src/Base/XSInteger.cpp
+	src/Base/XSInteger.h
+	src/Base/XSString.cpp
+	src/Base/XSString.h
+	src/Base/XSUnsignedInteger.cpp
+	src/Base/XSUnsignedInteger.h
+
 	src/Builder/TypeListBuilder.cpp
 	src/Builder/TypeListBuilder.h
 	src/Model/Classname.h

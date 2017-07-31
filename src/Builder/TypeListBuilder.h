@@ -29,6 +29,9 @@ public:
 	void setFilename(const QString& szFilename);
 	QString getFilename() const;
 
+	void setDirname(const QString& szDirname);
+	QString getDirname() const;
+
 	void buildHeaderFile();
 	void buildCppFile();
 
@@ -56,7 +59,7 @@ private:
 
 	QString m_szPrefix;
 	QString m_szFilename;
-
+	QString m_szDirname;
 };
 
 #endif /* TYPELISTBUILDER_H_ */

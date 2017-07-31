@@ -12,7 +12,7 @@
 #endif
 
 SimpleType::SimpleType()
-	:Type(Type::SimpleType)
+	:Type(Type::TypeSimple)
 {
 	m_variableType = Unknown;
 	m_iMaxLength = -1;
@@ -37,10 +37,14 @@ void SimpleType::setVariableTypeFromString(const QString& szType)
 {
 	if(szType == "xs:string") {
 		m_variableType = String;
+	} else if(szType == "xs:int") {
+		m_variableType = Int;
 	} else if(szType == "xs:unsignedInt") {
 		m_variableType = UnsignedInt;
 	} else if(szType == "xs:boolean") {
 		m_variableType = Boolean;
+	}else if(szType == "xs:duration") {
+		m_variableType = Duration;
 	}
 }
 
@@ -53,18 +57,24 @@ QString SimpleType::getVariableTypeString()const
 {
 	if(m_bRestricted && m_variableType == String &&
 			m_listEnumerationValues.count() > 0) {
-		return getLocalName() + "::Values";
+		return getQualifiedName() + "::Values";
 
 	}else{
 		switch(m_variableType) {
 		case String:
 			return "XSString";
 			break;
+		case Int:
+			return "XSInteger";
+			break;
 		case UnsignedInt:
-			return "XSUnsignedInt";
+			return "XSUnsignedInteger";
 			break;
 		case Boolean:
 			return "XSBoolean";
+			break;
+		case Duration:
+			return "XSDuration";
 			break;
 		default:
 			return QString();
@@ -102,8 +112,8 @@ QString SimpleType::getEnumConvertDeclaration() const
 	if(m_bRestricted && m_variableType == String &&
 			getEnumerationValues().count() > 0) {
 
-		szDeclaration += "void set%0FromString(const QString& szValue);";
-		szDeclaration += "QString get%0ToString() const;";
+		szDeclaration += "void set%0FromString(const QString& szValue);" CRLF;
+		szDeclaration += "\tQString get%0ToString() const;";
 		szDeclaration = szDeclaration.arg(getLocalName());
 	}
 	return szDeclaration;
@@ -132,7 +142,7 @@ QString SimpleType::getEnumerationDeclaration() const
 				szDeclaration += ", " + m_listEnumerationValues[i];
 			}
 		}
-		szDeclaration += "}";
+		szDeclaration += "};";
 	}
 	return szDeclaration;
 }
@@ -143,9 +153,9 @@ QString SimpleType::getSetterDefinition(const QString& szClassname) const
 
 	QString szDefinition = "";
 	if(m_bRestricted && m_variableType == String && m_listEnumerationValues.count() > 0) {
-		szDefinition = "void %0::set%1(%2 %3);" CRLF;
+		szDefinition = "void %0::set%1(%2 %3)" CRLF;
 	}else{
-		szDefinition = "void %0::set%1(const %2& %3);" CRLF;
+		szDefinition = "void %0::set%1(const %2& %3)" CRLF;
 	}
 	szDefinition += ""
 	"{" CRLF
@@ -169,13 +179,26 @@ QString SimpleType::getGetterDefinition(const QString& szClassname) const
 
 QString SimpleType::getSerializerDefinition(const QString& szClassname) const
 {
-	QString szDefinition = ""
-	"QString %0::serialize() const" CRLF
-	"{" CRLF
-	"\t return \"<%1>\" + %2.serialize() + \"</%1>\";" CRLF
-	"}" CRLF;
+	if(m_bRestricted && m_variableType == String &&
+			getEnumerationValues().count() > 0) {
 
-	return szDefinition.arg(szClassname).arg(getTagQualifiedName()).arg(getVariableName());
+		QString szDefinition = ""
+		"QString %0::serialize() const" CRLF
+		"{" CRLF
+		"\t return \"<%1>\" + get%2ToString() + \"</%1>\";" CRLF
+		"}" CRLF;
+
+		return szDefinition.arg(szClassname).arg(getTagQualifiedName()).arg(getLocalName());
+
+	} else {
+		QString szDefinition = ""
+		"QString %0::serialize() const" CRLF
+		"{" CRLF
+		"\t return \"<%1>\" + %2.serialize() + \"</%1>\";" CRLF
+		"}" CRLF;
+
+		return szDefinition.arg(szClassname).arg(getTagQualifiedName()).arg(getVariableName());
+	}
 }
 
 QString SimpleType::getEnumConvertDefinition(const QString& szClassname) const
@@ -201,7 +224,7 @@ QString SimpleType::getEnumConvertDefinition(const QString& szClassname) const
 		szDefinition += "}" CRLF CRLF;
 
 		szDefinition += ""
-		"QString %0::get%1ToString()" CRLF
+		"QString %0::get%1ToString() const" CRLF
 		"{" CRLF
 		"\tswitch(%2) {" CRLF;
 

@@ -5,6 +5,7 @@
  *      Author: lgruber
  */
 
+#include "SimpleType.h"
 #include "ComplexType.h"
 
 #ifndef CRLF
@@ -128,7 +129,7 @@ AttributeListSharedPtr AttributeList::create()
  */
 
 ComplexType::ComplexType()
-	:Type(Type::ComplexType)
+	:Type(Type::TypeComplex)
 {
 	m_pListAttribute = AttributeList::create();
 	m_pListElement = ElementList::create();
@@ -188,6 +189,11 @@ QString ComplexType::getGetterDeclaration() const
 	return szDeclaration.arg(getQualifiedName()).arg(getLocalName());
 }
 
+QString ComplexType::getSerializerDeclaration() const
+{
+	return "QString serialize() const;";
+}
+
 QString ComplexType::getSetterDefinition(const QString& szClassname) const
 {
 	QString szVarName = getLocalName().left(1).toLower() + getLocalName().mid(1);
@@ -205,12 +211,39 @@ QString ComplexType::getSetterDefinition(const QString& szClassname) const
 QString ComplexType::getGetterDefinition(const QString& szClassname) const
 {
 	QString szDefinition = ""
-	"void %0::get%1() const" CRLF
+	"%0 %1::get%2() const" CRLF
 	"{" CRLF
-	"\treturn %2;" CRLF
+	"\treturn %3;" CRLF
 	"}" CRLF;
 
-	return szDefinition.arg(szClassname).arg(getLocalName()).arg(getVariableName());
+	return szDefinition.arg(getQualifiedName()).arg(szClassname).arg(getLocalName()).arg(getVariableName());
+}
+
+QString ComplexType::getSerializerDefinition(const QString& szClassname) const
+{
+	AttributeList::const_iterator attr;
+	ElementList::const_iterator elem;
+
+	QString szDefinition = ""
+	"QString %0::serialize() const" CRLF
+	"{" CRLF
+	"\treturn \"\"" CRLF
+	"\t\"<%1>\"" CRLF;
+	for(attr = m_pListAttribute->constBegin(); attr != m_pListAttribute->constEnd(); ++attr) {
+		if( (*attr)->getType()->getClassType() == Type::TypeSimple) {
+			SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>((*attr)->getType());
+			szDefinition += "\t\"\" + " + pSimpleType->getVariableName() + ".serialize() +" CRLF;
+
+		}else if( (*attr)->getType()->getClassType() == Type::TypeComplex) {
+			ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>((*attr)->getType());
+			szDefinition += "\t\"\" + " + pComplexType->getVariableName() + ".serialize() + " CRLF;
+		}
+
+	}
+	szDefinition += "\t\"</%1>\";" CRLF;
+	szDefinition += "}" CRLF;
+
+	return szDefinition.arg(szClassname).arg(getTagQualifiedName());
 }
 
 QString ComplexType::getVariableDeclaration() const
@@ -219,6 +252,7 @@ QString ComplexType::getVariableDeclaration() const
 	szDeclaration += getQualifiedName();
 	szDeclaration += " ";
 	szDeclaration += getVariableName();
+	szDeclaration += ";";
 
 	return szDeclaration;
 }

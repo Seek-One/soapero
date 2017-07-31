@@ -13,6 +13,7 @@
 #endif
 
 #include <QFile>
+#include <QDir>
 #include <QBuffer>
 #include <QXmlInputSource>
 #include <QXmlSimpleReader>
@@ -20,6 +21,8 @@
 
 #include "Builder/TypeListBuilder.h"
 #include "Parser/QWSDLParserHandler.h"
+
+void copyPath(QString src, QString dst);
 
 int main(int argc, char **argv)
 {
@@ -48,12 +51,30 @@ int main(int argc, char **argv)
 			qWarning("[ServerController::getDevicesList] Error to parse data (error: %s)", qPrintable(reader.errorHandler()->errorString()));
 		}else{
 
+			if(!QDir("./generated").exists()) {
+				qWarning("[main] Generated directory does not exists, we create it");
+				QDir().mkdir("generated");
+			}
+			if(!QDir("./generated/xstypes").exists()) {
+				qWarning("[main] XSTypes directory does not exists, we create it");
+				QDir().mkdir("generated/xstypes");
+			}
+
 
 			TypeListBuilder builder(handler.getService(), handler.getTypeList(), handler.getElementList());
 			//builder.setPrefix("Onvif");
 			builder.setFilename("doorcontrol");
+			builder.setDirname("./generated");
 			builder.buildHeaderFile();
 			builder.buildCppFile();
+
+			QDir dir("./src/Base");
+		    foreach (QString f, dir.entryList(QDir::Files)) {
+		    	QString srcPath = QString("./src/Base") + QDir::separator() + f;
+		    	QString dstPath = QString("./generated/xstypes") + QDir::separator() + f;
+		    	QFile::remove(dstPath);
+		        QFile::copy(srcPath, dstPath);
+		    }
 
 		}
 	}else{
@@ -62,4 +83,21 @@ int main(int argc, char **argv)
 
 
 	return iRes;
+}
+
+void copyPath(QString src, QString dst)
+{
+    QDir dir(src);
+    if (! dir.exists())
+        return;
+
+    foreach (QString d, dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
+        QString dst_path = dst + QDir::separator() + d;
+        dir.mkpath(dst_path);
+        copyPath(src+ QDir::separator() + d, dst_path);
+    }
+
+    foreach (QString f, dir.entryList(QDir::Files)) {
+        QFile::copy(src + QDir::separator() + f, dst + QDir::separator() + f);
+    }
 }

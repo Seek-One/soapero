@@ -39,9 +39,9 @@ class Type : public Classname
 {
 public:
 	enum ClassType {
-		Unknown,
-		ComplexType,
-		SimpleType,
+		TypeUnknown,
+		TypeComplex,
+		TypeSimple,
 	};
 
 protected:
