@@ -164,8 +164,8 @@ include_directories (${PROJECT_SOURCE_DIR}/src)
 
 # src directory
 set (APP_SOURCES
-	generated/doorcontrol.cpp
-	generated/doorcontrol.h
+#	generated/doorcontrol.cpp
+#	generated/doorcontrol.h
 
 	src/Base/XSBoolean.cpp
 	src/Base/XSBoolean.h
