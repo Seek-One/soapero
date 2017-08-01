@@ -39,6 +39,16 @@ QString TypeListBuilder::getPrefix() const
 	return m_szPrefix;
 }
 
+void TypeListBuilder::setNamespace(const QString& szNamespace)
+{
+	m_szNamespace = szNamespace;
+}
+
+QString TypeListBuilder::getNamespace() const
+{
+	return m_szNamespace;
+}
+
 void TypeListBuilder::setFilename(const QString& szFilename)
 {
 	m_szFilename = szFilename;
@@ -59,26 +69,72 @@ QString TypeListBuilder::getDirname() const
 	return m_szDirname;
 }
 
-void TypeListBuilder::buildHeaderFile()
+void TypeListBuilder::buildHeaderFiles()
 {
-	if(m_szFilename.isEmpty()) {
-		qWarning("[TypeListBuilder] Filename for output not set");
-		return;
-	}
-
 	TypeList::const_iterator type;
 	RequestResponseElementList::const_iterator element;
 
-	QString szHeaderFilename = m_szFilename + ".h";
+	QDir dir(m_szDirname);
+	if(!dir.mkpath("types")) {
+		qDebug("[TypeListBuilder::buildHeaderFiles] Cannot create types dir");
+	}
+	if(!dir.mkpath("messages")) {
+		qDebug("[TypeListBuilder::buildHeaderFiles] Cannot create messages dir");
+	}
 
-	QFile file(m_szDirname + QDir::separator() + m_szFilename + ".h");
+	for(type = m_pListType->constBegin(); type != m_pListType->constEnd(); ++type) {
+		if(!(*type)->getLocalName().isEmpty()) {
+			buildHeaderFile(*type);
+		}
+	}
+
+	for(type = m_pListType->constBegin(); type != m_pListType->constEnd(); ++type) {
+		if(!(*type)->getLocalName().isEmpty()) {
+			buildHeaderFile(*type);
+		}
+	}
+
+	for(element = m_pListElement->constBegin(); element != m_pListElement->constEnd(); ++element) {
+		if(!(*element)->getLocalName().isEmpty()) {
+			buildHeaderFile(*element);
+		}
+	}
+
+	buildHeaderFile(m_pService);
+}
+
+void TypeListBuilder::buildCppFiles()
+{
+	TypeList::const_iterator type;
+	RequestResponseElementList::const_iterator element;
+
+	for(type = m_pListType->constBegin(); type != m_pListType->constEnd(); ++type) {
+		if(!(*type)->getLocalName().isEmpty()) {
+			buildCppFile(*type);
+		}
+	}
+
+	for(element = m_pListElement->constBegin(); element != m_pListElement->constEnd(); ++element) {
+		if(!(*element)->getLocalName().isEmpty()) {
+			buildCppFile(*element);
+		}
+	}
+
+	buildCppFile(m_pService);
+}
+
+void TypeListBuilder::buildHeaderFile(const TypeSharedPtr& pType)
+{
+	QString szHeaderFilename = pType->getQualifiedName() + ".h";
+
+	QFile file(m_szDirname + QDir::separator() + "types" + QDir::separator() + szHeaderFilename);
 	if(file.open(QFile::WriteOnly)) {
 
 		QTextStream os(&file);
-		QString szDefine = (!m_szPrefix.isEmpty() ? m_szPrefix.toUpper() + "_" : "") + m_szFilename.toUpper() + "_H_";
+		QString szDefine = (!m_szPrefix.isEmpty() ? m_szPrefix.toUpper() + "_" : "") + pType->getQualifiedName().toUpper() + "_H_";
 
 		os << "/*" << CRLF;
-		os << " * " << m_szFilename << ".h" << CRLF;
+		os << " * " << szHeaderFilename << CRLF;
 		os << " * Created on: " << QDateTime::currentDateTime().toString("dd MMM yyyy") << CRLF;
 		os << " *     Author: " << QCoreApplication::applicationName() << " v" << QCoreApplication::applicationVersion() << CRLF;
 		os << " */" << CRLF;
@@ -87,29 +143,19 @@ void TypeListBuilder::buildHeaderFile()
 		os << "#define " << szDefine << CRLF;
 		os << CRLF;
 
-		QDir dir("./generated/xstypes");
-	    foreach (QString f, dir.entryList(QDir::Files)) {
-	    	if(f.endsWith(".h")){
-	    		os << "#include \"xstypes/" << f << "\"" << CRLF;
-	    	}
-	    }
+		buildHeaderIncludeType(os, pType);
 
-	    os << CRLF;
+		os << CRLF;
 
-		for(type = m_pListType->constBegin(); type != m_pListType->constEnd(); ++type) {
-			if(!(*type)->getLocalName().isEmpty()) {
-				buildHeaderClassType(os, *type);
-			}
+		if(!m_szNamespace.isEmpty()) {
+			os << "namespace " << m_szNamespace << " {" << CRLF;
 		}
 
-		for(element = m_pListElement->constBegin(); element != m_pListElement->constEnd(); ++element) {
-			if(!(*element)->getLocalName().isEmpty()) {
-				buildHeaderClassElement(os, *element);
-			}
+		buildHeaderClassType(os, pType);
+
+		if(!m_szNamespace.isEmpty()) {
+			os << "}" << CRLF;
 		}
-
-		buildHeaderClassService(os, m_pService);
-
 
 		os << "#endif" << CRLF;
 
@@ -118,20 +164,89 @@ void TypeListBuilder::buildHeaderFile()
 	}
 }
 
-void TypeListBuilder::buildCppFile()
+void TypeListBuilder::buildHeaderFile(const RequestResponseElementSharedPtr& pElement)
 {
-	if(m_szFilename.isEmpty()) {
-		qWarning("[TypeListBuilder] Filename for output not set");
-		return;
+	QString szHeaderFilename = pElement->getQualifiedName() + ".h";
+
+	QFile file(m_szDirname + QDir::separator() + "messages" + QDir::separator() + szHeaderFilename);
+	if(file.open(QFile::WriteOnly)) {
+
+		QTextStream os(&file);
+		QString szDefine = (!m_szPrefix.isEmpty() ? m_szPrefix.toUpper() + "_" : "") + pElement->getQualifiedName().toUpper() + "_H_";
+
+		os << "/*" << CRLF;
+		os << " * " << szHeaderFilename << CRLF;
+		os << " * Created on: " << QDateTime::currentDateTime().toString("dd MMM yyyy") << CRLF;
+		os << " *     Author: " << QCoreApplication::applicationName() << " v" << QCoreApplication::applicationVersion() << CRLF;
+		os << " */" << CRLF;
+		os << CRLF;
+		os << "#ifndef " << szDefine << CRLF;
+		os << "#define " << szDefine << CRLF;
+		os << CRLF;
+
+		buildHeaderIncludeElement(os, pElement);
+
+		os << CRLF;
+
+		if(!m_szNamespace.isEmpty()) {
+			os << "namespace " << m_szNamespace << " {" << CRLF;
+		}
+
+		buildHeaderClassElement(os, pElement);
+
+		if(!m_szNamespace.isEmpty()) {
+			os << "}" << CRLF;
+		}
+
+		os << "#endif" << CRLF;
+
+	}else{
+		qWarning("[TypeListBuilder] Cannot open file %s (error: %s)", qPrintable(szHeaderFilename), qPrintable(file.errorString()));
 	}
+}
 
-	TypeList::const_iterator type;
-	RequestResponseElementList::const_iterator element;
+void TypeListBuilder::buildHeaderFile(const ServiceSharedPtr& pService)
+{
+	QString szHeaderFilename = pService->getName() + ".h";
 
-	QString szCppFilename = m_szFilename + ".cpp";
-	QString szHeaderFilename = m_szFilename + ".h";
+	QFile file(m_szDirname + QDir::separator() + szHeaderFilename);
+	if(file.open(QFile::WriteOnly)) {
 
-	QFile file(m_szDirname + QDir::separator() + m_szFilename + ".cpp");
+		QTextStream os(&file);
+		QString szDefine = (!m_szPrefix.isEmpty() ? m_szPrefix.toUpper() + "_" : "") + pService->getName().toUpper() + "_H_";
+
+		os << "/*" << CRLF;
+		os << " * " << szHeaderFilename << ".h" << CRLF;
+		os << " * Created on: " << QDateTime::currentDateTime().toString("dd MMM yyyy") << CRLF;
+		os << " *     Author: " << QCoreApplication::applicationName() << " v" << QCoreApplication::applicationVersion() << CRLF;
+		os << " */" << CRLF;
+		os << CRLF;
+		os << "#ifndef " << szDefine << CRLF;
+		os << "#define " << szDefine << CRLF;
+		os << CRLF;
+
+		if(!m_szNamespace.isEmpty()) {
+			os << "namespace " << m_szNamespace << " {" << CRLF;
+		}
+
+		buildHeaderClassService(os, m_pService);
+
+		if(!m_szNamespace.isEmpty()) {
+			os << "}" << CRLF;
+		}
+
+		os << "#endif" << CRLF;
+	}else{
+		qWarning("[TypeListBuilder] Cannot open file %s (error: %s)", qPrintable(szHeaderFilename), qPrintable(file.errorString()));
+	}
+}
+
+void TypeListBuilder::buildCppFile(const TypeSharedPtr& pType)
+{
+	QString szCppFilename = pType->getQualifiedName() + ".cpp";
+	QString szHeaderFilename = pType->getQualifiedName() + ".h";
+
+	QFile file(m_szDirname + QDir::separator() + "types" + QDir::separator() + szCppFilename);
 	if(file.open(QFile::WriteOnly)) {
 
 		QTextStream os(&file);
@@ -145,19 +260,83 @@ void TypeListBuilder::buildCppFile()
 		os << "#include \"" << szHeaderFilename << "\"" << CRLF;
 		os << CRLF;
 
-		for(type = m_pListType->constBegin(); type != m_pListType->constEnd(); ++type) {
-			if(!(*type)->getLocalName().isEmpty()) {
-				buildCppClassType(os, *type);
-			}
+		if(!m_szNamespace.isEmpty()) {
+			os << "namespace " << m_szNamespace << " {" << CRLF;
 		}
 
-		for(element = m_pListElement->constBegin(); element != m_pListElement->constEnd(); ++element) {
-			if(!(*element)->getLocalName().isEmpty()) {
-				buildCppClassElement(os, *element);
-			}
+		buildCppClassType(os, pType);
+
+		if(!m_szNamespace.isEmpty()) {
+			os << "}" << CRLF;
 		}
 
-		buildCppClassService(os, m_pService);
+	}else{
+		qWarning("[TypeListBuilder] Cannot open file %s (error: %s)", qPrintable(szCppFilename), qPrintable(file.errorString()));
+	}
+}
+
+void TypeListBuilder::buildCppFile(const RequestResponseElementSharedPtr& pElement)
+{
+	QString szCppFilename = pElement->getQualifiedName() + ".cpp";
+	QString szHeaderFilename = pElement->getQualifiedName() + ".h";
+
+	QFile file(m_szDirname + QDir::separator() + "messages" + QDir::separator() + szCppFilename);
+	if(file.open(QFile::WriteOnly)) {
+
+		QTextStream os(&file);
+
+		os << "/*" << CRLF;
+		os << " * " << szCppFilename << CRLF;
+		os << " * Created on: " << QDateTime::currentDateTime().toString("dd MMM yyyy") << CRLF;
+		os << " *     Author: " << QCoreApplication::applicationName() << " v" << QCoreApplication::applicationVersion() << CRLF;
+		os << " */" << CRLF;
+		os << CRLF;
+		os << "#include \"" << szHeaderFilename << "\"" << CRLF;
+		os << CRLF;
+
+		if(!m_szNamespace.isEmpty()) {
+			os << "namespace " << m_szNamespace << " {" << CRLF;
+		}
+
+		buildCppClassElement(os, pElement);
+
+		if(!m_szNamespace.isEmpty()) {
+			os << "}" << CRLF;
+		}
+
+	}else{
+		qWarning("[TypeListBuilder] Cannot open file %s (error: %s)", qPrintable(szCppFilename), qPrintable(file.errorString()));
+	}
+}
+
+void TypeListBuilder::buildCppFile(const ServiceSharedPtr& pService)
+{
+	QString szCppFilename = pService->getName() + ".cpp";
+	QString szHeaderFilename = pService->getName() + ".h";
+
+	QFile file(m_szDirname + QDir::separator() + szCppFilename);
+	if(file.open(QFile::WriteOnly)) {
+
+		QTextStream os(&file);
+
+		os << "/*" << CRLF;
+		os << " * " << szCppFilename << CRLF;
+		os << " * Created on: " << QDateTime::currentDateTime().toString("dd MMM yyyy") << CRLF;
+		os << " *     Author: " << QCoreApplication::applicationName() << " v" << QCoreApplication::applicationVersion() << CRLF;
+		os << " */" << CRLF;
+		os << CRLF;
+		os << "#include \"" << szHeaderFilename << "\"" << CRLF;
+		os << CRLF;
+
+		if(!m_szNamespace.isEmpty()) {
+			os << "namespace " << m_szNamespace << " {" << CRLF;
+		}
+
+		buildCppClassService(os, pService);
+
+		if(!m_szNamespace.isEmpty()) {
+			os << "}" << CRLF;
+		}
 
 	}else{
 		qWarning("[TypeListBuilder] Cannot open file %s (error: %s)", qPrintable(szCppFilename), qPrintable(file.errorString()));
@@ -166,7 +345,10 @@ void TypeListBuilder::buildCppFile()
 
 void TypeListBuilder::buildHeaderClassType(QTextStream& os, const TypeSharedPtr& pType) const
 {
-	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pType->getQualifiedName();
+	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pType->getLocalName();
+
+	os << "namespace " << pType->getNamespace().toUpper() << " {" << CRLF;
+	os << CRLF;
 
 	if(pType->getClassType() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pType);
@@ -214,6 +396,8 @@ void TypeListBuilder::buildHeaderClassType(QTextStream& os, const TypeSharedPtr&
 		os << "};" << CRLF;
 		os << CRLF;
 	}
+
+	os << "}" << CRLF;
 }
 
 void TypeListBuilder::buildHeaderClassSimpleType(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const
@@ -321,6 +505,9 @@ void TypeListBuilder::buildHeaderClassElement(QTextStream& os, const RequestResp
 	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pElement->getQualifiedName();
 	ComplexTypeSharedPtr pComplexType = pElement->getComplexType();
 
+	os << "namespace " << pElement->getNamespace().toUpper() << " {" << CRLF;
+	os << CRLF;
+
 	if(!pComplexType.isNull()) {
 		os << "class " << szClassname << CRLF;
 		os << "{" << CRLF;
@@ -334,6 +521,8 @@ void TypeListBuilder::buildHeaderClassElement(QTextStream& os, const RequestResp
 		os << "};" << CRLF;
 		os << CRLF;
 	}
+
+	os << "}" << CRLF;
 }
 
 void TypeListBuilder::buildHeaderClassService(QTextStream& os, const ServiceSharedPtr& pService) const
@@ -356,9 +545,111 @@ void TypeListBuilder::buildHeaderClassService(QTextStream& os, const ServiceShar
 	os << "};" << CRLF;
 }
 
+void TypeListBuilder::buildHeaderIncludeType(QTextStream& os, const TypeSharedPtr& pType) const
+{
+
+	os << "#include <QString>" << CRLF;
+
+	if(pType->getClassType() == Type::TypeSimple) {
+		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pType);
+
+		if(!pSimpleType->getVariableTypeFilenameString().isEmpty()) {
+			os << "#include \"" << pSimpleType->getVariableTypeFilenameString() << ".h\"" << CRLF;
+		}
+	}else if(pType->getClassType() == Type::TypeComplex){
+
+		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pType);
+
+		AttributeListSharedPtr pListAttributes = pComplexType->getAttributeList();
+		AttributeList::const_iterator attr;
+
+		ElementListSharedPtr pListElements = pComplexType->getElementList();
+		ElementList::const_iterator element;
+
+		if(pListAttributes->count() > 0 || pListElements->count() > 0) {
+
+			QStringList list;
+
+			for(attr = pListAttributes->constBegin(); attr != pListAttributes->constEnd(); ++attr) {
+				if(!(*attr)->getType()) {
+					continue;
+				}
+				if( (*attr)->getType()->getClassType() == Type::TypeSimple) {
+					SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>((*attr)->getType());
+
+					if(!list.contains(pSimpleType->getVariableTypeFilenameString())) {
+						os << "#include \"" << pSimpleType->getVariableTypeFilenameString() << ".h\"" << CRLF;
+						list.append(pSimpleType->getVariableTypeFilenameString());
+
+					}
+				}else if( (*attr)->getType()->getClassType() == Type::TypeComplex) {
+					ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>((*attr)->getType());
+
+					if(!list.contains(pComplexType->getQualifiedName())) {
+						os << "#include \"" << pComplexType->getQualifiedName() << ".h\"" << CRLF;
+						list.append(pComplexType->getQualifiedName());
+
+					}
+
+				}
+			}
+			for(element = pListElements->constBegin(); element != pListElements->constEnd(); ++element) {
+
+				if(!(*element)->getType()) {
+					continue;
+				}
+
+				if( (*element)->getType()->getClassType() == Type::TypeSimple) {
+					SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>((*element)->getType());
+					if(!list.contains(pSimpleType->getVariableTypeFilenameString())) {
+						os << "#include \"" << pSimpleType->getVariableTypeFilenameString() << ".h\"" << CRLF;
+						list.append(pSimpleType->getVariableTypeFilenameString());
+
+					}
+
+				}else if( (*element)->getType()->getClassType() == Type::TypeComplex) {
+					ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>((*element)->getType());
+					if(!list.contains(pComplexType->getQualifiedName())) {
+						os << "#include \"" << pComplexType->getQualifiedName() << ".h\"" << CRLF;
+						list.append(pComplexType->getQualifiedName());
+
+					}
+
+				}
+			}
+		}
+	}
+}
+
+void TypeListBuilder::buildHeaderIncludeElement(QTextStream& os, const RequestResponseElementSharedPtr& pElement) const
+{
+	ComplexTypeSharedPtr pComplexType = pElement->getComplexType();
+
+	buildHeaderIncludeType(os, pComplexType);
+}
+
+void TypeListBuilder::buildHeaderIncludeService(QTextStream& os, const ServiceSharedPtr& pService) const
+{
+	QStringList list;
+
+	OperationListSharedPtr pOperationList = pService->getOperationList();
+	OperationList::const_iterator operation;
+	for(operation = pOperationList->constBegin(); operation != pOperationList->constEnd(); ++operation) {
+		if(!list.contains((*operation)->getInputMessage()->getQualifiedName())) {
+			os << "#include \"" << (*operation)->getInputMessage()->getQualifiedName() << ".h\"" << CRLF;
+			list.append((*operation)->getInputMessage()->getQualifiedName());
+		}
+	}
+
+	os << "};" << CRLF;
+}
+
 void TypeListBuilder::buildCppClassType(QTextStream& os, const TypeSharedPtr& pType) const
 {
 	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pType->getQualifiedName();
+
+	os << "namespace " << pType->getNamespace().toUpper() << " {" << CRLF;
+	os << CRLF;
 
 	if(pType->getClassType() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pType);
@@ -401,6 +692,9 @@ void TypeListBuilder::buildCppClassType(QTextStream& os, const TypeSharedPtr& pT
 
 		os << CRLF;
 	}
+
+	os << "}" << CRLF;
+	os << CRLF;
 }
 
 void TypeListBuilder::buildCppClassSimpleType(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const
@@ -481,6 +775,9 @@ void TypeListBuilder::buildCppClassElement(QTextStream& os, const RequestRespons
 	pComplexType->setLocalName(pElement->getLocalName());
 	pComplexType->setNamespace(pElement->getNamespace());
 
+	os << "namespace " << pElement->getNamespace().toUpper() << " {" << CRLF;
+	os << CRLF;
+
 	if(!pComplexType.isNull()) {
 		os << szClassname << "::" << szClassname << "() {}" << CRLF;
 		os << szClassname << "::~" << szClassname << "() {}" << CRLF;
@@ -490,6 +787,9 @@ void TypeListBuilder::buildCppClassElement(QTextStream& os, const RequestRespons
 
 		os << CRLF;
 	}
+
+	os << "}" << CRLF;
+	os << CRLF;
 }
 
 void TypeListBuilder::buildCppClassService(QTextStream& os, const ServiceSharedPtr& pService) const

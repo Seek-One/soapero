@@ -180,13 +180,13 @@ QString ComplexType::getSetterDeclaration() const
 	QString szVarName = getLocalName().left(1).toLower() + getLocalName().mid(1);
 
 	QString szDeclaration = "void set%0(const %1& %2);";
-	return szDeclaration.arg(getLocalName()).arg(getQualifiedName()).arg(szVarName);
+	return szDeclaration.arg(getLocalName()).arg(getNameWithNamespace()).arg(szVarName);
 }
 
 QString ComplexType::getGetterDeclaration() const
 {
 	QString szDeclaration = "%0 get%1() const;";
-	return szDeclaration.arg(getQualifiedName()).arg(getLocalName());
+	return szDeclaration.arg(getNameWithNamespace()).arg(getLocalName());
 }
 
 QString ComplexType::getSerializerDeclaration() const
@@ -249,7 +249,7 @@ QString ComplexType::getSerializerDefinition(const QString& szClassname) const
 QString ComplexType::getVariableDeclaration() const
 {
 	QString szDeclaration;
-	szDeclaration += getQualifiedName();
+	szDeclaration += getNameWithNamespace();
 	szDeclaration += " ";
 	szDeclaration += getVariableName();
 	szDeclaration += ";";

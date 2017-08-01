@@ -23,6 +23,7 @@
 #include "Parser/QWSDLParserHandler.h"
 
 void copyPath(QString src, QString dst);
+bool removeDir(const QString & dirName);
 
 int main(int argc, char **argv)
 {
@@ -51,27 +52,29 @@ int main(int argc, char **argv)
 			qWarning("[ServerController::getDevicesList] Error to parse data (error: %s)", qPrintable(reader.errorHandler()->errorString()));
 		}else{
 
+			removeDir("./generated");
+
 			if(!QDir("./generated").exists()) {
 				qWarning("[main] Generated directory does not exists, we create it");
 				QDir().mkdir("generated");
 			}
-			if(!QDir("./generated/xstypes").exists()) {
-				qWarning("[main] XSTypes directory does not exists, we create it");
-				QDir().mkdir("generated/xstypes");
+			if(!QDir("./generated/types").exists()) {
+				qWarning("[main] types directory does not exists, we create it");
+				QDir().mkdir("generated/types");
 			}
 
 
 			TypeListBuilder builder(handler.getService(), handler.getTypeList(), handler.getElementList());
-			//builder.setPrefix("Onvif");
+			builder.setNamespace("Onvif");
 			builder.setFilename("doorcontrol");
 			builder.setDirname("./generated");
-			builder.buildHeaderFile();
-			builder.buildCppFile();
+			builder.buildHeaderFiles();
+			builder.buildCppFiles();
 
 			QDir dir("./src/Base");
 		    foreach (QString f, dir.entryList(QDir::Files)) {
 		    	QString srcPath = QString("./src/Base") + QDir::separator() + f;
-		    	QString dstPath = QString("./generated/xstypes") + QDir::separator() + f;
+		    	QString dstPath = QString("./generated/types") + QDir::separator() + f;
 		    	QFile::remove(dstPath);
 		        QFile::copy(srcPath, dstPath);
 		    }
@@ -100,4 +103,27 @@ void copyPath(QString src, QString dst)
     foreach (QString f, dir.entryList(QDir::Files)) {
         QFile::copy(src + QDir::separator() + f, dst + QDir::separator() + f);
     }
+}
+
+bool removeDir(const QString & dirName)
+{
+    bool result = true;
+    QDir dir(dirName);
+
+    if (dir.exists()) {
+        Q_FOREACH(QFileInfo info, dir.entryInfoList(QDir::NoDotAndDotDot | QDir::System | QDir::Hidden  | QDir::AllDirs | QDir::Files, QDir::DirsFirst)) {
+            if (info.isDir()) {
+                result = removeDir(info.absoluteFilePath());
+            }
+            else {
+                result = QFile::remove(info.absoluteFilePath());
+            }
+
+            if (!result) {
+                return result;
+            }
+        }
+        result = QDir().rmdir(dirName);
+    }
+    return result;
 }

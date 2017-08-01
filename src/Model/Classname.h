@@ -21,6 +21,7 @@ public:
 	void setLocalName(const QString& szLocalName);
 	void setName(const QString& szName);
 	QString getTagQualifiedName() const;
+	QString getNameWithNamespace() const;
 	QString getQualifiedName() const;
 	QString getNamespace() const;
 	QString getLocalName() const;

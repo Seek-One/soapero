@@ -7,27 +7,31 @@
 
 #include "XSDuration.h"
 
-XSDuration::XSDuration()
+namespace XS {
+
+Duration::Duration()
 {
 
 }
 
-XSDuration::~XSDuration()
+Duration::~Duration()
 {
 
 }
 
-void XSDuration::setDuration(const QString& szValue)
+void Duration::setDuration(const QString& szValue)
 {
 	m_szValue = szValue;
 }
 
-QString XSDuration::getValue() const
+QString Duration::getValue() const
 {
 	return m_szValue;
 }
 
-QString XSDuration::serialize() const
+QString Duration::serialize() const
 {
 	return m_szValue;
+}
+
 }

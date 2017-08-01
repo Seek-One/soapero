@@ -7,27 +7,31 @@
 
 #include "XSUnsignedInteger.h"
 
-XSUnsignedInteger::XSUnsignedInteger()
+namespace XS {
+
+UnsignedInteger::UnsignedInteger()
 {
 	m_iValue = -1;
 }
 
-XSUnsignedInteger::~XSUnsignedInteger()
+UnsignedInteger::~UnsignedInteger()
 {
 
 }
 
-void XSUnsignedInteger::setValue(unsigned int iValue)
+void UnsignedInteger::setValue(unsigned int iValue)
 {
 	m_iValue = (int)iValue;
 }
 
-unsigned int XSUnsignedInteger::getValue() const
+unsigned int UnsignedInteger::getValue() const
 {
 	return (unsigned int)m_iValue;
 }
 
-QString XSUnsignedInteger::serialize() const
+QString UnsignedInteger::serialize() const
 {
 	return QString::number(m_iValue);
+}
+
 }

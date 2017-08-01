@@ -54,6 +54,15 @@ QString Classname::getTagQualifiedName() const
 	}
 }
 
+QString Classname::getNameWithNamespace() const
+{
+	if(m_szNamespace.isEmpty()) {
+		return m_szLocalName;
+	}else{
+		return m_szNamespace.toUpper() + "::" + m_szLocalName;
+	}
+}
+
 QString Classname::getQualifiedName() const
 {
 	if(m_szNamespace.isEmpty()) {

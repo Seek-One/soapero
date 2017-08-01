@@ -10,11 +10,13 @@
 
 #include <QString>
 
-class XSInteger
+namespace XS {
+
+class Integer
 {
 public:
-	XSInteger();
-	virtual ~XSInteger();
+	Integer();
+	virtual ~Integer();
 
 	void setValue(int iValue);
 	int getValue() const;
@@ -26,6 +28,6 @@ private:
 
 };
 
-
+}
 
 #endif /* XSINTEGER_H_ */

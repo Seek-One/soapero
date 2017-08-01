@@ -7,28 +7,31 @@
 
 #include "XSInteger.h"
 
-XSInteger::XSInteger()
+namespace XS {
+
+Integer::Integer()
 {
 	m_iValue = 0;
 }
 
-XSInteger::~XSInteger()
+Integer::~Integer()
 {
 
 }
 
-void XSInteger::setValue(int iValue)
+void Integer::setValue(int iValue)
 {
 	m_iValue = iValue;
 }
 
-int XSInteger::getValue() const
+int Integer::getValue() const
 {
 	return m_iValue;
 }
 
-QString XSInteger::serialize() const
+QString Integer::serialize() const
 {
 	return QString::number(m_iValue);
 }
 
+}

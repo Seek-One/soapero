@@ -62,6 +62,35 @@ QString SimpleType::getVariableTypeString()const
 	}else{
 		switch(m_variableType) {
 		case String:
+			return "XS::String";
+			break;
+		case Int:
+			return "XS::Integer";
+			break;
+		case UnsignedInt:
+			return "XS::UnsignedInteger";
+			break;
+		case Boolean:
+			return "XS::Boolean";
+			break;
+		case Duration:
+			return "XS::Duration";
+			break;
+		default:
+			return QString();
+		}
+	}
+}
+
+QString SimpleType::getVariableTypeFilenameString() const
+{
+	if(m_bRestricted && m_variableType == String &&
+			m_listEnumerationValues.count() > 0) {
+		return QString();
+
+	}else{
+		switch(m_variableType) {
+		case String:
 			return "XSString";
 			break;
 		case Int:

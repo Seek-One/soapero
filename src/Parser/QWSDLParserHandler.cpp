@@ -292,7 +292,8 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 				QString szValue = attributes.value("type");
 				QString szNamespace = szValue.split(":")[0];
 				QString szLocalName = szValue.split(":")[1];
-				TypeSharedPtr pType = m_pListTypes->getByName(szNamespace, szLocalName);
+
+				TypeSharedPtr pType = m_pListTypes->getByName(szLocalName, szNamespace);
 				if(!pType.isNull()){
 					element->setType(pType);
 				}else{
@@ -399,6 +400,9 @@ QWSDLParserHandler::endElement(const QString &namespaceURI,
 		}else{
 			m_szCurrentSection = "";
 			m_pListTypes->add(m_pCurrentType);
+
+
+
 			m_pCurrentType.clear();
 		}
 

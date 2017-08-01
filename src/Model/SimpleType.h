@@ -34,8 +34,9 @@ public:
 
 	void setVariableType(VariableType type);
 	void setVariableTypeFromString(const QString& szType);
-	VariableType getVariableType()const;
-	QString getVariableTypeString()const;
+	VariableType getVariableType() const;
+	QString getVariableTypeString() const;
+	QString getVariableTypeFilenameString() const;
 
 	QString getSetterDeclaration() const;
 	QString getGetterDeclaration() const;

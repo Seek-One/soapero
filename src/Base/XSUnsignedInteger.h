@@ -10,11 +10,13 @@
 
 #include <QString>
 
-class XSUnsignedInteger
+namespace XS {
+
+class UnsignedInteger
 {
 public:
-	XSUnsignedInteger();
-	virtual ~XSUnsignedInteger();
+	UnsignedInteger();
+	virtual ~UnsignedInteger();
 
 	void setValue(unsigned int iValue);
 	unsigned int getValue() const;
@@ -26,6 +28,6 @@ private:
 
 };
 
-
+}
 
 #endif /* XSUNSIGNEDINTEGER_H_ */

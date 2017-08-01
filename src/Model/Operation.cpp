@@ -63,11 +63,11 @@ QString Operation::getOperationDeclaration() const
 	szDeclaration += "static bool ";
 	szDeclaration += m_szName;
 	szDeclaration += "(const ";
-	szDeclaration += m_pInputMessage->getParameter()->getQualifiedName();
+	szDeclaration += m_pInputMessage->getParameter()->getNameWithNamespace();
 	szDeclaration += "& ";
 	szDeclaration += m_pInputMessage->getParameter()->getLocalName();
 	szDeclaration += ", ";
-	szDeclaration += m_pOutputMessage->getParameter()->getQualifiedName();
+	szDeclaration += m_pOutputMessage->getParameter()->getNameWithNamespace();
 	szDeclaration += "& ";
 	szDeclaration += m_pOutputMessage->getParameter()->getLocalName();
 	szDeclaration += ");";
@@ -85,9 +85,9 @@ QString Operation::getOperationDefinition(const QString& szClassname) const
 
 	return szDefinition.arg(szClassname)
 			.arg(m_szName)
-			.arg(m_pInputMessage->getParameter()->getQualifiedName())
+			.arg(m_pInputMessage->getParameter()->getNameWithNamespace())
 			.arg(m_pInputMessage->getParameter()->getLocalName())
-			.arg(m_pOutputMessage->getParameter()->getQualifiedName())
+			.arg(m_pOutputMessage->getParameter()->getNameWithNamespace())
 			.arg(m_pOutputMessage->getParameter()->getLocalName());
 }
 

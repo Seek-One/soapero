@@ -10,11 +10,13 @@
 
 #include <QString>
 
-class XSString
+namespace XS {
+
+class String
 {
 public:
-	XSString();
-	virtual ~XSString();
+	String();
+	virtual ~String();
 
 	void setValue(const QString& szValue);
 	QString getValue() const;
@@ -25,5 +27,7 @@ private:
 	QString m_szValue;
 
 };
+
+}
 
 #endif /* XSSTRING_H_ */

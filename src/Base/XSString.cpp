@@ -7,27 +7,31 @@
 
 #include "XSString.h"
 
-XSString::XSString()
+namespace XS {
+
+String::String()
 {
 
 }
 
-XSString::~XSString()
+String::~String()
 {
 
 }
 
-void XSString::setValue(const QString& szValue)
+void String::setValue(const QString& szValue)
 {
 	m_szValue = szValue;
 }
 
-QString XSString::getValue() const
+QString String::getValue() const
 {
 	return m_szValue;
 }
 
-QString XSString::serialize() const
+QString String::serialize() const
 {
 	return m_szValue;
+}
+
 }

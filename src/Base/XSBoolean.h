@@ -10,11 +10,13 @@
 
 #include <QString>
 
-class XSBoolean
+namespace XS {
+
+class Boolean
 {
 public:
-	XSBoolean();
-	virtual ~XSBoolean();
+	Boolean();
+	virtual ~Boolean();
 
 	void setValue(bool bValue);
 	bool getValue() const;
@@ -24,9 +26,9 @@ public:
 	void setNull();
 	bool isNull() const;
 
-	void operator=(const XSBoolean& other);
+	void operator=(const Boolean& other);
 	void operator=(bool bOther);
-	bool operator==(const XSBoolean& other) const;
+	bool operator==(const Boolean& other) const;
 	bool operator==(bool bOther) const;
 
 private:
@@ -34,6 +36,6 @@ private:
 
 };
 
-
+}
 
 #endif /* XSBOOLEAN_H_ */

@@ -10,11 +10,13 @@
 
 #include <QString>
 
-class XSDuration
+namespace XS {
+
+class Duration
 {
 public:
-	XSDuration();
-	virtual ~XSDuration();
+	Duration();
+	virtual ~Duration();
 
 	void setDuration(const QString& szValue);
 	QString getValue() const;
@@ -25,5 +27,7 @@ private:
 	QString m_szValue;
 
 };
+
+}
 
 #endif /* XSDURATION_H_ */

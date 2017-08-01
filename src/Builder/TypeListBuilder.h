@@ -26,31 +26,40 @@ public:
 	void setPrefix(const QString& szPrefix);
 	QString getPrefix() const;
 
+	void setNamespace(const QString& szNamespace);
+	QString getNamespace() const;
+
 	void setFilename(const QString& szFilename);
 	QString getFilename() const;
 
 	void setDirname(const QString& szDirname);
 	QString getDirname() const;
 
-	void buildHeaderFile();
-	void buildCppFile();
-
+	void buildHeaderFiles();
+	void buildCppFiles();
 
 private:
+	void buildHeaderFile(const TypeSharedPtr& pType);
+	void buildHeaderFile(const RequestResponseElementSharedPtr& pElement);
+	void buildHeaderFile(const ServiceSharedPtr& pService);
+
+	void buildCppFile(const TypeSharedPtr& pType);
+	void buildCppFile(const RequestResponseElementSharedPtr& pElement);
+	void buildCppFile(const ServiceSharedPtr& pService);
+
 	void buildHeaderClassType(QTextStream& os, const TypeSharedPtr& pType) const;
 	void buildHeaderClassSimpleType(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const;
 	void buildHeaderClassComplexType(QTextStream& os, const ComplexTypeSharedPtr& pComplexType) const;
-
 	void buildHeaderClassElement(QTextStream& os, const RequestResponseElementSharedPtr& pElement) const;
-
 	void buildHeaderClassService(QTextStream& os, const ServiceSharedPtr& pService) const;
+	void buildHeaderIncludeType(QTextStream& os, const TypeSharedPtr& pType) const;
+	void buildHeaderIncludeElement(QTextStream& os, const RequestResponseElementSharedPtr& pElement) const;
+	void buildHeaderIncludeService(QTextStream& os, const ServiceSharedPtr& pService) const;
 
 	void buildCppClassType(QTextStream& os, const TypeSharedPtr& pType) const;
 	void buildCppClassSimpleType(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const;
 	void buildCppClassComplexType(QTextStream& os, const ComplexTypeSharedPtr& pComplexType) const;
-
 	void buildCppClassElement(QTextStream& os, const RequestResponseElementSharedPtr& pElement) const;
-
 	void buildCppClassService(QTextStream& os, const ServiceSharedPtr& pService) const;
 
 	TypeListSharedPtr m_pListType;
@@ -58,6 +67,7 @@ private:
 	ServiceSharedPtr m_pService;
 
 	QString m_szPrefix;
+	QString m_szNamespace;
 	QString m_szFilename;
 	QString m_szDirname;
 };
