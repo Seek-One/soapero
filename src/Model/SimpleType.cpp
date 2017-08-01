@@ -57,7 +57,7 @@ QString SimpleType::getVariableTypeString()const
 {
 	if(m_bRestricted && m_variableType == String &&
 			m_listEnumerationValues.count() > 0) {
-		return getQualifiedName() + "::Values";
+		return getLocalName() + "::Values";
 
 	}else{
 		switch(m_variableType) {

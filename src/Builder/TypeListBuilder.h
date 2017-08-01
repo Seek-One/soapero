@@ -35,6 +35,7 @@ public:
 	void setDirname(const QString& szDirname);
 	QString getDirname() const;
 
+	void buildResumeFile();
 	void buildHeaderFiles();
 	void buildCppFiles();
 

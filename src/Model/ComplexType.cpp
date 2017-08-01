@@ -204,7 +204,7 @@ QString ComplexType::getSetterDefinition(const QString& szClassname) const
 	"\t%4 = %5;" CRLF
 	"}" CRLF;
 
-	return szDeclaration.arg(szClassname).arg(getLocalName()).arg(getQualifiedName())
+	return szDeclaration.arg(szClassname).arg(getLocalName()).arg(getNameWithNamespace())
 			.arg(szVarName).arg(getVariableName()).arg(szVarName);
 }
 
@@ -216,7 +216,7 @@ QString ComplexType::getGetterDefinition(const QString& szClassname) const
 	"\treturn %3;" CRLF
 	"}" CRLF;
 
-	return szDefinition.arg(getQualifiedName()).arg(szClassname).arg(getLocalName()).arg(getVariableName());
+	return szDefinition.arg(getNameWithNamespace()).arg(szClassname).arg(getLocalName()).arg(getVariableName());
 }
 
 QString ComplexType::getSerializerDefinition(const QString& szClassname) const

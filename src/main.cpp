@@ -70,6 +70,7 @@ int main(int argc, char **argv)
 			builder.setDirname("./generated");
 			builder.buildHeaderFiles();
 			builder.buildCppFiles();
+			builder.buildResumeFile();
 
 			QDir dir("./src/Base");
 		    foreach (QString f, dir.entryList(QDir::Files)) {
