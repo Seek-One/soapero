@@ -28,9 +28,29 @@ public:
 	void setType(const TypeSharedPtr& pType);
 	TypeSharedPtr getType()const;
 
+	void setMinOccurs(int iMinOccurs);
+	int getMinOccurs()const;
+
+	void setMaxOccurs(int iMaxOccurs);
+	int getMaxOccurs()const;
+
+	QString getVariableName() const;
+
+	QString getSetterDeclaration() const;
+	QString getGetterDeclaration() const;
+	QString getSerializerDeclaration() const;
+	QString getVariableDeclaration() const;
+
+	QString getSetterDefinition(const QString& szClassname) const;
+	QString getGetterDefinition(const QString& szClassname) const;
+	QString getSerializerDefinition(const QString& szClassname) const;
+
 private:
 	QString m_szName;
 	TypeSharedPtr m_pType;
+
+	int m_iMinOccurs;
+	int m_iMaxOccurs;
 
 };
 

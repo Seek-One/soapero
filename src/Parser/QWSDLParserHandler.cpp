@@ -314,6 +314,16 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 				}
 			}
 
+			iRes = attributes.index("minOccurs");
+			if(iRes != -1) {
+				element->setMinOccurs(attributes.value("minOccurs").toUInt());
+			}
+
+			iRes = attributes.index("maxOccurs");
+			if(iRes != -1) {
+				QString szValue = attributes.value("maxOccurs");
+				element->setMaxOccurs(szValue == "unbounded" ? -1 : szValue.toUInt());
+			}
 
 			ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(m_pCurrentType);
 			pComplexType->addElement(element);
@@ -378,11 +388,11 @@ QWSDLParserHandler::endElement(const QString &namespaceURI,
 {
 	TypeSharedPtr pType;
 	TypeListSharedPtr pListTypes;
-	TypeList::const_iterator type;
+	TypeList::iterator type;
 
-	RequestResponseElementList::const_iterator requestResponseElement;
-	ElementList::const_iterator element;
-	AttributeList::const_iterator attr;
+	RequestResponseElementList::iterator requestResponseElement;
+	ElementList::iterator element;
+	AttributeList::iterator attr;
 
 
 	if(qName == "xs:simpleType" && !m_pCurrentType.isNull()) {
@@ -400,9 +410,6 @@ QWSDLParserHandler::endElement(const QString &namespaceURI,
 		}else{
 			m_szCurrentSection = "";
 			m_pListTypes->add(m_pCurrentType);
-
-
-
 			m_pCurrentType.clear();
 		}
 
@@ -432,7 +439,7 @@ QWSDLParserHandler::endElement(const QString &namespaceURI,
 
 	if(qName == "wsdl:types") {
 
-		for(type = m_pListTypes->constBegin(); type != m_pListTypes->constEnd(); ++type) {
+		for(type = m_pListTypes->begin(); type != m_pListTypes->end(); ++type) {
 
 			if( (*type)->getClassType() == Type::TypeComplex) {
 
@@ -448,8 +455,8 @@ QWSDLParserHandler::endElement(const QString &namespaceURI,
 				if(pComplexType->getElementList()->count() > 0) {
 					//Parcours elment list
 
-					for(element = pComplexType->getElementList()->constBegin();
-							element != pComplexType->getElementList()->constEnd(); ++element) {
+					for(element = pComplexType->getElementList()->begin();
+							element != pComplexType->getElementList()->end(); ++element) {
 
 						if( (*element)->getType()->getClassType() == Type::TypeUnknown) {
 							pType = m_pListTypes->getByName((*element)->getType()->getLocalName(), (*element)->getType()->getNamespace());
@@ -461,8 +468,8 @@ QWSDLParserHandler::endElement(const QString &namespaceURI,
 				if(pComplexType->getAttributeList()->count() > 0) {
 					//Parcours attr list
 
-					for(attr = pComplexType->getAttributeList()->constBegin();
-							attr != pComplexType->getAttributeList()->constEnd(); ++attr) {
+					for(attr = pComplexType->getAttributeList()->begin();
+							attr != pComplexType->getAttributeList()->end(); ++attr) {
 
 						if( (*attr)->getType()->getClassType() == Type::TypeUnknown) {
 							pType = m_pListTypes->getByName((*attr)->getType()->getLocalName(), (*attr)->getType()->getNamespace());
@@ -475,8 +482,8 @@ QWSDLParserHandler::endElement(const QString &namespaceURI,
 			}
 		}
 
-		for(requestResponseElement = m_pListElements->constBegin();
-				requestResponseElement != m_pListElements->constEnd(); ++requestResponseElement) {
+		for(requestResponseElement = m_pListElements->begin();
+				requestResponseElement != m_pListElements->end(); ++requestResponseElement) {
 
 			ComplexTypeSharedPtr pComplexType = (*requestResponseElement)->getComplexType();
 			if(pComplexType->getExtensionType()) {
@@ -490,8 +497,8 @@ QWSDLParserHandler::endElement(const QString &namespaceURI,
 			if(pComplexType->getElementList()->count() > 0) {
 				//Parcours elment list
 
-				for(element = pComplexType->getElementList()->constBegin();
-						element != pComplexType->getElementList()->constEnd(); ++element) {
+				for(element = pComplexType->getElementList()->begin();
+						element != pComplexType->getElementList()->end(); ++element) {
 
 					if( (*element)->getType()->getClassType() == Type::TypeUnknown) {
 						pType = m_pListTypes->getByName((*element)->getType()->getLocalName(),
@@ -504,8 +511,8 @@ QWSDLParserHandler::endElement(const QString &namespaceURI,
 			if(pComplexType->getAttributeList()->count() > 0) {
 				//Parcours attr list
 
-				for(attr = pComplexType->getAttributeList()->constBegin();
-						attr != pComplexType->getAttributeList()->constEnd(); ++attr) {
+				for(attr = pComplexType->getAttributeList()->begin();
+						attr != pComplexType->getAttributeList()->end(); ++attr) {
 
 					if( (*attr)->getType()->getClassType() == Type::TypeUnknown) {
 						pType = m_pListTypes->getByName((*attr)->getType()->getLocalName(),
