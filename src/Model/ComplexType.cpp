@@ -455,20 +455,39 @@ QString ComplexType::getSerializerDefinition(const QString& szClassname) const
 	QString szDefinition = ""
 	"QString %0::serialize() const" CRLF
 	"{" CRLF
-	"\treturn \"\"" CRLF
-	"\t\"<%1>\"" CRLF;
+	"\tQString szValue = \"\"" CRLF
+	"\t\"<%1>\";" CRLF;
 	for(attr = m_pListAttribute->constBegin(); attr != m_pListAttribute->constEnd(); ++attr) {
 		if( (*attr)->getType()->getClassType() == Type::TypeSimple) {
 			SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>((*attr)->getType());
-			szDefinition += "\t\"\" + " + pSimpleType->getVariableName() + ".serialize() +" CRLF;
+			szDefinition += "\tszValue +=\"<" + pSimpleType->getTagQualifiedName() + ">\" + " + pSimpleType->getVariableName() + ".serialize() +" + "\"</" + pSimpleType->getTagQualifiedName() + ">\";" CRLF;
 
 		}else if( (*attr)->getType()->getClassType() == Type::TypeComplex) {
 			ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>((*attr)->getType());
-			szDefinition += "\t\"\" + " + pComplexType->getVariableName() + ".serialize() + " CRLF;
+			szDefinition += "\tszValue += \"\" + " + pComplexType->getVariableName() + ".serialize();" CRLF;
 		}
-
 	}
-	szDefinition += "\t\"</%1>\";" CRLF;
+	for(elem = m_pListElement->constBegin(); elem != m_pListElement->constEnd(); ++elem) {
+		if( (*elem)->getType()->getClassType() == Type::TypeSimple) {
+			SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>((*elem)->getType());
+			szDefinition += "\tszValue += \"<" + pSimpleType->getTagQualifiedName() + ">\" + " + pSimpleType->getVariableName() + ".serialize() +" + "\"</" + pSimpleType->getTagQualifiedName() + ">\";" CRLF;
+
+		}else if( (*elem)->getType()->getClassType() == Type::TypeComplex) {
+			ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>((*elem)->getType());
+
+			if( (*elem)->getMaxOccurs() > 1 || (*elem)->getMaxOccurs() == -1) {
+				QString szIterator = "door";
+				szDefinition += QString("\tQList<%0>::const_iterator %1;" CRLF).arg( pComplexType->getNameWithNamespace()).arg(szIterator);
+				szDefinition += QString("\tfor(%0 = %1List.constBegin(); %0 != %1List.constEnd(); ++%0) {" CRLF).arg(szIterator).arg((*elem)->getVariableName());
+				szDefinition += QString("\t\tszValue += %0->serialize();" CRLF).arg(szIterator);
+				szDefinition += "\t}" CRLF;
+			} else{
+				szDefinition += "\t\"\" + " + (*elem)->getVariableName() + ".serialize();" CRLF;
+			}
+		}
+	}
+	szDefinition += "\tszValue += \"</%1>\";" CRLF;
+	szDefinition += "\treturn szValue;" CRLF;
 	szDefinition += "}" CRLF;
 
 	return szDefinition.arg(szClassname).arg(getTagQualifiedName());

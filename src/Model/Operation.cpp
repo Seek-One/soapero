@@ -80,7 +80,7 @@ QString Operation::getOperationDefinition(const QString& szClassname) const
 	QString szDefinition = ""
 	"bool %0::%1(const %2& %3, %4& %5)" CRLF
 	"{" CRLF
-	"\t return false;" CRLF
+	"\treturn false;" CRLF
 	"}" CRLF;
 
 	return szDefinition.arg(szClassname)

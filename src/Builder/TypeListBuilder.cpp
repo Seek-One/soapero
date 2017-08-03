@@ -492,8 +492,11 @@ void TypeListBuilder::buildHeaderClassComplexType(QTextStream& os, const Complex
 			os << CRLF;
 
 		}
-		os << "\t" << pComplexType->getSerializerDeclaration() << CRLF;
+	}
 
+	os << "\t" << pComplexType->getSerializerDeclaration() << CRLF;
+
+	if(pListAttributes->count() > 0 || pListElements->count() > 0) {
 		os << "private:" << CRLF;
 		for(attr = pListAttributes->constBegin(); attr != pListAttributes->constEnd(); ++attr) {
 			if(!(*attr)->getType()) {
@@ -860,9 +863,8 @@ void TypeListBuilder::buildCppClassComplexType(QTextStream& os, const ComplexTyp
 			os << (*element)->getGetterDefinition(szClassname) << CRLF ;
 			os << CRLF;
 		}
-
-		os << pComplexType->getSerializerDefinition(szClassname) << CRLF;
 	}
+	os << pComplexType->getSerializerDefinition(szClassname) << CRLF;
 }
 
 void TypeListBuilder::buildCppClassElement(QTextStream& os, const RequestResponseElementSharedPtr& pElement) const
