@@ -7,6 +7,7 @@
 
 #include "XSDuration.h"
 
+namespace Onvif {
 namespace XS {
 
 Duration::Duration()
@@ -34,4 +35,5 @@ QString Duration::serialize() const
 	return m_szValue;
 }
 
+}
 }

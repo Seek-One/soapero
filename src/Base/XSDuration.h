@@ -10,6 +10,7 @@
 
 #include <QString>
 
+namespace Onvif {
 namespace XS {
 
 class Duration
@@ -28,6 +29,7 @@ private:
 
 };
 
+}
 }
 
 #endif /* XSDURATION_H_ */

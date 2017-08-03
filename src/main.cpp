@@ -79,6 +79,13 @@ int main(int argc, char **argv)
 		    	QFile::remove(dstPath);
 		        QFile::copy(srcPath, dstPath);
 		    }
+			dir = QDir("./src/Service");
+		    foreach (QString f, dir.entryList(QDir::Files)) {
+		    	QString srcPath = QString("./src/Service") + QDir::separator() + f;
+		    	QString dstPath = QString("./generated") + QDir::separator() + f;
+		    	QFile::remove(dstPath);
+		        QFile::copy(srcPath, dstPath);
+		    }
 
 		}
 	}else{

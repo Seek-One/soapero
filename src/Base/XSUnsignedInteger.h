@@ -10,6 +10,7 @@
 
 #include <QString>
 
+namespace Onvif {
 namespace XS {
 
 class UnsignedInteger
@@ -28,6 +29,7 @@ private:
 
 };
 
+}
 }
 
 #endif /* XSUNSIGNEDINTEGER_H_ */

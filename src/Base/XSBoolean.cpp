@@ -7,6 +7,7 @@
 
 #include "XSBoolean.h"
 
+namespace Onvif {
 namespace XS {
 
 Boolean::Boolean()
@@ -64,4 +65,5 @@ bool Boolean::operator==(bool bOther) const
 	return m_iValue == (bOther ? 1 : 0);
 }
 
+}
 }

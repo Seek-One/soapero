@@ -7,6 +7,7 @@
 
 #include "XSUnsignedInteger.h"
 
+namespace Onvif {
 namespace XS {
 
 UnsignedInteger::UnsignedInteger()
@@ -34,4 +35,5 @@ QString UnsignedInteger::serialize() const
 	return QString::number(m_iValue);
 }
 
+}
 }

@@ -7,6 +7,7 @@
 
 #include "XSString.h"
 
+namespace Onvif {
 namespace XS {
 
 String::String()
@@ -34,4 +35,5 @@ QString String::serialize() const
 	return m_szValue;
 }
 
+}
 }

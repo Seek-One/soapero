@@ -60,7 +60,7 @@ MessageSharedPtr Operation::getOutputMessage() const
 QString Operation::getOperationDeclaration() const
 {
 	QString szDeclaration;
-	szDeclaration += "static bool ";
+	szDeclaration += "bool ";
 	szDeclaration += m_szName;
 	szDeclaration += "(const ";
 	szDeclaration += m_pInputMessage->getParameter()->getNameWithNamespace();
@@ -80,6 +80,16 @@ QString Operation::getOperationDefinition(const QString& szClassname) const
 	QString szDefinition = ""
 	"bool %0::%1(const %2& %3, %4& %5)" CRLF
 	"{" CRLF
+	"\tQNetworkAccessManager *manager = new QNetworkAccessManager();" CRLF
+	CRLF
+	"\tQNetworkRequest request = initNetworkRequest();" CRLF
+	CRLF
+	"\tQNetworkReply *reply = manager->post(request, %3.serialize().toUtf8());" CRLF
+	"\tif(reply->waitForReadyRead(TIMEOUT_MSEC)) {" CRLF
+		"\t\tQByteArray bytes = reply->readAll();" CRLF
+		"\t\tQString szValue(bytes);" CRLF
+		"\t\t//GetServiceCapabilitiesResponse.deserialize(szValue);" CRLF
+	"\t}" CRLF
 	"\treturn false;" CRLF
 	"}" CRLF;
 

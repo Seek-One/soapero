@@ -127,8 +127,8 @@ endif()
 set(WITH_COMPILER_LIBRARIES ON CACHE BOOL "Enable build with compiler library")
 # GUI
 set(WITH_QT ON CACHE BOOL "Enable build with qt library")
-set(QT4_COMPONENTS QtCore QtXml)
-set(QT5_COMPONENTS Core Xml)
+set(QT4_COMPONENTS QtCore QtNetwork QtXml)
+set(QT5_COMPONENTS Core Network Xml)
 
 # Define output variable
 set (PACKAGE_DEPS)
@@ -180,6 +180,7 @@ set (APP_SOURCES
 
 	src/Builder/TypeListBuilder.cpp
 	src/Builder/TypeListBuilder.h
+
 	src/Model/Classname.h
 	src/Model/Classname.cpp
 	src/Model/ComplexType.h
@@ -196,8 +197,12 @@ set (APP_SOURCES
 	src/Model/SimpleType.cpp
 	src/Model/Type.h
 	src/Model/Type.cpp
+
 	src/Parser/QWSDLParserHandler.h
 	src/Parser/QWSDLParserHandler.cpp
+
+	src/Service/Service.h
+	src/Service/Service.cpp
 )
 
 # Creating MOC file for sources file using "slots" or Q_OBJECT macro

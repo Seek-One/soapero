@@ -7,6 +7,7 @@
 
 #include "XSInteger.h"
 
+namespace Onvif {
 namespace XS {
 
 Integer::Integer()
@@ -34,4 +35,5 @@ QString Integer::serialize() const
 	return QString::number(m_iValue);
 }
 
+}
 }

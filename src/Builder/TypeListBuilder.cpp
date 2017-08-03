@@ -361,7 +361,14 @@ void TypeListBuilder::buildCppFile(const ServiceSharedPtr& pService)
 		os << " *     Author: " << QCoreApplication::applicationName() << " v" << QCoreApplication::applicationVersion() << CRLF;
 		os << " */" << CRLF;
 		os << CRLF;
+		os << "#include <QUrl>" << CRLF;
+		os << "#include <QtNetwork/QNetworkAccessManager>" << CRLF;
+		os << "#include <QtNetwork/QNetworkRequest>" << CRLF;
+		os << "#include <QtNetwork/QNetworkReply>" << CRLF;
+		os << CRLF;
 		os << "#include \"" << szHeaderFilename << "\"" << CRLF;
+		os << CRLF;
+		os << "#define TIMEOUT_MSEC 10*1000" << CRLF;
 		os << CRLF;
 
 		if(!m_szNamespace.isEmpty()) {
@@ -551,7 +558,7 @@ void TypeListBuilder::buildHeaderClassService(QTextStream& os, const ServiceShar
 {
 	QString szClassname = pService->getName();
 
-	os << "class " << szClassname << CRLF;
+	os << "class " << szClassname << " : public Service" CRLF;
 	os << "{" << CRLF;
 	os << "public:" << CRLF;
 	os << "\t" << szClassname << "();" << CRLF;
@@ -737,6 +744,8 @@ void TypeListBuilder::buildHeaderIncludeElement(QTextStream& os, const RequestRe
 void TypeListBuilder::buildHeaderIncludeService(QTextStream& os, const ServiceSharedPtr& pService) const
 {
 	QStringList list;
+
+	os << "#include \"Service.h\"" << CRLF << CRLF;
 
 	OperationListSharedPtr pOperationList = pService->getOperationList();
 	OperationList::const_iterator operation;

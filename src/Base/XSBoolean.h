@@ -10,6 +10,7 @@
 
 #include <QString>
 
+namespace Onvif {
 namespace XS {
 
 class Boolean
@@ -37,5 +38,5 @@ private:
 };
 
 }
-
+}
 #endif /* XSBOOLEAN_H_ */
