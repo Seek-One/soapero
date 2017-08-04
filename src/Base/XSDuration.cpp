@@ -12,7 +12,7 @@ namespace XS {
 
 Duration::Duration()
 {
-
+	m_bIsNull = true;
 }
 
 Duration::~Duration()
@@ -22,6 +22,7 @@ Duration::~Duration()
 
 void Duration::setDuration(const QString& szValue)
 {
+	m_bIsNull = false;
 	m_szValue = szValue;
 }
 
@@ -33,6 +34,11 @@ QString Duration::getValue() const
 QString Duration::serialize() const
 {
 	return m_szValue;
+}
+
+bool Duration::isNull() const
+{
+	return m_bIsNull;
 }
 
 }

@@ -24,16 +24,11 @@ public:
 
 	QString serialize() const;
 
-	void setNull();
 	bool isNull() const;
 
-	void operator=(const Boolean& other);
-	void operator=(bool bOther);
-	bool operator==(const Boolean& other) const;
-	bool operator==(bool bOther) const;
-
 private:
-	short m_iValue;
+	bool m_bValue;
+	bool m_bIsNull;
 
 };
 

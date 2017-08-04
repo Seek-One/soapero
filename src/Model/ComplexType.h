@@ -119,10 +119,12 @@ public:
 	QString getGetterDeclaration() const;
 	QString getSerializerDeclaration() const;
 	QString getVariableDeclaration() const;
+	QString getIsNullDeclaration() const;
 
 	QString getSetterDefinition(const QString& szClassname) const;
 	QString getGetterDefinition(const QString& szClassname) const;
 	QString getSerializerDefinition(const QString& szClassname) const;
+	QString getIsNullDefinition(const QString& szClassname) const;
 
 	QString getVariableName() const;
 

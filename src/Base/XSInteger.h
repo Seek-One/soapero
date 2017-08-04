@@ -24,8 +24,12 @@ public:
 
 	QString serialize() const;
 
+	bool isNull() const;
+
 private:
 	int m_iValue;
+
+	bool m_bIsNull;
 
 };
 

@@ -12,7 +12,8 @@ namespace XS {
 
 UnsignedInteger::UnsignedInteger()
 {
-	m_iValue = -1;
+	m_iValue = 0;
+	m_bIsNull = true;
 }
 
 UnsignedInteger::~UnsignedInteger()
@@ -22,17 +23,23 @@ UnsignedInteger::~UnsignedInteger()
 
 void UnsignedInteger::setValue(unsigned int iValue)
 {
-	m_iValue = (int)iValue;
+	m_bIsNull = false;
+	m_iValue = iValue;
 }
 
 unsigned int UnsignedInteger::getValue() const
 {
-	return (unsigned int)m_iValue;
+	return m_iValue;
 }
 
 QString UnsignedInteger::serialize() const
 {
 	return QString::number(m_iValue);
+}
+
+bool UnsignedInteger::isNull() const
+{
+	return m_bIsNull;
 }
 
 }

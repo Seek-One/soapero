@@ -13,6 +13,7 @@ namespace XS {
 Integer::Integer()
 {
 	m_iValue = 0;
+	m_bIsNull = true;
 }
 
 Integer::~Integer()
@@ -22,6 +23,7 @@ Integer::~Integer()
 
 void Integer::setValue(int iValue)
 {
+	m_bIsNull = false;
 	m_iValue = iValue;
 }
 
@@ -33,6 +35,11 @@ int Integer::getValue() const
 QString Integer::serialize() const
 {
 	return QString::number(m_iValue);
+}
+
+bool Integer::isNull() const
+{
+	return m_bIsNull;
 }
 
 }

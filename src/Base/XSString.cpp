@@ -35,5 +35,10 @@ QString String::serialize() const
 	return m_szValue;
 }
 
+bool String::isNull() const
+{
+	return m_szValue.isNull();
+}
+
 }
 }

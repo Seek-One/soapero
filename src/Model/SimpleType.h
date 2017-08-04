@@ -42,15 +42,18 @@ public:
 	QString getGetterDeclaration() const;
 	QString getSerializerDeclaration() const;
 	QString getEnumConvertDeclaration() const;
+	QString getIsNullDeclaration() const;
 
 	QString getSetterDefinition(const QString& szClassname) const;
 	QString getGetterDefinition(const QString& szClassname) const;
 	QString getSerializerDefinition(const QString& szClassname) const;
 	QString getEnumConvertDefinition(const QString& szClassname) const;
+	QString getIsNullDefinition(const QString& szClassname) const;
 
 	QString getVariableDeclaration() const;
 	QString getEnumerationDeclaration() const;
 	QString getVariableName() const;
+	QString getVariableIsNullName() const;
 
 	void setRestricted(bool bRestricted);
 	bool isRestricted() const;

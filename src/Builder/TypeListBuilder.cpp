@@ -449,6 +449,7 @@ void TypeListBuilder::buildHeaderClassSimpleType(QTextStream& os, const SimpleTy
 	os << "\t" << pSimpleType->getGetterDeclaration() << CRLF ;
 	os << "\t" << pSimpleType->getSerializerDeclaration() << CRLF;
 	os << "\t" << pSimpleType->getEnumConvertDeclaration() << CRLF;
+	os << "\t" << pSimpleType->getIsNullDeclaration() << CRLF;
 	os << CRLF;
 	os << "private:" << CRLF;
 	os << "\t" << pSimpleType->getVariableDeclaration() << CRLF;
@@ -502,6 +503,8 @@ void TypeListBuilder::buildHeaderClassComplexType(QTextStream& os, const Complex
 	}
 
 	os << "\t" << pComplexType->getSerializerDeclaration() << CRLF;
+	os << CRLF;
+	os << "\t" << pComplexType->getIsNullDeclaration() << CRLF;
 
 	if(pListAttributes->count() > 0 || pListElements->count() > 0) {
 		os << "private:" << CRLF;
@@ -778,6 +781,7 @@ void TypeListBuilder::buildCppClassType(QTextStream& os, const TypeSharedPtr& pT
 
 			os << szClassname << "::" << szClassname << "()" << CRLF;
 			os << "{" << CRLF;
+			os << "\t" << pSimpleType->getVariableIsNullName() << " = true;" CRLF;
 			os << "\t" << pSimpleType->getVariableName() << " = " << pSimpleType->getEnumerationValues()[0] << ";" << CRLF;
 			os << "}" << CRLF;
 			os << CRLF;
@@ -824,6 +828,7 @@ void TypeListBuilder::buildCppClassSimpleType(QTextStream& os, const SimpleTypeS
 	os << pSimpleType->getGetterDefinition(szClassname) << CRLF;
 	os << pSimpleType->getSerializerDefinition(szClassname) << CRLF;
 	os << pSimpleType->getEnumConvertDefinition(szClassname) << CRLF;
+	os << pSimpleType->getIsNullDefinition(szClassname) << CRLF;
 	os << CRLF;
 }
 
@@ -874,6 +879,8 @@ void TypeListBuilder::buildCppClassComplexType(QTextStream& os, const ComplexTyp
 		}
 	}
 	os << pComplexType->getSerializerDefinition(szClassname) << CRLF;
+	os << CRLF;
+	os << pComplexType->getIsNullDefinition(szClassname) << CRLF;
 }
 
 void TypeListBuilder::buildCppClassElement(QTextStream& os, const RequestResponseElementSharedPtr& pElement) const
