@@ -385,6 +385,7 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 			m_pListOperations->removeAll(pOperation);
 			pOperation->setSoapAction(attributes.value("soapAction"));
 			m_pListOperations->append(pOperation);
+			m_szCurrentOperationName = "";
 		}
 
 
@@ -441,11 +442,13 @@ QWSDLParserHandler::endElement(const QString &namespaceURI,
 
 	}
 
-	if(qName == "wsdl:operation" && !m_pCurrentOperation.isNull()) {
+	if(qName == "wsdl:operation") {
 		m_szCurrentSection = "";
-		m_pListOperations->append(m_pCurrentOperation);
-		m_pService->addOperation(m_pCurrentOperation);
-		m_pCurrentOperation.clear();
+		if(!m_pCurrentOperation.isNull()) {
+			m_pListOperations->append(m_pCurrentOperation);
+			m_pService->addOperation(m_pCurrentOperation);
+			m_pCurrentOperation.clear();
+		}
 
 	}
 
