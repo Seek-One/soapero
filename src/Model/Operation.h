@@ -35,11 +35,15 @@ public:
 	void setOutputMessage(const MessageSharedPtr& pMessage);
 	MessageSharedPtr getOutputMessage() const;
 
+	void setSoapAction(const QString& szSoapAction);
+	QString getSoapAction() const;
+
 	QString getOperationDeclaration() const;
 	QString getOperationDefinition(const QString& szClassname) const;
 
 private:
 	QString m_szName;
+	QString m_szSoapAction;
 
 	MessageSharedPtr m_pInputMessage;
 	MessageSharedPtr m_pOutputMessage;

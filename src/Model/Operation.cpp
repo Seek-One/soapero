@@ -57,6 +57,16 @@ MessageSharedPtr Operation::getOutputMessage() const
 	return m_pOutputMessage;
 }
 
+void Operation::setSoapAction(const QString& szSoapAction)
+{
+	m_szSoapAction = szSoapAction;
+}
+
+QString Operation::getSoapAction() const
+{
+	return m_szSoapAction;
+}
+
 QString Operation::getOperationDeclaration() const
 {
 	QString szDeclaration;
@@ -83,12 +93,15 @@ QString Operation::getOperationDefinition(const QString& szClassname) const
 	"\tQNetworkAccessManager *manager = new QNetworkAccessManager();" CRLF
 	CRLF
 	"\tQNetworkRequest request = initNetworkRequest();" CRLF
+	"\trequest.setRawHeader(QString(\"Content-Type\").toLatin1(), QString(\"application/soap+xml; charset=utf-8; action=\\\"%6\\\"\").toLatin1());" CRLF
+	"\trequest.setRawHeader(QString(\"Accept-Encoding\").toLatin1(), QString(\"gzip, deflate\").toLatin1());" CRLF
+	"\trequest.setRawHeader(QString(\"SoapAction\").toLatin1(), QString(\"%6\").toLatin1());" CRLF
 	CRLF
 	"\tQNetworkReply *reply = manager->post(request, %3.serialize().toUtf8());" CRLF
 	"\tif(reply->waitForReadyRead(TIMEOUT_MSEC)) {" CRLF
 		"\t\tQByteArray bytes = reply->readAll();" CRLF
 		"\t\tQString szValue(bytes);" CRLF
-		"\t\t//GetServiceCapabilitiesResponse.deserialize(szValue);" CRLF
+		"\t\t//%5.deserialize(szValue);" CRLF
 	"\t}" CRLF
 	"\treturn false;" CRLF
 	"}" CRLF;
@@ -98,7 +111,8 @@ QString Operation::getOperationDefinition(const QString& szClassname) const
 			.arg(m_pInputMessage->getParameter()->getNameWithNamespace())
 			.arg(m_pInputMessage->getParameter()->getLocalName())
 			.arg(m_pOutputMessage->getParameter()->getNameWithNamespace())
-			.arg(m_pOutputMessage->getParameter()->getLocalName());
+			.arg(m_pOutputMessage->getParameter()->getLocalName())
+			.arg(m_szSoapAction);
 }
 
 OperationList::OperationList()

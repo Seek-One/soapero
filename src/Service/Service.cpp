@@ -19,9 +19,10 @@ Service::~Service()
 
 }
 
-void Service::setEndPoint(const QUrl& endPoint)
+void Service::setUrl(const QUrl& url)
 {
-
+	m_url = url;
+	m_url.setPath("/onvif/device_service");
 }
 
 int Service::lastErrorCode() const
@@ -36,6 +37,9 @@ QString Service::lastError() const
 
 QNetworkRequest Service::initNetworkRequest() const
 {
+	QNetworkRequest request;
+
+	request.setUrl(m_url);
 	return QNetworkRequest();
 }
 

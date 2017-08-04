@@ -170,12 +170,12 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 			m_szCurrentSection = qName;
 
 			if(attributes.index("name") != -1) {
-				QString szName = attributes.value("name");
+				m_szCurrentOperationName = attributes.value("name");
 
-				OperationSharedPtr pOperation = m_pListOperations->getByName(szName);
+				OperationSharedPtr pOperation = m_pListOperations->getByName(m_szCurrentOperationName);
 				if(pOperation.isNull()) {
 					m_pCurrentOperation = Operation::create();
-					m_pCurrentOperation->setName(szName);
+					m_pCurrentOperation->setName(m_szCurrentOperationName);
 				}
 			}
 		}
@@ -376,6 +376,18 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 				}
 			}
 		}
+	}
+
+	if(qName == "soap:operation") {
+
+		OperationSharedPtr pOperation = m_pListOperations->getByName(m_szCurrentOperationName);
+		if(pOperation) {
+			m_pListOperations->removeAll(pOperation);
+			pOperation->setSoapAction(attributes.value("soapAction"));
+			m_pListOperations->append(pOperation);
+		}
+
+
 	}
 
 	return true;

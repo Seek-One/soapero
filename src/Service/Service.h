@@ -22,7 +22,6 @@ public:
 	virtual ~Service();
 
 	void setUrl(const QUrl& url);
-	void setEndPoint(const QString& szEndPoint);
 
     int lastErrorCode() const;
     QString lastError() const;

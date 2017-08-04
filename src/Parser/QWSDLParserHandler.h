@@ -42,6 +42,7 @@ private:
     QString m_szCurrentType;
     QString m_szCurrentSection;
     QString m_szCurrentText;
+    QString m_szCurrentOperationName;
 
     QString m_szTargetNamespacePrefix;
 
