@@ -92,12 +92,14 @@ QString Operation::getOperationDefinition(const QString& szClassname) const
 	"{" CRLF
 	"\tQNetworkAccessManager *manager = new QNetworkAccessManager();" CRLF
 	CRLF
-	"\tQNetworkRequest request = initNetworkRequest();" CRLF
+	"\tQNetworkRequest request = buildNetworkRequest();" CRLF
 	"\trequest.setRawHeader(QString(\"Content-Type\").toLatin1(), QString(\"application/soap+xml; charset=utf-8; action=\\\"%6\\\"\").toLatin1());" CRLF
 	"\trequest.setRawHeader(QString(\"Accept-Encoding\").toLatin1(), QString(\"gzip, deflate\").toLatin1());" CRLF
 	"\trequest.setRawHeader(QString(\"SoapAction\").toLatin1(), QString(\"%6\").toLatin1());" CRLF
 	CRLF
-	"\tQNetworkReply *reply = manager->post(request, %3.serialize().toUtf8());" CRLF
+	"\tQByteArray soapMessage = buildSoapMessage(%3.serialize());" CRLF
+	CRLF
+	"\tQNetworkReply *reply = manager->post(request, soapMessage);" CRLF
 	"\tif(reply->waitForReadyRead(TIMEOUT_MSEC)) {" CRLF
 		"\t\tQByteArray bytes = reply->readAll();" CRLF
 		"\t\tQString szValue(bytes);" CRLF

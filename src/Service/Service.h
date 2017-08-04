@@ -9,6 +9,7 @@
 #define SERVICE_H_
 
 #include <QString>
+#include <QByteArray>
 #include <QUrl>
 
 #include <QtNetwork/QNetworkRequest>
@@ -27,12 +28,16 @@ public:
     QString lastError() const;
 
 protected:
-	QNetworkRequest initNetworkRequest() const;
+	QNetworkRequest buildNetworkRequest() const;
+	QByteArray buildSoapMessage(const QString& szSerializedObject) const;
 
 	QUrl m_url;
 
 	int m_iLastErrorCode;
 	QString m_szLastError;
+
+private:
+	QString buildNonce() const;
 };
 
 }
