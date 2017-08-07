@@ -20,7 +20,7 @@ Duration::~Duration()
 
 }
 
-void Duration::setDuration(const QString& szValue)
+void Duration::setValue(const QString& szValue)
 {
 	m_bIsNull = false;
 	m_szValue = szValue;
@@ -34,6 +34,11 @@ QString Duration::getValue() const
 QString Duration::serialize() const
 {
 	return m_szValue;
+}
+
+void Duration::deserialize(const QDomElement& element)
+{
+	setValue(element.text().trimmed());
 }
 
 bool Duration::isNull() const

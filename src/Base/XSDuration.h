@@ -8,6 +8,7 @@
 #ifndef XSDURATION_H_
 #define XSDURATION_H_
 
+#include <QDomElement>
 #include <QString>
 
 namespace Onvif {
@@ -19,10 +20,11 @@ public:
 	Duration();
 	virtual ~Duration();
 
-	void setDuration(const QString& szValue);
+	void setValue(const QString& szValue);
 	QString getValue() const;
 
 	QString serialize() const;
+	void deserialize(const QDomElement& element);
 
 	bool isNull() const;
 

@@ -8,6 +8,7 @@
 #ifndef XSUNSIGNEDINTEGER_H_
 #define XSUNSIGNEDINTEGER_H_
 
+#include <QDomElement>
 #include <QString>
 
 namespace Onvif {
@@ -23,6 +24,7 @@ public:
 	unsigned int getValue() const;
 
 	QString serialize() const;
+	void deserialize(const QDomElement& element);
 
 	bool isNull() const;
 

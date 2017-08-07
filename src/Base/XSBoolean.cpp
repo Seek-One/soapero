@@ -37,6 +37,15 @@ QString Boolean::serialize() const
 	return (m_bValue ? "True" : "False");
 }
 
+void Boolean::deserialize(const QDomElement& element)
+{
+	if(element.text().trimmed() == "True") {
+		setValue(true);
+	}else if(element.text().trimmed() == "False"){
+		setValue(false);
+	}
+}
+
 bool Boolean::isNull() const
 {
 	return m_bIsNull;

@@ -362,9 +362,10 @@ void TypeListBuilder::buildCppFile(const ServiceSharedPtr& pService)
 		os << " */" << CRLF;
 		os << CRLF;
 		os << "#include <QUrl>" << CRLF;
-		os << "#include <QtNetwork/QNetworkAccessManager>" << CRLF;
-		os << "#include <QtNetwork/QNetworkRequest>" << CRLF;
-		os << "#include <QtNetwork/QNetworkReply>" << CRLF;
+		os << "#include <QDomElement>" << CRLF;
+		os << "#include <QNetworkAccessManager>" << CRLF;
+		os << "#include <QNetworkRequest>" << CRLF;
+		os << "#include <QNetworkReply>" << CRLF;
 		os << CRLF;
 		os << "#include \"" << szHeaderFilename << "\"" << CRLF;
 		os << CRLF;
@@ -448,6 +449,7 @@ void TypeListBuilder::buildHeaderClassSimpleType(QTextStream& os, const SimpleTy
 	os << "\t" << pSimpleType->getSetterDeclaration() << CRLF ;
 	os << "\t" << pSimpleType->getGetterDeclaration() << CRLF ;
 	os << "\t" << pSimpleType->getSerializerDeclaration() << CRLF;
+	os << "\t" << pSimpleType->getDeserializerDeclaration() << CRLF;
 	os << "\t" << pSimpleType->getEnumConvertDeclaration() << CRLF;
 	os << "\t" << pSimpleType->getIsNullDeclaration() << CRLF;
 	os << CRLF;
@@ -503,6 +505,7 @@ void TypeListBuilder::buildHeaderClassComplexType(QTextStream& os, const Complex
 	}
 
 	os << "\t" << pComplexType->getSerializerDeclaration() << CRLF;
+	os << "\t" << pComplexType->getDeserializerDeclaration() << CRLF;
 	os << CRLF;
 	os << "\t" << pComplexType->getIsNullDeclaration() << CRLF;
 
@@ -579,6 +582,7 @@ void TypeListBuilder::buildHeaderClassService(QTextStream& os, const ServiceShar
 
 void TypeListBuilder::buildHeaderIncludeType(QTextStream& os, const TypeSharedPtr& pType) const
 {
+	os << "#include <QDomElement>" << CRLF;
 	os << "#include <QString>" << CRLF;
 
 	if(pType->getClassType() == Type::TypeSimple) {
@@ -668,6 +672,7 @@ void TypeListBuilder::buildHeaderIncludeElement(QTextStream& os, const RequestRe
 {
 	ComplexTypeSharedPtr pComplexType = pElement->getComplexType();
 
+	os << "#include <QDomElement>" << CRLF;
 	os << "#include <QString>" << CRLF;
 
 	AttributeListSharedPtr pListAttributes = pComplexType->getAttributeList();
@@ -827,6 +832,7 @@ void TypeListBuilder::buildCppClassSimpleType(QTextStream& os, const SimpleTypeS
 	os << pSimpleType->getSetterDefinition(szClassname) << CRLF;
 	os << pSimpleType->getGetterDefinition(szClassname) << CRLF;
 	os << pSimpleType->getSerializerDefinition(szClassname) << CRLF;
+	os << pSimpleType->getDeserializerDefinition(szClassname) << CRLF;
 	os << pSimpleType->getEnumConvertDefinition(szClassname) << CRLF;
 	os << pSimpleType->getIsNullDefinition(szClassname) << CRLF;
 	os << CRLF;
@@ -879,6 +885,7 @@ void TypeListBuilder::buildCppClassComplexType(QTextStream& os, const ComplexTyp
 		}
 	}
 	os << pComplexType->getSerializerDefinition(szClassname) << CRLF;
+	os << pComplexType->getDeserializerDefinition(szClassname) << CRLF;
 	os << CRLF;
 	os << pComplexType->getIsNullDefinition(szClassname) << CRLF;
 }

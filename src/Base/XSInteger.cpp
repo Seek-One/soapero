@@ -37,6 +37,11 @@ QString Integer::serialize() const
 	return QString::number(m_iValue);
 }
 
+void Integer::deserialize(const QDomElement& element)
+{
+	setValue(element.text().trimmed().toInt());
+}
+
 bool Integer::isNull() const
 {
 	return m_bIsNull;

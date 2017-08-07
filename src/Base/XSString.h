@@ -8,6 +8,7 @@
 #ifndef XSSTRING_H_
 #define XSSTRING_H_
 
+#include <QDomElement>
 #include <QString>
 
 namespace Onvif {
@@ -23,6 +24,7 @@ public:
 	QString getValue() const;
 
 	QString serialize() const;
+	void deserialize(const QDomElement& element);
 
 	bool isNull() const;
 

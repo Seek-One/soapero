@@ -35,15 +35,18 @@ public:
 	int getMaxOccurs()const;
 
 	QString getVariableName() const;
+	QString getTagQualifiedName() const;
 
 	QString getSetterDeclaration() const;
 	QString getGetterDeclaration() const;
 	QString getSerializerDeclaration() const;
+	QString getDeserializerDeclaration() const;
 	QString getVariableDeclaration() const;
 
 	QString getSetterDefinition(const QString& szClassname) const;
 	QString getGetterDefinition(const QString& szClassname) const;
 	QString getSerializerDefinition(const QString& szClassname) const;
+	QString getDeserializerDefinition(const QString& szClassname) const;
 
 private:
 	QString m_szName;
@@ -118,12 +121,14 @@ public:
 	QString getSetterDeclaration() const;
 	QString getGetterDeclaration() const;
 	QString getSerializerDeclaration() const;
+	QString getDeserializerDeclaration() const;
 	QString getVariableDeclaration() const;
 	QString getIsNullDeclaration() const;
 
 	QString getSetterDefinition(const QString& szClassname) const;
 	QString getGetterDefinition(const QString& szClassname) const;
 	QString getSerializerDefinition(const QString& szClassname) const;
+	QString getDeserializerDefinition(const QString& szClassname) const;
 	QString getIsNullDefinition(const QString& szClassname) const;
 
 	QString getVariableName() const;

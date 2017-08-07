@@ -35,6 +35,11 @@ QString String::serialize() const
 	return m_szValue;
 }
 
+void String::deserialize(const QDomElement& element)
+{
+	setValue(element.text().trimmed());
+}
+
 bool String::isNull() const
 {
 	return m_szValue.isNull();

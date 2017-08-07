@@ -37,6 +37,11 @@ QString UnsignedInteger::serialize() const
 	return QString::number(m_iValue);
 }
 
+void UnsignedInteger::deserialize(const QDomElement& element)
+{
+	setValue(element.text().trimmed().toUInt());
+}
+
 bool UnsignedInteger::isNull() const
 {
 	return m_bIsNull;

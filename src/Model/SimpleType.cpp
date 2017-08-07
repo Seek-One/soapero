@@ -135,6 +135,11 @@ QString SimpleType::getSerializerDeclaration() const
 	return "QString serialize() const;";
 }
 
+QString SimpleType::getDeserializerDeclaration() const
+{
+	return "void deserialize(const QDomElement& element);";
+}
+
 QString SimpleType::getEnumConvertDeclaration() const
 {
 	QString szDeclaration;
@@ -245,6 +250,36 @@ QString SimpleType::getSerializerDefinition(const QString& szClassname) const
 		"\t\treturn \"<%1>\" + %2.serialize() + \"</%1>\";" CRLF
 		"\t}" CRLF
 		"\t return \"\";" CRLF
+		"}" CRLF;
+
+		return szDefinition.arg(szClassname).arg(getTagQualifiedName()).arg(getVariableName());
+	}
+}
+
+QString SimpleType::getDeserializerDefinition(const QString& szClassname) const
+{
+	if(m_bRestricted && m_variableType == String &&
+			getEnumerationValues().count() > 0) {
+
+		QString szDefinition = ""
+		"void %0::deserialize(const QDomElement& element)" CRLF
+		"{" CRLF
+		"\tset%1FromString(element.text().trimmed());" CRLF
+		"}" CRLF;
+
+		return szDefinition.arg(szClassname).arg(getLocalName());
+
+	} else {
+		QString szDefinition = ""
+		"void %0::deserialize(const QDomElement& element)" CRLF
+		"{" CRLF
+		"\tQDomElement child = element.firstChild().toElement();" CRLF
+		"\twhile(!child.isNull()) {" CRLF
+		"\t\tif(child.tagName() == \"%1\") {" CRLF
+		"\t\t%2.deserialize(child);" CRLF
+		"\t\t}" CRLF
+		"\tchild = child.nextSibling().toElement();" CRLF
+		"\t}" CRLF
 		"}" CRLF;
 
 		return szDefinition.arg(szClassname).arg(getTagQualifiedName()).arg(getVariableName());

@@ -8,6 +8,7 @@
 #ifndef XSINTEGER_H_
 #define XSINTEGER_H_
 
+#include <QDomElement>
 #include <QString>
 
 namespace Onvif {
@@ -23,6 +24,7 @@ public:
 	int getValue() const;
 
 	QString serialize() const;
+	void deserialize(const QDomElement& element);
 
 	bool isNull() const;
 

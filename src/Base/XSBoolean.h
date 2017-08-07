@@ -8,6 +8,7 @@
 #ifndef XSBOOLEAN_H_
 #define XSBOOLEAN_H_
 
+#include <QDomElement>
 #include <QString>
 
 namespace Onvif {
@@ -23,6 +24,7 @@ public:
 	bool getValue() const;
 
 	QString serialize() const;
+	void deserialize(const QDomElement& element);
 
 	bool isNull() const;
 

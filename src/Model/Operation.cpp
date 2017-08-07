@@ -102,8 +102,16 @@ QString Operation::getOperationDefinition(const QString& szClassname) const
 	"\tQNetworkReply *reply = manager->post(request, soapMessage);" CRLF
 	"\tif(reply->waitForReadyRead(TIMEOUT_MSEC)) {" CRLF
 		"\t\tQByteArray bytes = reply->readAll();" CRLF
-		"\t\tQString szValue(bytes);" CRLF
-		"\t\t//%5.deserialize(szValue);" CRLF
+		"\t\tQString szErrorMsg;" CRLF
+		"\t\tint iErrorLine = -1;" CRLF
+		"\t\tint iErrorColumn = -1;" CRLF
+		"\t\tQDomDocument doc;" CRLF CRLF
+		"\t\tif(doc.setContent(bytes, &szErrorMsg, &iErrorLine, &iErrorColumn)) {" CRLF
+		"\t\t\tQDomElement root=doc.elementsByTagName(\"Soap::body\").at(0).firstChildElement();" CRLF
+		"\t\t\t%5.deserialize(root);" CRLF
+		"\t\t} else {" CRLF
+		"\t\t\tqWarning(\"[%0::%1] Error during parsing response : %s (%d:%d)\", qPrintable(szErrorMsg), iErrorLine, iErrorColumn);" CRLF
+		"\t\t}" CRLF
 	"\t}" CRLF
 	"\treturn false;" CRLF
 	"}" CRLF;
