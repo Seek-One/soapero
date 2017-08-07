@@ -542,13 +542,13 @@ QString ComplexType::getDeserializerDefinition(const QString& szClassname) const
 			ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>((*elem)->getType());
 
 			if( (*elem)->getMaxOccurs() > 1 || (*elem)->getMaxOccurs() == -1) {
-				QString szIterator = "door";
-				szDefinition += QString("\t\t/*QList<%0>::const_iterator %1;" CRLF).arg( pComplexType->getNameWithNamespace()).arg(szIterator);
-				szDefinition += QString("\t\tfor(%0 = %1List.constBegin(); %0 != %1List.constEnd(); ++%0) {" CRLF).arg(szIterator).arg((*elem)->getVariableName());
-				szDefinition += QString("\t\t\tif(!%0->isNull()) {" CRLF).arg(szIterator);
-				szDefinition += QString("\t\t\t\tszValue += %0->serialize();" CRLF).arg(szIterator);
-				szDefinition += QString("\t\t\t}" CRLF);
-				szDefinition += "\t\t}*/" CRLF;
+
+				szDefinition += "\t\tif(child.tagName() == \"" + (*elem)->getTagQualifiedName() + "\") {" CRLF;
+				szDefinition += "\t\t\t" + pComplexType->getNameWithNamespace() + " item;" CRLF;
+				szDefinition += "\t\t\titem.deserialize(child);" CRLF;
+				szDefinition += "\t\t\t" + (*elem)->getVariableName() + "List.append(item);" CRLF;
+				szDefinition += "\t\t}" CRLF;
+
 			} else{
 				szDefinition += "\t\tif(child.tagName() == \"" + (*elem)->getTagQualifiedName() + "\") {" CRLF;
 				szDefinition += "\t\t\t" + (*elem)->getVariableName() + ".deserialize(child);" CRLF;
