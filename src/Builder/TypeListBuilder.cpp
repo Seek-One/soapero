@@ -162,6 +162,9 @@ void TypeListBuilder::buildHeaderFile(const TypeSharedPtr& pType)
 	QString szHeaderFilename = pType->getQualifiedName() + ".h";
 
 	QFile file(m_szDirname + QDir::separator() + "types" + QDir::separator() + szHeaderFilename);
+	if(file.exists()) {
+		file.remove();
+	}
 	if(file.open(QFile::WriteOnly)) {
 
 		QTextStream os(&file);
@@ -203,6 +206,9 @@ void TypeListBuilder::buildHeaderFile(const RequestResponseElementSharedPtr& pEl
 	QString szHeaderFilename = pElement->getQualifiedName() + ".h";
 
 	QFile file(m_szDirname + QDir::separator() + "messages" + QDir::separator() + szHeaderFilename);
+	if(file.exists()) {
+		file.remove();
+	}
 	if(file.open(QFile::WriteOnly)) {
 
 		QTextStream os(&file);
@@ -244,6 +250,9 @@ void TypeListBuilder::buildHeaderFile(const ServiceSharedPtr& pService)
 	QString szHeaderFilename = pService->getName() + ".h";
 
 	QFile file(m_szDirname + QDir::separator() + szHeaderFilename);
+	if(file.exists()) {
+		file.remove();
+	}
 	if(file.open(QFile::WriteOnly)) {
 
 		QTextStream os(&file);
@@ -283,6 +292,9 @@ void TypeListBuilder::buildCppFile(const TypeSharedPtr& pType)
 	QString szHeaderFilename = pType->getQualifiedName() + ".h";
 
 	QFile file(m_szDirname + QDir::separator() + "types" + QDir::separator() + szCppFilename);
+	if(file.exists()) {
+		file.remove();
+	}
 	if(file.open(QFile::WriteOnly)) {
 
 		QTextStream os(&file);
@@ -317,6 +329,9 @@ void TypeListBuilder::buildCppFile(const RequestResponseElementSharedPtr& pEleme
 	QString szHeaderFilename = pElement->getQualifiedName() + ".h";
 
 	QFile file(m_szDirname + QDir::separator() + "messages" + QDir::separator() + szCppFilename);
+	if(file.exists()) {
+		file.remove();
+	}
 	if(file.open(QFile::WriteOnly)) {
 
 		QTextStream os(&file);
@@ -351,6 +366,9 @@ void TypeListBuilder::buildCppFile(const ServiceSharedPtr& pService)
 	QString szHeaderFilename = pService->getName() + ".h";
 
 	QFile file(m_szDirname + QDir::separator() + szCppFilename);
+	if(file.exists()) {
+		file.remove();
+	}
 	if(file.open(QFile::WriteOnly)) {
 
 		QTextStream os(&file);

@@ -52,7 +52,7 @@ int main(int argc, char **argv)
 			qWarning("[ServerController::getDevicesList] Error to parse data (error: %s)", qPrintable(reader.errorHandler()->errorString()));
 		}else{
 
-			removeDir("./generated");
+			//removeDir("./generated");
 
 			if(!QDir("./generated").exists()) {
 				qWarning("[main] Generated directory does not exists, we create it");
