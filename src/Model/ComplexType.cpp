@@ -82,8 +82,18 @@ QString Element::getSetterDeclaration() const
 {
 	if(m_pType->getClassType() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
-		return pSimpleType->getSetterDeclaration();
+		if(m_iMaxOccurs > 1 || m_iMaxOccurs == -1) {
+			QString szLocalName = pSimpleType->getLocalName();
+			QString szVarName = szLocalName.left(1).toLower() + szLocalName.mid(1);
+			QString szVarListName = szVarName + "List";
+			QString szDeclaration = "void set%0List(const QList<%1>& %2);" CRLF;
+			szDeclaration += "\tvoid add%0(const %1& %3);";
 
+			return szDeclaration.arg(szLocalName).arg(pSimpleType->getVariableTypeString()).arg(szVarListName).arg(szVarName);
+
+		}else{
+			return pSimpleType->getSetterDeclaration();
+		}
 	}else{
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(m_pType);
 		if(m_iMaxOccurs > 1 || m_iMaxOccurs == -1) {
@@ -109,7 +119,13 @@ QString Element::getGetterDeclaration() const
 {
 	if(m_pType->getClassType() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
-		return pSimpleType->getGetterDeclaration();
+		if(m_iMaxOccurs > 1 || m_iMaxOccurs == -1) {
+			QString szDeclaration = "QList<%0> get%1List() const;";
+			return szDeclaration.arg(pSimpleType->getVariableTypeString()).arg(pSimpleType->getLocalName());
+
+		}else{
+			return pSimpleType->getGetterDeclaration();
+		}
 
 	}else{
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(m_pType);
@@ -151,8 +167,26 @@ QString Element::getSetterDefinition(const QString& szClassname) const
 {
 	if(m_pType->getClassType() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
-		return pSimpleType->getSetterDefinition(szClassname);
+		if(m_iMaxOccurs > 1 || m_iMaxOccurs == -1) {
+			QString szLocalName = pSimpleType->getLocalName();
+			QString szVarName = szLocalName.left(1).toLower() + szLocalName.mid(1);
+			QString szVarListName = szVarName + "List";
+			QString szDeclaration = ""
+			"void %0::set%1List(const QList<%2>& %3)" CRLF
+			"{" CRLF
+			"\t%4List = %3;" CRLF
+			"}" CRLF CRLF
+			"void %0::add%1(const %2& %5)" CRLF
+			"{" CRLF
+			"\t%4List.append(%5);" CRLF
+			"}" CRLF;
 
+			return szDeclaration.arg(szClassname).arg(szLocalName).arg(pSimpleType->getVariableTypeString())
+					.arg(szVarListName).arg(pSimpleType->getVariableName()).arg(szVarName);
+
+		}else{
+			return pSimpleType->getSetterDefinition(szClassname);
+		}
 	}else{
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(m_pType);
 		if(m_iMaxOccurs > 1 || m_iMaxOccurs == -1) {
@@ -192,7 +226,21 @@ QString Element::getGetterDefinition(const QString& szClassname) const
 {
 	if(m_pType->getClassType() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
-		return pSimpleType->getGetterDefinition(szClassname);
+		if(m_iMaxOccurs > 1 || m_iMaxOccurs == -1) {
+			QString szLocalName = pSimpleType->getLocalName();
+			QString szVarName = szLocalName.left(1).toLower() + szLocalName.mid(1);
+			QString szVarListName = szVarName + "List";
+			QString szDefinition = ""
+			"QList<%0> %1::get%2List() const" CRLF
+			"{" CRLF
+			"\treturn %3List;" CRLF
+			"}" CRLF;
+
+			return szDefinition.arg(pSimpleType->getVariableTypeString()).arg(szClassname).arg(pSimpleType->getLocalName()).arg(pSimpleType->getVariableName());
+
+		}else{
+			return pSimpleType->getGetterDefinition(szClassname);
+		}
 
 	}else{
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(m_pType);
@@ -248,8 +296,23 @@ QString Element::getVariableDeclaration() const
 {
 	if(m_pType->getClassType() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
-		return pSimpleType->getVariableDeclaration();
+		QString szDeclaration;
 
+		QString szVarName = "_" + getName().left(1).toLower() + getName().mid(1);
+
+		if(m_iMaxOccurs > 1 || m_iMaxOccurs == -1) {
+			szDeclaration += "QList<";
+			szDeclaration += pSimpleType->getVariableTypeString();
+			szDeclaration += "> ";
+			szDeclaration += pSimpleType->getVariableName();
+			szDeclaration += "List";
+			szDeclaration += ";";
+
+			return szDeclaration;
+
+		} else {
+			return pSimpleType->getVariableDeclaration();
+		}
 	}else{
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(m_pType);
 		QString szDeclaration;
@@ -482,9 +545,21 @@ QString ComplexType::getSerializerDefinition(const QString& szClassname, const Q
 	for(elem = m_pListElement->constBegin(); elem != m_pListElement->constEnd(); ++elem) {
 		if( (*elem)->getType()->getClassType() == Type::TypeSimple) {
 			SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>((*elem)->getType());
-			szDefinition += "\tif(!" + pSimpleType->getVariableName() + ".isNull()) {" CRLF;
-			szDefinition += "\t\tszValue += \"<" + (*elem)->getName() + ">\" + " + pSimpleType->getVariableName() + ".serialize() +" + "\"</" + (*elem)->getName() + ">\";" CRLF;
-			szDefinition += "\t}" CRLF;
+
+			if( (*elem)->getMaxOccurs() > 1 || (*elem)->getMaxOccurs() == -1) {
+				QString szIterator = "iter";
+				szDefinition += QString("\tQList<%0>::const_iterator %1;" CRLF).arg( pSimpleType->getVariableTypeString()).arg(szIterator);
+				szDefinition += QString("\tfor(%0 = %1List.constBegin(); %0 != %1List.constEnd(); ++%0) {" CRLF).arg(szIterator).arg(pSimpleType->getVariableName());
+				szDefinition += QString("\t\tif(!%0->isNull()) {" CRLF).arg(szIterator);
+				szDefinition += QString("\t\t\tszValue += %0->serialize();" CRLF).arg(szIterator);
+				szDefinition += QString("\t\t}" CRLF);
+				szDefinition += "\t}" CRLF;
+			} else{
+
+				szDefinition += "\tif(!" + pSimpleType->getVariableName() + ".isNull()) {" CRLF;
+				szDefinition += "\t\tszValue += \"<" + (*elem)->getName() + ">\" + " + pSimpleType->getVariableName() + ".serialize() +" + "\"</" + (*elem)->getName() + ">\";" CRLF;
+				szDefinition += "\t}" CRLF;
+			}
 
 		}else if( (*elem)->getType()->getClassType() == Type::TypeComplex) {
 			ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>((*elem)->getType());
@@ -538,9 +613,20 @@ QString ComplexType::getDeserializerDefinition(const QString& szClassname) const
 	for(elem = m_pListElement->constBegin(); elem != m_pListElement->constEnd(); ++elem) {
 		if( (*elem)->getType()->getClassType() == Type::TypeSimple) {
 			SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>((*elem)->getType());
-			szDefinition += "\t\tif(child.tagName() == \"" + pSimpleType->getTagQualifiedName() + "\") {" CRLF;
-			szDefinition += "\t\t\t" + pSimpleType->getVariableName() + ".deserialize(child);" CRLF;
-			szDefinition += "\t\t}" CRLF;
+
+			if( (*elem)->getMaxOccurs() > 1 || (*elem)->getMaxOccurs() == -1) {
+
+				szDefinition += "\t\tif(child.tagName() == \"" + (*elem)->getTagQualifiedName() + "\") {" CRLF;
+				szDefinition += "\t\t\t" + pSimpleType->getVariableTypeString() + " item;" CRLF;
+				szDefinition += "\t\t\titem.deserialize(child);" CRLF;
+				szDefinition += "\t\t\t" + pSimpleType->getVariableName() + "List.append(item);" CRLF;
+				szDefinition += "\t\t}" CRLF;
+
+			} else{
+				szDefinition += "\t\tif(child.tagName() == \"" + pSimpleType->getTagQualifiedName() + "\") {" CRLF;
+				szDefinition += "\t\t\t" + pSimpleType->getVariableName() + ".deserialize(child);" CRLF;
+				szDefinition += "\t\t}" CRLF;
+			}
 
 		}else if( (*elem)->getType()->getClassType() == Type::TypeComplex) {
 			ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>((*elem)->getType());
@@ -590,7 +676,11 @@ QString ComplexType::getIsNullDefinition(const QString& szClassname) const
 	for(elem = m_pListElement->constBegin(); elem != m_pListElement->constEnd(); ++elem) {
 		if( (*elem)->getType()->getClassType() == Type::TypeSimple) {
 			SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>((*elem)->getType());
-			szCond += pSimpleType->getVariableName() + ".isNull() && ";
+			if( (*elem)->getMaxOccurs() > 1 || (*elem)->getMaxOccurs() == -1) {
+				szCond += pSimpleType->getVariableName() + "List.isEmpty() && ";
+			}else{
+				szCond += pSimpleType->getVariableName() + ".isNull() && ";
+			}
 
 		}else if( (*elem)->getType()->getClassType() == Type::TypeComplex) {
 			ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>((*elem)->getType());
