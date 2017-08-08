@@ -12,7 +12,7 @@
 #include <QByteArray>
 #include <QUrl>
 
-#include <QtNetwork/QNetworkRequest>
+#include <QNetworkRequest>
 
 namespace Onvif {
 

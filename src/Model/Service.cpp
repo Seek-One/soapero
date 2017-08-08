@@ -32,6 +32,16 @@ void Service::setName(const QString& szName)
 	m_szName = szName;
 }
 
+QString Service::getTargetNamespace() const
+{
+	return m_szTargetNamespace;
+}
+
+void Service::setTargetNamespace(const QString& szTargetNamespace)
+{
+	m_szTargetNamespace = szTargetNamespace;
+}
+
 OperationListSharedPtr Service::getOperationList() const
 {
 	return m_pOperationList;

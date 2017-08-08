@@ -46,6 +46,7 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 
 			if(attributes.index("targetNamespace") != -1) {
 				szTargetNamespace = attributes.value("targetNamespace");
+				m_pService->setTargetNamespace(szTargetNamespace);
 			}
 
 			for(int i=0; i < attributes.length(); ++i) {

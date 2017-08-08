@@ -45,7 +45,7 @@ public:
 
 	QString getSetterDefinition(const QString& szClassname) const;
 	QString getGetterDefinition(const QString& szClassname) const;
-	QString getSerializerDefinition(const QString& szClassname) const;
+	QString getSerializerDefinition(const QString& szClassname, const QString& szNamespace) const;
 	QString getDeserializerDefinition(const QString& szClassname) const;
 
 private:
@@ -127,7 +127,7 @@ public:
 
 	QString getSetterDefinition(const QString& szClassname) const;
 	QString getGetterDefinition(const QString& szClassname) const;
-	QString getSerializerDefinition(const QString& szClassname) const;
+	QString getSerializerDefinition(const QString& szClassname, const QString& szNamespace = QString()) const;
 	QString getDeserializerDefinition(const QString& szClassname) const;
 	QString getIsNullDefinition(const QString& szClassname) const;
 

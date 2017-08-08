@@ -59,7 +59,7 @@ private:
 
 	void buildCppClassType(QTextStream& os, const TypeSharedPtr& pType) const;
 	void buildCppClassSimpleType(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const;
-	void buildCppClassComplexType(QTextStream& os, const ComplexTypeSharedPtr& pComplexType) const;
+	void buildCppClassComplexType(QTextStream& os, const ComplexTypeSharedPtr& pComplexType, const QString& szTargetNamespace = QString()) const;
 	void buildCppClassElement(QTextStream& os, const RequestResponseElementSharedPtr& pElement) const;
 	void buildCppClassService(QTextStream& os, const ServiceSharedPtr& pService) const;
 

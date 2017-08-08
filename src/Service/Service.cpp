@@ -40,10 +40,8 @@ QString Service::lastError() const
 
 QNetworkRequest Service::buildNetworkRequest() const
 {
-	QNetworkRequest request;
-
-	request.setUrl(m_url);
-	return QNetworkRequest();
+	QNetworkRequest request(m_url);
+	return request;
 }
 
 QByteArray Service::buildSoapMessage(const QString& szSerializedObject) const
@@ -54,7 +52,7 @@ QByteArray Service::buildSoapMessage(const QString& szSerializedObject) const
 	QByteArray digestbytes = szNonce.toLatin1();
 	digestbytes.append(szDatetime);
 	digestbytes.append(m_url.password());
-	QString szDigestPassword = QCryptographicHash::hash(digestbytes, QCryptographicHash::Sha1);
+	QString szDigestPassword = QString(QCryptographicHash::hash(digestbytes, QCryptographicHash::Sha1).toBase64());
 
 	QByteArray bytes;
 	bytes += "<s:Envelope xmlns:s=\"http://www.w3.org/2003/05/soap-envelope\">";

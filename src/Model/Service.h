@@ -24,6 +24,9 @@ public:
 	QString getName() const;
 	void setName(const QString& szName);
 
+	QString getTargetNamespace() const;
+	void setTargetNamespace(const QString& szTargetNamespace);
+
 	OperationListSharedPtr getOperationList() const;
 	void addOperation(const OperationSharedPtr& pOperation);
 
@@ -31,6 +34,7 @@ private:
 	OperationListSharedPtr m_pOperationList;
 
 	QString m_szName;
+	QString m_szTargetNamespace;
 
 };
 

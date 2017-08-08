@@ -362,6 +362,7 @@ void TypeListBuilder::buildCppFile(const ServiceSharedPtr& pService)
 		os << " */" << CRLF;
 		os << CRLF;
 		os << "#include <QUrl>" << CRLF;
+		os << "#include <QEventLoop>" << CRLF;
 		os << "#include <QDomElement>" << CRLF;
 		os << "#include <QNetworkAccessManager>" << CRLF;
 		os << "#include <QNetworkRequest>" << CRLF;
@@ -838,7 +839,7 @@ void TypeListBuilder::buildCppClassSimpleType(QTextStream& os, const SimpleTypeS
 	os << CRLF;
 }
 
-void TypeListBuilder::buildCppClassComplexType(QTextStream& os, const ComplexTypeSharedPtr& pComplexType) const
+void TypeListBuilder::buildCppClassComplexType(QTextStream& os, const ComplexTypeSharedPtr& pComplexType, const QString& szTargetNamespace) const
 {
 	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pComplexType->getLocalName();
 
@@ -884,7 +885,7 @@ void TypeListBuilder::buildCppClassComplexType(QTextStream& os, const ComplexTyp
 			os << CRLF;
 		}
 	}
-	os << pComplexType->getSerializerDefinition(szClassname) << CRLF;
+	os << pComplexType->getSerializerDefinition(szClassname, szTargetNamespace) << CRLF;
 	os << pComplexType->getDeserializerDefinition(szClassname) << CRLF;
 	os << CRLF;
 	os << pComplexType->getIsNullDefinition(szClassname) << CRLF;
@@ -905,7 +906,7 @@ void TypeListBuilder::buildCppClassElement(QTextStream& os, const RequestRespons
 		os << szClassname << "::~" << szClassname << "() {}" << CRLF;
 		os << CRLF;
 
-		buildCppClassComplexType(os, pComplexType);
+		buildCppClassComplexType(os, pComplexType, m_pService->getTargetNamespace());
 
 		os << CRLF;
 	}
