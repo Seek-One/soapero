@@ -38,21 +38,28 @@ public:
 	QString getVariableTypeString() const;
 	QString getVariableTypeFilenameString() const;
 
+	bool isEnumeration() const;
+
 	QString getSetterDeclaration() const;
+	QString getSetterDeclarationForComplexType() const;
 	QString getGetterDeclaration() const;
+	QString getGetterDeclarationForComplexType() const;
 	QString getSerializerDeclaration() const;
 	QString getDeserializerDeclaration() const;
 	QString getEnumConvertDeclaration() const;
 	QString getIsNullDeclaration() const;
 
 	QString getSetterDefinition(const QString& szClassname) const;
+	QString getSetterDefinitionForComplexType(const QString& szClassname) const;
 	QString getGetterDefinition(const QString& szClassname) const;
+	QString getGetterDefinitionForComplexType(const QString& szClassname) const;
 	QString getSerializerDefinition(const QString& szClassname) const;
 	QString getDeserializerDefinition(const QString& szClassname) const;
 	QString getEnumConvertDefinition(const QString& szClassname) const;
 	QString getIsNullDefinition(const QString& szClassname) const;
 
 	QString getVariableDeclaration() const;
+	QString getVariableDeclarationForComplexType() const;
 	QString getEnumerationDeclaration() const;
 	QString getVariableName() const;
 	QString getVariableIsNullName() const;

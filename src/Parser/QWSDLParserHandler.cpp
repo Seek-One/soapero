@@ -476,6 +476,10 @@ QWSDLParserHandler::endElement(const QString &namespaceURI,
 
 						if( (*element)->getType()->getClassType() == Type::TypeUnknown) {
 							pType = m_pListTypes->getByName((*element)->getType()->getLocalName(), (*element)->getType()->getNamespace());
+							if(pType->getClassType() == Type::TypeUnknown) {
+								m_pListTypes->removeAll(pType);
+								pType = m_pListTypes->getByName((*element)->getType()->getLocalName(), (*element)->getType()->getNamespace());
+							}
 							(*element)->setType(pType);
 						}
 					}

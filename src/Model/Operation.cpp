@@ -109,7 +109,7 @@ QString Operation::getOperationDefinition(const QString& szClassname) const
 	"\tint iErrorColumn = -1;" CRLF
 	"\tQDomDocument doc;" CRLF CRLF
 	"\tif(doc.setContent(bytes, &szErrorMsg, &iErrorLine, &iErrorColumn)) {" CRLF
-		"\t\tQDomElement root=doc.elementsByTagName(\"s:Body\").at(0).firstChildElement();" CRLF
+		"\t\tQDomElement root=doc.elementsByTagName(\"SOAP-ENV:Body\").at(0).firstChildElement();" CRLF
 		"\t\t%5.deserialize(root);" CRLF
 		"\t\treturn true;" CRLF
 	"\t} else {" CRLF

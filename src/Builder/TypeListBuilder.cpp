@@ -493,12 +493,16 @@ void TypeListBuilder::buildHeaderClassComplexType(QTextStream& os, const Complex
 				continue;
 			}
 
-
 			if( (*attr)->getType()->getClassType() == Type::TypeSimple) {
 				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>((*attr)->getType());
 
-				os << "\t" << pSimpleType->getSetterDeclaration() << CRLF ;
-				os << "\t" << pSimpleType->getGetterDeclaration() << CRLF ;
+				if(pSimpleType->isEnumeration()) {
+					os << "\t" << pSimpleType->getSetterDeclarationForComplexType() << CRLF;
+					os << "\t" << pSimpleType->getGetterDeclarationForComplexType() << CRLF;
+				} else {
+					os << "\t" << pSimpleType->getSetterDeclaration() << CRLF;
+					os << "\t" << pSimpleType->getGetterDeclaration() << CRLF;
+				}
 				os << CRLF;
 
 			}else if( (*attr)->getType()->getClassType() == Type::TypeComplex) {
@@ -536,7 +540,7 @@ void TypeListBuilder::buildHeaderClassComplexType(QTextStream& os, const Complex
 			}
 			if( (*attr)->getType()->getClassType() == Type::TypeSimple) {
 				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>((*attr)->getType());
-				os << "\t" << pSimpleType->getVariableDeclaration() << CRLF ;
+				os << "\t" << pSimpleType->getVariableDeclarationForComplexType() << CRLF ;
 
 			}else if( (*attr)->getType()->getClassType() == Type::TypeComplex) {
 				ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>((*attr)->getType());
@@ -800,13 +804,11 @@ void TypeListBuilder::buildCppClassType(QTextStream& os, const TypeSharedPtr& pT
 	if(pType->getClassType() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pType);
 
-		if(pSimpleType->isRestricted() && pSimpleType->getVariableType() == SimpleType::String &&
-				pSimpleType->getEnumerationValues().count() > 0) {
+		if(pSimpleType->isEnumeration()) {
 
 			os << szClassname << "::" << szClassname << "()" << CRLF;
 			os << "{" << CRLF;
-			os << "\t" << pSimpleType->getVariableIsNullName() << " = true;" CRLF;
-			os << "\t" << pSimpleType->getVariableName() << " = " << pSimpleType->getEnumerationValues()[0] << ";" << CRLF;
+			os << "\t" << pSimpleType->getVariableName() << " = Unknown;" << CRLF;
 			os << "}" << CRLF;
 			os << CRLF;
 		}else{
@@ -877,8 +879,13 @@ void TypeListBuilder::buildCppClassComplexType(QTextStream& os, const ComplexTyp
 			if( (*attr)->getType()->getClassType() == Type::TypeSimple) {
 				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>((*attr)->getType());
 
-				os << pSimpleType->getSetterDefinition(szClassname) << CRLF ;
-				os << pSimpleType->getGetterDefinition(szClassname) << CRLF ;
+				if(!pSimpleType->isEnumeration()) {
+					os << pSimpleType->getSetterDefinition(szClassname) << CRLF ;
+					os << pSimpleType->getGetterDefinition(szClassname) << CRLF ;
+				} else {
+					os << pSimpleType->getSetterDefinitionForComplexType(szClassname) << CRLF ;
+					os << pSimpleType->getGetterDefinitionForComplexType(szClassname) << CRLF ;
+				}
 				os << CRLF;
 
 			}else if( (*attr)->getType()->getClassType() == Type::TypeComplex) {
