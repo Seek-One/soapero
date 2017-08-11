@@ -596,10 +596,7 @@ QString ComplexType::getSerializerDefinition(const QString& szClassname, const Q
 	}
 	szDefinition += "\t}" CRLF;
 
-	if(!getExtensionType().isNull()) {
-		szDefinition += "\tszValue += " + getExtensionType()->getNameWithNamespace() + "::serialize(true);" CRLF;
-	}
-
+	//Not found other cases so we supposed attribute is only a simpleType
 	for(attr = m_pListAttribute->constBegin(); attr != m_pListAttribute->constEnd(); ++attr) {
 		if( (*attr)->getType()->getClassType() == Type::TypeSimple) {
 			SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>((*attr)->getType());
@@ -607,14 +604,15 @@ QString ComplexType::getSerializerDefinition(const QString& szClassname, const Q
 			szDefinition += "\t\tszValue += \" " + (*attr)->getName() + "=\\\"\" + " + pSimpleType->getVariableName() + ".serialize() + \"\\\"\";" CRLF;
 			szDefinition += "\t}" CRLF;
 
-		}/*else if( (*attr)->getType()->getClassType() == Type::TypeComplex) {
-			ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>((*attr)->getType());
-			szDefinition += "\tif(!" + pComplexType->getVariableName() + ".isNull()) {" CRLF;
-			szDefinition += "\t\tszValue += \"\" + " + pComplexType->getVariableName() + ".serialize();" CRLF;
-			szDefinition += "\t}" CRLF;
-		}*/
+		}
 	}
-	szDefinition += "\tszValue += \">\";" CRLF;
+
+	if(!getExtensionType().isNull()) {
+		szDefinition += "\tszValue += " + getExtensionType()->getNameWithNamespace() + "::serialize(true);" CRLF;
+	}else{
+		szDefinition += "\t\tszValue += \">\";" CRLF;
+	}
+
 	for(elem = m_pListElement->constBegin(); elem != m_pListElement->constEnd(); ++elem) {
 		if( (*elem)->getType()->getClassType() == Type::TypeSimple) {
 			SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>((*elem)->getType());
@@ -630,7 +628,7 @@ QString ComplexType::getSerializerDefinition(const QString& szClassname, const Q
 			} else{
 
 				szDefinition += "\tif(!" + (*elem)->getVariableName() + ".isNull()) {" CRLF;
-				szDefinition += "\t\tszValue += " + (*elem)->getVariableName() + ".serialize();" CRLF;
+				szDefinition += "\t\tszValue += \"<" + (*elem)->getName() + ">\" + " + (*elem)->getVariableName() + ".serialize() + \"</" + (*elem)->getName() + ">\";" CRLF;
 				szDefinition += "\t}" CRLF;
 			}
 
@@ -674,19 +672,14 @@ QString ComplexType::getDeserializerDefinition(const QString& szClassname) const
 		szDefinition += "\t" + getExtensionType()->getNameWithNamespace() + "::deserialize(element);" CRLF;
 	}
 
+	//Not found other cases so we supposed attribute is only a simpleType
 	for(attr = m_pListAttribute->constBegin(); attr != m_pListAttribute->constEnd(); ++attr) {
 		if( (*attr)->getType()->getClassType() == Type::TypeSimple) {
 			SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>((*attr)->getType());
 			szDefinition += "\tif(!element.attributeNode(\"" + (*attr)->getName() + "\").isNull()) {" CRLF;
 			szDefinition += "\t\t" + pSimpleType->getVariableName() + ".deserialize(element.attributeNode(\"" + (*attr)->getName() + "\"));" CRLF;
 			szDefinition += "\t}" CRLF;
-
-		}/*else if( (*attr)->getType()->getClassType() == Type::TypeComplex) {
-			ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>((*attr)->getType());
-			szDefinition += "\tif(element.tagName() == \"" + pComplexType->getNamespace() + ":" + (*attr)->getName() + "\") {" CRLF;
-			szDefinition += "\t\t" + pComplexType->getVariableName() + ".deserialize(element);" CRLF;
-			szDefinition += "\t}" CRLF;
-		}*/
+		}
 	}
 	szDefinition += CRLF;
 	szDefinition += "\tQDomElement child = element.firstChild().toElement();" CRLF;
@@ -697,14 +690,14 @@ QString ComplexType::getDeserializerDefinition(const QString& szClassname) const
 
 			if( (*elem)->getMaxOccurs() > 1 || (*elem)->getMaxOccurs() == -1) {
 
-				szDefinition += "\t\tif(child.tagName() == \"" + (*elem)->getName() + "\") {" CRLF;
+				szDefinition += "\t\tif(child.tagName() == \"" + getNamespace() + ":" + (*elem)->getName() + "\") {" CRLF;
 				szDefinition += "\t\t\t" + pSimpleType->getVariableTypeString() + " item;" CRLF;
 				szDefinition += "\t\t\titem.deserialize(child);" CRLF;
 				szDefinition += "\t\t\t" + (*elem)->getVariableName() + "List.append(item);" CRLF;
 				szDefinition += "\t\t}" CRLF;
 
 			} else{
-				szDefinition += "\t\tif(child.tagName() == \"" + (*elem)->getName() + "\") {" CRLF;
+				szDefinition += "\t\tif(child.tagName() == \"" + getNamespace() + ":" + (*elem)->getName() + "\") {" CRLF;
 				szDefinition += "\t\t\t" + (*elem)->getVariableName() + ".deserialize(child);" CRLF;
 				szDefinition += "\t\t}" CRLF;
 			}
@@ -781,7 +774,7 @@ QString ComplexType::getIsNullDefinition(const QString& szClassname) const
 		szDefinition += szCond.left(szCond.length() - 4);
 		szDefinition += ";" CRLF;
 	}else{
-		szDefinition += "false;" CRLF;
+		szDefinition += "true;" CRLF;
 	}
 	szDefinition += "}" CRLF;
 
