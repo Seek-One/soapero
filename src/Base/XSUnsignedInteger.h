@@ -25,6 +25,7 @@ public:
 
 	QString serialize() const;
 	void deserialize(const QDomElement& element);
+	void deserialize(const QDomAttr& attr);
 
 	bool isNull() const;
 

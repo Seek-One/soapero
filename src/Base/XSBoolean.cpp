@@ -34,14 +34,23 @@ bool Boolean::getValue() const
 
 QString Boolean::serialize() const
 {
-	return (m_bValue ? "True" : "False");
+	return (m_bValue ? "true" : "false");
 }
 
 void Boolean::deserialize(const QDomElement& element)
 {
-	if(element.text().trimmed() == "True") {
+	if(element.text().trimmed() == "true") {
 		setValue(true);
-	}else if(element.text().trimmed() == "False"){
+	}else if(element.text().trimmed() == "false"){
+		setValue(false);
+	}
+}
+
+void Boolean::deserialize(const QDomAttr& attr)
+{
+	if(attr.value().trimmed() == "true") {
+		setValue(true);
+	}else if(attr.value().trimmed() == "false"){
 		setValue(false);
 	}
 }

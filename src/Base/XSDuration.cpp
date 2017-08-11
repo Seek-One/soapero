@@ -41,6 +41,11 @@ void Duration::deserialize(const QDomElement& element)
 	setValue(element.text().trimmed());
 }
 
+void Duration::deserialize(const QDomAttr& attr)
+{
+	setValue(attr.value().trimmed());
+}
+
 bool Duration::isNull() const
 {
 	return m_bIsNull;

@@ -292,7 +292,7 @@ QString SimpleType::getSerializerDefinition(const QString& szClassname) const
 		"\t return \"\";" CRLF
 		"}" CRLF;
 
-		return szDefinition.arg(szClassname).arg(getTagQualifiedName()).arg(getLocalName());
+		return szDefinition.arg(szClassname).arg(getLocalName()).arg(getLocalName());
 
 	} else {
 		QString szDefinition = ""
@@ -304,7 +304,7 @@ QString SimpleType::getSerializerDefinition(const QString& szClassname) const
 		"\t return \"\";" CRLF
 		"}" CRLF;
 
-		return szDefinition.arg(szClassname).arg(getTagQualifiedName()).arg(getVariableName());
+		return szDefinition.arg(szClassname).arg(getLocalName()).arg(getVariableName());
 	}
 }
 

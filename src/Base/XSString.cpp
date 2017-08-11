@@ -40,6 +40,11 @@ void String::deserialize(const QDomElement& element)
 	setValue(element.text().trimmed());
 }
 
+void String::deserialize(const QDomAttr& attr)
+{
+	setValue(attr.value().trimmed());
+}
+
 bool String::isNull() const
 {
 	return m_szValue.isNull();

@@ -42,6 +42,11 @@ void Integer::deserialize(const QDomElement& element)
 	setValue(element.text().trimmed().toInt());
 }
 
+void Integer::deserialize(const QDomAttr& attr)
+{
+	setValue(attr.value().trimmed().toInt());
+}
+
 bool Integer::isNull() const
 {
 	return m_bIsNull;

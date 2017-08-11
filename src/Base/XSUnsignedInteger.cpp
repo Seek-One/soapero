@@ -42,6 +42,11 @@ void UnsignedInteger::deserialize(const QDomElement& element)
 	setValue(element.text().trimmed().toUInt());
 }
 
+void UnsignedInteger::deserialize(const QDomAttr& attr)
+{
+	setValue(attr.value().trimmed().toUInt());
+}
+
 bool UnsignedInteger::isNull() const
 {
 	return m_bIsNull;
