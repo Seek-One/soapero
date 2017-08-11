@@ -116,7 +116,6 @@ QString Operation::getOperationDefinition(const QString& szClassname) const
 		"\t\tqWarning(\"[%0::%1] Error during parsing response : %s (%d:%d)\", qPrintable(szErrorMsg), iErrorLine, iErrorColumn);" CRLF
 		"\t\treturn false;" CRLF
 	"\t}" CRLF
-	"\treturn false;" CRLF
 	"}" CRLF;
 
 	return szDefinition.arg(szClassname)
