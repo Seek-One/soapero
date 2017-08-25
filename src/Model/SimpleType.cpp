@@ -138,13 +138,23 @@ QString SimpleType::getSetterDeclarationForComplexType() const
 
 QString SimpleType::getGetterDeclaration() const
 {
-	QString szDeclaration = "%0 get%1() const;";
+	QString szDeclaration;
+	if(isEnumeration()) {
+		szDeclaration = "%0 get%1() const;";
+	}else{
+		szDeclaration = "const %0& get%1() const;";
+	}
 	return szDeclaration.arg(getVariableTypeString()).arg(getLocalName());
 }
 
 QString SimpleType::getGetterDeclarationForComplexType() const
 {
-	QString szDeclaration = "%0 get%1() const;";
+	QString szDeclaration;
+	if(isEnumeration()) {
+		szDeclaration = "%0 get%1() const;";
+	}else{
+		szDeclaration = "const %0& get%1() const;";
+	}
 	return szDeclaration.arg(isEnumeration() ? getNameWithNamespace() : getVariableTypeString()).arg(getLocalName());
 }
 
@@ -259,11 +269,20 @@ QString SimpleType::getSetterDefinitionForComplexType(const QString& szClassname
 
 QString SimpleType::getGetterDefinition(const QString& szClassname) const
 {
-	QString szDefinition = ""
-	"%0 %1::get%2() const" CRLF
-	"{" CRLF
-	"\treturn %3;" CRLF
-	"}" CRLF;
+	QString szDefinition;
+	if(isEnumeration()) {
+		szDefinition = ""
+		"%0 %1::get%2() const" CRLF
+		"{" CRLF
+		"\treturn %3;" CRLF
+		"}" CRLF;
+	} else {
+		szDefinition = ""
+		"const %0& %1::get%2() const" CRLF
+		"{" CRLF
+		"\treturn %3;" CRLF
+		"}" CRLF;
+	}
 
 	return szDefinition.arg(getVariableTypeString()).arg(szClassname).arg(getLocalName()).arg(getVariableName());
 }
@@ -271,7 +290,7 @@ QString SimpleType::getGetterDefinition(const QString& szClassname) const
 QString SimpleType::getGetterDefinitionForComplexType(const QString& szClassname) const
 {
 	QString szDefinition = ""
-	"%0 %1::get%2() const" CRLF
+	"const %0& %1::get%2() const" CRLF
 	"{" CRLF
 	"\treturn %3;" CRLF
 	"}" CRLF;

@@ -131,7 +131,7 @@ QString Element::getGetterDeclaration() const
 	if(m_pType->getClassType() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
 		if(m_iMaxOccurs > 1 || m_iMaxOccurs == -1) {
-			QString szDeclaration = "QList<%0> get%1List() const;";
+			QString szDeclaration = "const QList<%0>& get%1List() const;";
 			return szDeclaration.arg(pSimpleType->getVariableTypeString()).arg(getName());
 
 		}else{
@@ -139,7 +139,7 @@ QString Element::getGetterDeclaration() const
 				QString szDeclaration = "%0 get%1() const;";
 				return szDeclaration.arg(pSimpleType->getNameWithNamespace()).arg(getName());
 			} else {
-				QString szDeclaration = "%0 get%1() const;";
+				QString szDeclaration = "const %0& get%1() const;";
 				return szDeclaration.arg(pSimpleType->getVariableTypeString()).arg(getName());
 			}
 		}
@@ -147,11 +147,11 @@ QString Element::getGetterDeclaration() const
 	}else{
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(m_pType);
 		if(m_iMaxOccurs > 1 || m_iMaxOccurs == -1) {
-			QString szDeclaration = "QList<%0> get%1List() const;";
+			QString szDeclaration = "const QList<%0>& get%1List() const;";
 			return szDeclaration.arg(pComplexType->getNameWithNamespace()).arg(getName());
 
 		}else{
-			QString szDeclaration = "%0 get%1() const;";
+			QString szDeclaration = "const %0& get%1() const;";
 			return szDeclaration.arg(pComplexType->getNameWithNamespace()).arg(getName());
 		}
 	}
@@ -270,7 +270,7 @@ QString Element::getGetterDefinition(const QString& szClassname) const
 			QString szVarName = szLocalName.left(1).toLower() + szLocalName.mid(1);
 			QString szVarListName = szVarName + "List";
 			QString szDefinition = ""
-			"QList<%0> %1::get%2List() const" CRLF
+			"const QList<%0>& %1::get%2List() const" CRLF
 			"{" CRLF
 			"\treturn %3List;" CRLF
 			"}" CRLF;
@@ -288,7 +288,7 @@ QString Element::getGetterDefinition(const QString& szClassname) const
 				return szDefinition.arg(pSimpleType->getNameWithNamespace()).arg(szClassname).arg(getName()).arg(getVariableName());
 			}else{
 				QString szDefinition = ""
-				"%0 %1::get%2() const" CRLF
+				"const %0& %1::get%2() const" CRLF
 				"{" CRLF
 				"\treturn %3;" CRLF
 				"}" CRLF;
@@ -304,7 +304,7 @@ QString Element::getGetterDefinition(const QString& szClassname) const
 			QString szVarName = szLocalName.left(1).toLower() + szLocalName.mid(1);
 			QString szVarListName = szVarName + "List";
 			QString szDefinition = ""
-			"QList<%0> %1::get%2List() const" CRLF
+			"const QList<%0>& %1::get%2List() const" CRLF
 			"{" CRLF
 			"\treturn %3List;" CRLF
 			"}" CRLF;
@@ -313,7 +313,7 @@ QString Element::getGetterDefinition(const QString& szClassname) const
 
 		}else{
 			QString szDefinition = ""
-			"%0 %1::get%2() const" CRLF
+			"const %0& %1::get%2() const" CRLF
 			"{" CRLF
 			"\treturn %3;" CRLF
 			"}" CRLF;
@@ -540,7 +540,7 @@ QString ComplexType::getSetterDeclaration() const
 
 QString ComplexType::getGetterDeclaration() const
 {
-	QString szDeclaration = "%0 get%1() const;";
+	QString szDeclaration = "const %0& get%1() const;";
 	return szDeclaration.arg(getNameWithNamespace()).arg(getLocalName());
 }
 
@@ -571,7 +571,7 @@ QString ComplexType::getSetterDefinition(const QString& szClassname) const
 QString ComplexType::getGetterDefinition(const QString& szClassname) const
 {
 	QString szDefinition = ""
-	"%0 %1::get%2() const" CRLF
+	"const %0& %1::get%2() const" CRLF
 	"{" CRLF
 	"\treturn %3;" CRLF
 	"}" CRLF;
