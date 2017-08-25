@@ -26,7 +26,7 @@ void Duration::setValue(const QString& szValue)
 	m_szValue = szValue;
 }
 
-QString Duration::getValue() const
+const QString& Duration::getValue() const
 {
 	return m_szValue;
 }

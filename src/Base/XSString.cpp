@@ -25,7 +25,7 @@ void String::setValue(const QString& szValue)
 	m_szValue = szValue;
 }
 
-QString String::getValue() const
+const QString& String::getValue() const
 {
 	return m_szValue;
 }

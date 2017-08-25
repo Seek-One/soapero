@@ -21,7 +21,7 @@ public:
 	virtual ~Duration();
 
 	void setValue(const QString& szValue);
-	QString getValue() const;
+	const QString& getValue() const;
 
 	QString serialize() const;
 	void deserialize(const QDomElement& element);
