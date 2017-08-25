@@ -7,7 +7,6 @@
 
 #include "XSDuration.h"
 
-namespace Onvif {
 namespace XS {
 
 Duration::Duration()
@@ -51,5 +50,4 @@ bool Duration::isNull() const
 	return m_bIsNull;
 }
 
-}
 }

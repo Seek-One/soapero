@@ -7,7 +7,6 @@
 
 #include "XSBoolean.h"
 
-namespace Onvif {
 namespace XS {
 
 Boolean::Boolean()
@@ -60,5 +59,4 @@ bool Boolean::isNull() const
 	return m_bIsNull;
 }
 
-}
 }

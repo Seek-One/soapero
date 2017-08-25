@@ -7,7 +7,6 @@
 
 #include "XSString.h"
 
-namespace Onvif {
 namespace XS {
 
 String::String()
@@ -50,5 +49,4 @@ bool String::isNull() const
 	return m_szValue.isNull();
 }
 
-}
 }

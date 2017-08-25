@@ -7,7 +7,6 @@
 
 #include "XSInteger.h"
 
-namespace Onvif {
 namespace XS {
 
 Integer::Integer()
@@ -52,5 +51,4 @@ bool Integer::isNull() const
 	return m_bIsNull;
 }
 
-}
 }

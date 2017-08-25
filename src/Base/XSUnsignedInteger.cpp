@@ -7,7 +7,6 @@
 
 #include "XSUnsignedInteger.h"
 
-namespace Onvif {
 namespace XS {
 
 UnsignedInteger::UnsignedInteger()
@@ -52,5 +51,4 @@ bool UnsignedInteger::isNull() const
 	return m_bIsNull;
 }
 
-}
 }

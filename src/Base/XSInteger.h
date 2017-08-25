@@ -11,7 +11,6 @@
 #include <QDomElement>
 #include <QString>
 
-namespace Onvif {
 namespace XS {
 
 class Integer
@@ -36,7 +35,6 @@ private:
 
 };
 
-}
 }
 
 #endif /* XSINTEGER_H_ */

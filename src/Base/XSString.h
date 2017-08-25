@@ -11,7 +11,6 @@
 #include <QDomElement>
 #include <QString>
 
-namespace Onvif {
 namespace XS {
 
 class String
@@ -34,6 +33,5 @@ private:
 
 };
 
-}
 }
 #endif /* XSSTRING_H_ */
