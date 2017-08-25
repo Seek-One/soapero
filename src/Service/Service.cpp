@@ -80,7 +80,7 @@ int Service::lastErrorCode() const
 	return m_iLastErrorCode;
 }
 
-QString Service::lastError() const
+const QString& Service::lastError() const
 {
 	return m_szLastError;
 }
