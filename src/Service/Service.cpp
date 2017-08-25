@@ -7,25 +7,72 @@
 
 #include <QDateTime>
 #include <QCryptographicHash>
+#include <QEventLoop>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
 
 #include "Service.h"
 
 namespace Onvif {
 
+IQueryExecutor::IQueryExecutor(){}
+IQueryExecutor::~IQueryExecutor(){}
+
+class CustomQueryExecutor : public IQueryExecutor
+{
+public:
+	virtual QByteArray execQuery(const QNetworkRequest& request, const QByteArray& bytes)
+	{
+		QNetworkAccessManager *manager = new QNetworkAccessManager();
+		QNetworkReply *reply = manager->post(request, bytes);
+		QEventLoop loop;
+		QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+		loop.exec();
+
+		QByteArray response(reply->readAll());
+
+		if(manager) {
+			delete manager;
+			manager = NULL;
+		}
+
+		if(reply) {
+			delete reply;
+			reply = NULL;
+		}
+
+		return response;
+	}
+};
+
 Service::Service()
 {
 	m_iLastErrorCode = -1;
+	m_pQueryExecutor = new CustomQueryExecutor();
 }
 
 Service::~Service()
 {
-
+	if(m_pQueryExecutor) {
+		delete m_pQueryExecutor;
+		m_pQueryExecutor = NULL;
+	}
 }
 
 void Service::setUrl(const QUrl& url)
 {
 	m_url = url;
 	m_url.setPath("/onvif/device_service");
+}
+
+void Service::setQueryExecutor(IQueryExecutor* pExecutor)
+{
+	if(m_pQueryExecutor) {
+		delete m_pQueryExecutor;
+		m_pQueryExecutor = NULL;
+	}
+	m_pQueryExecutor = pExecutor;
+
 }
 
 int Service::lastErrorCode() const

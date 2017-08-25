@@ -90,8 +90,6 @@ QString Operation::getOperationDefinition(const QString& szClassname) const
 	QString szDefinition = ""
 	"bool %0::%1(const %2& %3, %4& %5)" CRLF
 	"{" CRLF
-	"\tQNetworkAccessManager *manager = new QNetworkAccessManager();" CRLF
-	CRLF
 	"\tQNetworkRequest request = buildNetworkRequest();" CRLF
 	"\trequest.setRawHeader(QString(\"Content-Type\").toLatin1(), QString(\"application/soap+xml; charset=utf-8; action=\\\"%6\\\"\").toLatin1());" CRLF
 	"\trequest.setRawHeader(QString(\"Accept-Encoding\").toLatin1(), QString(\"gzip, deflate\").toLatin1());" CRLF
@@ -99,11 +97,7 @@ QString Operation::getOperationDefinition(const QString& szClassname) const
 	CRLF
 	"\tQByteArray soapMessage = buildSoapMessage(%3.serialize());" CRLF
 	CRLF
-	"\tQNetworkReply *reply = manager->post(request, soapMessage);" CRLF
-	"\tQEventLoop loop;" CRLF
-	"\tQObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));" CRLF
-	"\tloop.exec();" CRLF
-	"\tQByteArray bytes = reply->readAll();" CRLF
+	"\tQByteArray bytes = m_pQueryExecutor->execQuery(request, soapMessage);" CRLF
 	"\tQString szErrorMsg;" CRLF
 	"\tint iErrorLine = -1;" CRLF
 	"\tint iErrorColumn = -1;" CRLF

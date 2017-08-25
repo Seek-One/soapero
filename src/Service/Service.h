@@ -16,6 +16,15 @@
 
 namespace Onvif {
 
+class IQueryExecutor
+{
+public:
+	IQueryExecutor();
+	virtual ~IQueryExecutor();
+
+	virtual QByteArray execQuery(const QNetworkRequest& request, const QByteArray& bytes) = 0;
+};
+
 class Service
 {
 public:
@@ -23,9 +32,10 @@ public:
 	virtual ~Service();
 
 	void setUrl(const QUrl& url);
+	void setQueryExecutor(IQueryExecutor* pExecutor);
 
     int lastErrorCode() const;
-    QString lastError() const;
+    const QString& lastError() const;
 
 protected:
 	QNetworkRequest buildNetworkRequest() const;
@@ -35,6 +45,8 @@ protected:
 
 	int m_iLastErrorCode;
 	QString m_szLastError;
+
+	IQueryExecutor* m_pQueryExecutor;
 
 private:
 	QString buildNonce() const;
