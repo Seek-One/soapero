@@ -614,6 +614,9 @@ QString ComplexType::getSerializerDefinition(const QString& szClassname, const Q
 	}
 
 	for(elem = m_pListElement->constBegin(); elem != m_pListElement->constEnd(); ++elem) {
+		if( !(*elem)->getType()) {
+			continue;
+		}
 		if( (*elem)->getType()->getClassType() == Type::TypeSimple) {
 			SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>((*elem)->getType());
 
@@ -685,6 +688,9 @@ QString ComplexType::getDeserializerDefinition(const QString& szClassname) const
 	szDefinition += "\tQDomElement child = element.firstChild().toElement();" CRLF;
 	szDefinition += "\twhile(!child.isNull()) {" CRLF;
 	for(elem = m_pListElement->constBegin(); elem != m_pListElement->constEnd(); ++elem) {
+		if( !(*elem)->getType()) {
+			continue;
+		}
 		if( (*elem)->getType()->getClassType() == Type::TypeSimple) {
 			SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>((*elem)->getType());
 
@@ -753,6 +759,9 @@ QString ComplexType::getIsNullDefinition(const QString& szClassname) const
 		}
 	}
 	for(elem = m_pListElement->constBegin(); elem != m_pListElement->constEnd(); ++elem) {
+		if( !(*elem)->getType()) {
+			continue;
+		}
 		if( (*elem)->getType()->getClassType() == Type::TypeSimple) {
 			SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>((*elem)->getType());
 			if( (*elem)->getMaxOccurs() > 1 || (*elem)->getMaxOccurs() == -1) {

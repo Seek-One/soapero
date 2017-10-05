@@ -53,6 +53,8 @@ MessageSharedPtr MessageList::getByName(const QString& szLocalName, const QStrin
 {
 	MessageList::const_iterator message;
 	for(message = constBegin(); message != constEnd(); ++message) {
+		//qDebug("%s == %s", qPrintable((*message)->getLocalName()), qPrintable(szLocalName));
+		//qDebug("%s == %s", qPrintable((*message)->getNamespace()), qPrintable(szNamespace));
 		if( (*message)->getLocalName() == szLocalName &&
 				(*message)->getNamespace() == szNamespace) {
 			return *message;

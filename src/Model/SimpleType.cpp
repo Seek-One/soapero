@@ -39,6 +39,8 @@ void SimpleType::setVariableTypeFromString(const QString& szType)
 		m_variableType = String;
 	} else if(szType == "xs:int") {
 		m_variableType = Int;
+	} else if(szType == "xs:integer") {
+		m_variableType = Int;
 	} else if(szType == "xs:unsignedInt") {
 		m_variableType = UnsignedInt;
 	} else if(szType == "xs:boolean") {

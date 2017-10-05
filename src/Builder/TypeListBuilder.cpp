@@ -597,6 +597,9 @@ void TypeListBuilder::buildHeaderClassService(QTextStream& os, const ServiceShar
 	OperationListSharedPtr pOperationList = pService->getOperationList();
 	OperationList::const_iterator operation;
 	for(operation = pOperationList->constBegin(); operation != pOperationList->constEnd(); ++operation) {
+		if(!(*operation)->getInputMessage()) {
+			continue;
+		}
 		os << "\t" << (*operation)->getOperationDeclaration() << CRLF;
 	}
 
@@ -781,6 +784,16 @@ void TypeListBuilder::buildHeaderIncludeService(QTextStream& os, const ServiceSh
 	OperationListSharedPtr pOperationList = pService->getOperationList();
 	OperationList::const_iterator operation;
 	for(operation = pOperationList->constBegin(); operation != pOperationList->constEnd(); ++operation) {
+
+		OperationSharedPtr pOperation = *operation;
+		if(!pOperation->getInputMessage()) {
+			continue;
+		}
+		qDebug(qPrintable(pOperation->getName()));
+		qDebug(qPrintable(pOperation->getInputMessage() ? "NotNull" : "Null"));
+		qDebug(qPrintable(pOperation->getInputMessage()->getLocalName()));
+		qDebug(qPrintable(pOperation->getInputMessage()->getParameter() ? "NotNull" : "Null"));
+
 		if(!list.contains((*operation)->getInputMessage()->getParameter()->getQualifiedName())) {
 			os << "#include \"messages/" << (*operation)->getInputMessage()->getParameter()->getQualifiedName() << ".h\"" << CRLF;
 			list.append((*operation)->getInputMessage()->getParameter()->getQualifiedName());
@@ -951,6 +964,9 @@ void TypeListBuilder::buildCppClassService(QTextStream& os, const ServiceSharedP
 	OperationListSharedPtr pOperationList = pService->getOperationList();
 	OperationList::const_iterator operation;
 	for(operation = pOperationList->constBegin(); operation != pOperationList->constEnd(); ++operation) {
+		if(!(*operation)->getInputMessage()) {
+			continue;
+		}
 		os << (*operation)->getOperationDefinition(szClassname) << CRLF;
 	}
 }

@@ -32,8 +32,11 @@ int main(int argc, char **argv)
 	QCoreApplication::setApplicationName(APPLICATION_NAME);
 	QCoreApplication::setApplicationVersion(APPLICATION_VERSION);
 
+	QCoreApplication a(argc, argv);
 
-	QFile file("./doorcontrol.wsdl");
+	//QFile file("./wsdl/doorcontrol.wsdl");
+	//QFile file("./wsdl/event.wsdl");
+	QFile file("./wsdl/vapix/ActionService.wsdl");
 
 	if(file.open(QFile::ReadOnly)) {
 
@@ -65,8 +68,8 @@ int main(int argc, char **argv)
 
 
 			TypeListBuilder builder(handler.getService(), handler.getTypeList(), handler.getElementList());
-			builder.setNamespace("Onvif");
-			builder.setFilename("doorcontrol");
+			builder.setNamespace("Vapix");
+			builder.setFilename("actionservice");
 			builder.setDirname("./generated");
 			builder.buildHeaderFiles();
 			builder.buildCppFiles();

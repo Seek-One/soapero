@@ -6,6 +6,9 @@
  */
 
 #include <QBuffer>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QEventLoop>
 
 #include "Model/ComplexType.h"
 #include "Model/SimpleType.h"
@@ -36,8 +39,22 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 
 	if(m_szCurrentSection == "") {
 		if(qName == "wsdl:definitions") {
+			QString szTargetNamespace;
+
 			if(attributes.index("name") != -1) {
 				m_pService->setName(attributes.value("name"));
+			}
+
+			if(attributes.index("targetNamespace") != -1) {
+				szTargetNamespace = attributes.value("targetNamespace");
+				m_pService->setTargetNamespace(szTargetNamespace);
+			}
+
+			for(int i=0; i < attributes.length(); ++i) {
+				if(attributes.value(i) == szTargetNamespace && attributes.qName(i) != "targetNamespace") {
+					m_szTargetNamespacePrefix = attributes.localName(i);
+					qDebug("[QWSDLParserHandler::startElement] Target namespace prefix found: %s", qPrintable(m_szTargetNamespacePrefix));
+				}
 			}
 		}
 
@@ -62,11 +79,16 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 			if(iRes != -1) {
 
 				QString szLocation(attributes.value("schemaLocation"));
-				QFile file(szLocation);
 
-				if(file.open(QFile::ReadOnly)) {
+				if(szLocation.startsWith("http://")) {
 
-					QByteArray bytes = file.readAll();
+					QNetworkAccessManager manager;
+					QNetworkReply* reply = manager.get(QNetworkRequest(QUrl::fromUserInput(szLocation)));
+					QEventLoop loop;
+					QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+					loop.exec();
+
+					QByteArray bytes(reply->readAll());
 					QBuffer buffer;
 					buffer.setData(bytes);
 
@@ -88,10 +110,39 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 								qPrintable(szLocation),
 								qPrintable(reader.errorHandler()->errorString()));
 					}
+
 				}else{
-					qWarning("[QWSDLParserHandler::startElement] Error for opening file %s (error: %s)",
-							qPrintable(szLocation),
-							qPrintable(file.errorString()));
+					QFile file(szLocation);
+
+					if(file.open(QFile::ReadOnly)) {
+
+						QByteArray bytes = file.readAll();
+						QBuffer buffer;
+						buffer.setData(bytes);
+
+						QXmlInputSource source(&buffer);
+						QXmlSimpleReader reader;
+						QWSDLParserHandler handler;
+						reader.setContentHandler(&handler);
+						reader.setErrorHandler(&handler);
+						reader.setFeature("http://xml.org/sax/features/namespace-prefixes", true);
+						reader.setFeature("http://xml.org/sax/features/namespaces", true);
+						if(reader.parse(source)){
+							TypeListSharedPtr pList = handler.getTypeList();
+							TypeList::const_iterator type;
+							for(type = pList->constBegin(); type != pList->constEnd(); ++type) {
+								m_pListTypes->add(*type);
+							}
+						}else{
+							qWarning("[QWSDLParserHandler::startElement] Error to parse file %s (error: %s)",
+									qPrintable(szLocation),
+									qPrintable(reader.errorHandler()->errorString()));
+						}
+					}else{
+						qWarning("[QWSDLParserHandler::startElement] Error for opening file %s (error: %s)",
+								qPrintable(szLocation),
+								qPrintable(file.errorString()));
+					}
 				}
 			}
 		}
@@ -311,6 +362,35 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 						pType->setNamespace(szNamespace);
 						m_pListTypes->append(pType);
 						element->setType(pType);
+					}
+				}
+			}else {
+
+				iRes = attributes.index("ref");
+				if(iRes != -1) {
+
+					QString szValue = attributes.value("ref");
+					QString szNamespace = szValue.split(":")[0];
+					QString szLocalName = szValue.split(":")[1];
+
+					TypeSharedPtr pType = m_pListTypes->getByName(szLocalName, szNamespace);
+					if(!pType.isNull()){
+						element->setType(pType);
+					}else{
+						qWarning("[QWSDLParserHandler::startElement] Type %s is not found at this moment, we create it", qPrintable(szValue));
+
+						if(szValue.startsWith("xs:")) {
+							SimpleTypeSharedPtr pType = SimpleType::create();
+							pType->setVariableTypeFromString(szValue);
+							pType->setName(element->getName());
+							element->setType(pType);
+						}else{
+							TypeSharedPtr pType = Type::create();
+							pType->setLocalName(szLocalName);
+							pType->setNamespace(szNamespace);
+							m_pListTypes->append(pType);
+							element->setType(pType);
+						}
 					}
 				}
 			}
