@@ -608,6 +608,8 @@ void TypeListBuilder::buildHeaderClassService(QTextStream& os, const ServiceShar
 
 void TypeListBuilder::buildHeaderIncludeType(QTextStream& os, const TypeSharedPtr& pType) const
 {
+	bool bIncludeQList = false;
+
 	os << "#include <QDomElement>" << CRLF;
 	os << "#include <QString>" << CRLF;
 
@@ -663,6 +665,11 @@ void TypeListBuilder::buildHeaderIncludeType(QTextStream& os, const TypeSharedPt
 
 				if(!(*element)->getType()) {
 					continue;
+				}
+
+				if(!bIncludeQList && ((*element)->getMaxOccurs() > 1 || (*element)->getMaxOccurs() == -1)) {
+					os << "#include <QList>" << CRLF;
+					bIncludeQList = true;
 				}
 
 				if( (*element)->getType()->getClassType() == Type::TypeSimple) {
@@ -762,7 +769,7 @@ void TypeListBuilder::buildHeaderIncludeElement(QTextStream& os, const RequestRe
 
 				}
 
-			}else if( (*element)->getType()->getClassType() == Type::TypeComplex) {
+			}else/* if( (*element)->getType()->getClassType() == Type::TypeComplex)*/ {
 				ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>((*element)->getType());
 				if(!list.contains(pComplexType->getQualifiedName())) {
 					os << "#include \"../types/" << pComplexType->getQualifiedName() << ".h\"" << CRLF;

@@ -114,14 +114,14 @@ QString Element::getSetterDeclaration() const
 			QString szDeclaration = "void set%0List(const QList<%1>& %2);" CRLF;
 			szDeclaration += "\tvoid add%0(const %1& %3);";
 
-			return szDeclaration.arg(szLocalName).arg(szLocalName).arg(szVarListName).arg(szVarName);
+			return szDeclaration.arg(szLocalName).arg(pComplexType->getNameWithNamespace()).arg(szVarListName).arg(szVarName);
 
 		}else{
 			QString szLocalName = pComplexType->getLocalName();
 			QString szVarName = szLocalName.left(1).toLower() + szLocalName.mid(1);
 			QString szDeclaration = "void set%0(const %1& %2);";
 
-			return szDeclaration.arg(getName()).arg(szLocalName).arg(szVarName);
+			return szDeclaration.arg(getName()).arg(pComplexType->getNameWithNamespace()).arg(szVarName);
 		}
 	}
 }

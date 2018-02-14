@@ -37,6 +37,8 @@ void SimpleType::setVariableTypeFromString(const QString& szType)
 {
 	if(szType == "xs:string") {
 		m_variableType = String;
+	} else if(szType == "xs:anyURI") {
+		m_variableType = String;
 	} else if(szType == "xs:int") {
 		m_variableType = Int;
 	} else if(szType == "xs:integer") {
