@@ -5,26 +5,26 @@ set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 
 # Select build config
 if (NOT DEFINED PRODUCT_CONFIG)
-	set (PRODUCT_CONFIG "jet1oeil-soapero")
+    set (PRODUCT_CONFIG "jet1oeil-soapero")
 endif()
 
 if (NOT DEFINED APPLICATION_VENDOR_NAME)
-	set (APPLICATION_VENDOR_NAME "Jet1oeil")
+    set (APPLICATION_VENDOR_NAME "Jet1oeil")
 endif()
 if (NOT DEFINED APPLICATION_VENDOR_DOMAIN)
-	set (APPLICATION_VENDOR_DOMAIN "www.jet1oeil.com")
+    set (APPLICATION_VENDOR_DOMAIN "www.jet1oeil.com")
 endif()
 if (NOT DEFINED APPLICATION_VENDOR_PACKAGE)
-	set (APPLICATION_VENDOR_PACKAGE "jet1oeil")
+    set (APPLICATION_VENDOR_PACKAGE "jet1oeil")
 endif()
 if (NOT DEFINED APPLICATION_NAME)
-	set (APPLICATION_NAME "Jet1oeil Soapero")
+    set (APPLICATION_NAME "Jet1oeil Soapero")
 endif()
 if (NOT DEFINED APPLICATION_PACKAGE_NAME)
-	set (APPLICATION_PACKAGE_NAME "jet1oeil-soapero")
+    set (APPLICATION_PACKAGE_NAME "jet1oeil-soapero")
 endif()
 if (NOT DEFINED APPLICATION_EXE_NAME)
-	set (APPLICATION_EXE_NAME "jet1oeil-soapero")
+    set (APPLICATION_EXE_NAME "jet1oeil-soapero")
 endif()
 
 set (APPLICATION_VERSION_MAJOR 0)
@@ -32,10 +32,10 @@ set (APPLICATION_VERSION_MINOR 1)
 set (APPLICATION_VERSION_PATCH 0)
 
 if(NOT DEFINED APPLICATION_VERSION_BUILD)
-	set(APPLICATION_VERSION_BUILD "")
+    set(APPLICATION_VERSION_BUILD "")
 endif()
 if(CMAKE_BUILD_TYPE MATCHES Debug)
-	set(APPLICATION_VERSION_BUILD ${APPLICATION_VERSION_BUILD}dbg)
+    set(APPLICATION_VERSION_BUILD ${APPLICATION_VERSION_BUILD}dbg)
 endif()
 set (APPLICATION_VERSION ${APPLICATION_VERSION_MAJOR}.${APPLICATION_VERSION_MINOR}.${APPLICATION_VERSION_PATCH}${APPLICATION_VERSION_BUILD})
 
@@ -44,30 +44,43 @@ project (com.jet1oeil.monitor CXX C)
 set (CMAKE_VERBOSE_MAKEFILE OFF)
 
 if(WIN32)
-	set(AUTO_NEWLINE_STYLE WIN32)
+    set(AUTO_NEWLINE_STYLE WIN32)
 else()
-	set(AUTO_NEWLINE_STYLE UNIX)
+    set(AUTO_NEWLINE_STYLE UNIX)
 endif()
 if(CMAKE_HOST_SYSTEM MATCHES Windows)
-	set(HOST_WIN32 TRUE)
+    set(HOST_WIN32 TRUE)
 else()
-	set(HOST_WIN32 FALSE)
+    set(HOST_WIN32 FALSE)
 endif()
 
 # Define install paths
 if(WIN32)
-	set(INSTALL_PATH_BIN ".")
-	set(INSTALL_PATH_SHARE ".")
-	set(INSTALL_PATH_DOC ".")
-	set(INSTALL_PATH_APPLICATIONS ".")
-	set(INSTALL_PATH_ICONS ".")
-else(WIN32)
-	set(INSTALL_PATH_BIN "bin/")
-	set(INSTALL_PATH_SHARE "share/${APPLICATION_PACKAGE_NAME}")
-	set(INSTALL_PATH_DOC "share/${APPLICATION_PACKAGE_NAME}/doc")
-	set(INSTALL_PATH_APPLICATIONS "share/applications")
-	set(INSTALL_PATH_ICONS "share/icons")
-endif(WIN32)
+    set(INSTALL_PATH_SHARE ".")
+    set(INSTALL_PATH_BIN ".")
+    set(INSTALL_PATH_LIB ".")
+    set(INSTALL_PATH_PLUGIN ".")
+    set(INSTALL_PATH_DOC ".")
+    set(INSTALL_PATH_APPLICATIONS ".")
+    set(INSTALL_PATH_ICONS ".")
+elseif(APPLE)
+    set(INSTALL_PATH_SHARE ".")
+    set(INSTALL_PATH_BIN ".")
+    set(INSTALL_PATH_LIB "../lib")
+    set(INSTALL_PATH_FRAMEWORKS "../Frameworks")
+    set(INSTALL_PATH_PLUGIN "../plugins")
+    set(INSTALL_PATH_DOC ".")
+    set(INSTALL_PATH_APPLICATIONS ".")
+    set(INSTALL_PATH_ICONS ".")
+else()
+    set(INSTALL_PATH_BIN "bin")
+    set(INSTALL_PATH_SHARE "share/${APPLICATION_PACKAGE_NAME}")
+    set(INSTALL_PATH_LIB "share/${APPLICATION_PACKAGE_NAME}/lib")
+    set(INSTALL_PATH_PLUGIN "share/${APPLICATION_PACKAGE_NAME}/lib")
+    set(INSTALL_PATH_DOC "share/${APPLICATION_PACKAGE_NAME}/doc")
+    set(INSTALL_PATH_APPLICATIONS "share/applications")
+    set(INSTALL_PATH_ICONS "share/icons")
+endif()
 
 ##################
 # Macro
@@ -80,7 +93,7 @@ include (CMakeModules/IncludeMacro.cmake)
 ##################
 
 if(NOT MSVC)
-	add_definitions (-Wall)
+    add_definitions (-Wall)
 endif(NOT MSVC)
 
 # Platform check from standard C
@@ -164,45 +177,45 @@ include_directories (${PROJECT_SOURCE_DIR}/src)
 
 # src directory
 set (APP_SOURCES
-#	generated/doorcontrol.cpp
-#	generated/doorcontrol.h
+#    generated/doorcontrol.cpp
+#    generated/doorcontrol.h
 
-	src/Base/XSBoolean.cpp
-	src/Base/XSBoolean.h
-	src/Base/XSDuration.cpp
-	src/Base/XSDuration.h
-	src/Base/XSInteger.cpp
-	src/Base/XSInteger.h
-	src/Base/XSString.cpp
-	src/Base/XSString.h
-	src/Base/XSUnsignedInteger.cpp
-	src/Base/XSUnsignedInteger.h
+    src/Base/XSBoolean.cpp
+    src/Base/XSBoolean.h
+    src/Base/XSDuration.cpp
+    src/Base/XSDuration.h
+    src/Base/XSInteger.cpp
+    src/Base/XSInteger.h
+    src/Base/XSString.cpp
+    src/Base/XSString.h
+    src/Base/XSUnsignedInteger.cpp
+    src/Base/XSUnsignedInteger.h
 
-	src/Builder/TypeListBuilder.cpp
-	src/Builder/TypeListBuilder.h
+    src/Builder/TypeListBuilder.cpp
+    src/Builder/TypeListBuilder.h
 
-	src/Model/Classname.h
-	src/Model/Classname.cpp
-	src/Model/ComplexType.h
-	src/Model/ComplexType.cpp
-	src/Model/Message.h
-	src/Model/Message.cpp
-	src/Model/Operation.h
-	src/Model/Operation.cpp
-	src/Model/RequestResponseElement.h
-	src/Model/RequestResponseElement.cpp
-	src/Model/Service.h
-	src/Model/Service.cpp
-	src/Model/SimpleType.h
-	src/Model/SimpleType.cpp
-	src/Model/Type.h
-	src/Model/Type.cpp
+    src/Model/Classname.h
+    src/Model/Classname.cpp
+    src/Model/ComplexType.h
+    src/Model/ComplexType.cpp
+    src/Model/Message.h
+    src/Model/Message.cpp
+    src/Model/Operation.h
+    src/Model/Operation.cpp
+    src/Model/RequestResponseElement.h
+    src/Model/RequestResponseElement.cpp
+    src/Model/Service.h
+    src/Model/Service.cpp
+    src/Model/SimpleType.h
+    src/Model/SimpleType.cpp
+    src/Model/Type.h
+    src/Model/Type.cpp
 
-	src/Parser/QWSDLParserHandler.h
-	src/Parser/QWSDLParserHandler.cpp
+    src/Parser/QWSDLParserHandler.h
+    src/Parser/QWSDLParserHandler.cpp
 
-	src/Service/Service.h
-	src/Service/Service.cpp
+    src/Service/Service.h
+    src/Service/Service.cpp
 )
 
 # Creating MOC file for sources file using "slots" or Q_OBJECT macro
@@ -242,7 +255,7 @@ configure_file (
 
 # Resources
 set (QRC_FILES
-	${PROJECT_BINARY_DIR}/ts.qrc
+    ${PROJECT_BINARY_DIR}/ts.qrc
 )
 QT_ADD_RESOURCES(RCS_OUTFILES ${QRC_FILES})
 
@@ -256,18 +269,18 @@ SET (SOAPERO_MAIN_SRC
 
 # Build executable
 add_executable (${APPLICATION_EXE_NAME}
-	${GUI_TYPE}
-	${RC_FILES}
-	${SOAPERO_MAIN_SRC}
-	${APP_SOURCES}
-	${RCS_OUTFILES}
-	${MOC_OUTFILES}
-	${qm_FILES}
+    ${GUI_TYPE}
+    ${RC_FILES}
+    ${SOAPERO_MAIN_SRC}
+    ${APP_SOURCES}
+    ${RCS_OUTFILES}
+    ${MOC_OUTFILES}
+    ${qm_FILES}
 )
 target_link_libraries (
-	${APPLICATION_EXE_NAME}
-	${QT_LIBRARIES} 
-	${QT_QTMAIN_LIBRARY}
+    ${APPLICATION_EXE_NAME}
+    ${QT_LIBRARIES} 
+    ${QT_QTMAIN_LIBRARY}
 )
 install(TARGETS ${APPLICATION_EXE_NAME} DESTINATION ${INSTALL_PATH_BIN})
 
