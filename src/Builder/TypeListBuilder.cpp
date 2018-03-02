@@ -796,10 +796,10 @@ void TypeListBuilder::buildHeaderIncludeService(QTextStream& os, const ServiceSh
 		if(!pOperation->getInputMessage()) {
 			continue;
 		}
-		qDebug(qPrintable(pOperation->getName()));
-		qDebug(qPrintable(pOperation->getInputMessage() ? "NotNull" : "Null"));
-		qDebug(qPrintable(pOperation->getInputMessage()->getLocalName()));
-		qDebug(qPrintable(pOperation->getInputMessage()->getParameter() ? "NotNull" : "Null"));
+		//qDebug(qPrintable(pOperation->getName()));
+		//qDebug(qPrintable(pOperation->getInputMessage() ? "NotNull" : "Null"));
+		//qDebug(qPrintable(pOperation->getInputMessage()->getLocalName()));
+		//qDebug(qPrintable(pOperation->getInputMessage()->getParameter() ? "NotNull" : "Null"));
 
 		if(!list.contains((*operation)->getInputMessage()->getParameter()->getQualifiedName())) {
 			os << "#include \"messages/" << (*operation)->getInputMessage()->getParameter()->getQualifiedName() << ".h\"" << CRLF;
