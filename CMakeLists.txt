@@ -28,7 +28,7 @@ if (NOT DEFINED APPLICATION_EXE_NAME)
 endif()
 
 set (APPLICATION_VERSION_MAJOR 0)
-set (APPLICATION_VERSION_MINOR 1)
+set (APPLICATION_VERSION_MINOR 2)
 set (APPLICATION_VERSION_PATCH 0)
 
 if(NOT DEFINED APPLICATION_VERSION_BUILD)
@@ -180,16 +180,38 @@ set (APP_SOURCES
 #    generated/doorcontrol.cpp
 #    generated/doorcontrol.h
 
+	src/Base/XSAnyType.cpp
+	src/Base/XSAnyType.h
+	src/Base/XSAnyURI.cpp
+	src/Base/XSAnyURI.h
+	src/Base/XSBase64Binary.cpp
+	src/Base/XSBase64Binary.h
     src/Base/XSBoolean.cpp
     src/Base/XSBoolean.h
+    src/Base/XSDateTime.cpp
+    src/Base/XSDateTime.h
     src/Base/XSDuration.cpp
     src/Base/XSDuration.h
+    src/Base/XSFloat.cpp
+    src/Base/XSFloat.h
     src/Base/XSInteger.cpp
     src/Base/XSInteger.h
-    src/Base/XSString.cpp
-    src/Base/XSString.h
     src/Base/XSUnsignedInteger.cpp
     src/Base/XSUnsignedInteger.h
+    src/Base/XSQName.cpp
+    src/Base/XSQName.h
+    src/Base/XSNCName.cpp
+    src/Base/XSNCName.h
+    src/Base/XSNonNegativeInteger.cpp
+    src/Base/XSNonNegativeInteger.h
+    src/Base/XSString.cpp
+    src/Base/XSString.h
+    src/Base/XSToken.cpp
+    src/Base/XSToken.h
+    src/Base/XSUnsignedInteger.cpp
+    src/Base/XSUnsignedInteger.h
+    src/Base/XSUnsignedLong.cpp
+    src/Base/XSUnsignedLong.h
 
     src/Builder/TypeListBuilder.cpp
     src/Builder/TypeListBuilder.h
@@ -213,9 +235,13 @@ set (APP_SOURCES
 
     src/Parser/QWSDLParserHandler.h
     src/Parser/QWSDLParserHandler.cpp
+    src/Parser/WSDLAttributes.h
+    src/Parser/WSDLSections.h
 
     src/Service/Service.h
     src/Service/Service.cpp
+    
+    src/Utils/StringUtils.h
 )
 
 # Creating MOC file for sources file using "slots" or Q_OBJECT macro

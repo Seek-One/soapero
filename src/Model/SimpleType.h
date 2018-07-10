@@ -25,6 +25,16 @@ public:
 		UnsignedInt,
 		Boolean,
 		Duration,
+		Base64Binary,
+		AnyURI,
+		Float,
+		DateTime,
+		QName,
+		NCName,
+		Token,
+		UnsignedLong,
+		AnyType,
+		NonNegativeInteger,
 	};
 
 	SimpleType();
@@ -33,7 +43,7 @@ public:
 	static SimpleTypeSharedPtr create();
 
 	void setVariableType(VariableType type);
-	void setVariableTypeFromString(const QString& szType);
+	void setVariableTypeFromString(const QString& szNamespacePrefix, const QString& szType);
 	VariableType getVariableType() const;
 	QString getVariableTypeString() const;
 	QString getVariableTypeFilenameString() const;

@@ -70,7 +70,7 @@ public:
 	void add(const TypeListSharedPtr& pList);
 	void add(const TypeSharedPtr& pType);
 
-	TypeSharedPtr getByName(const QString& szLocalName, const QString& szNamespace = QString());
+	TypeSharedPtr getByName(const QString& szLocalName, const QString& szNamespace, const TypeListSharedPtr& pListIgnoredTypes);
 };
 
 #endif /* TYPE_H_ */

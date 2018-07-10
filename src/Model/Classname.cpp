@@ -59,7 +59,7 @@ QString Classname::getNameWithNamespace() const
 	if(m_szNamespace.isEmpty()) {
 		return m_szLocalName;
 	}else{
-		return m_szNamespace.toUpper() + "::" + m_szLocalName;
+		return m_szNamespace.toUpper().replace("-", "_") + "::" + m_szLocalName;
 	}
 }
 
@@ -68,7 +68,7 @@ QString Classname::getQualifiedName() const
 	if(m_szNamespace.isEmpty()) {
 		return m_szLocalName;
 	}else{
-		return m_szNamespace.toUpper() + m_szLocalName;
+		return m_szNamespace.toUpper().replace("-", "_") + m_szLocalName;
 	}
 }
 

@@ -5,6 +5,7 @@
  *      Author: lgruber
  */
 
+#include "../Utils/StringUtils.h"
 #include "SimpleType.h"
 
 #ifndef CRLF
@@ -33,22 +34,40 @@ void SimpleType::setVariableType(VariableType type)
 	m_variableType = type;
 }
 
-void SimpleType::setVariableTypeFromString(const QString& szType)
+void SimpleType::setVariableTypeFromString(const QString& szNamespacePrefix, const QString& szType)
 {
-	if(szType == "xs:string") {
+	if(szType == (szNamespacePrefix + ":string")) {
 		m_variableType = String;
-	} else if(szType == "xs:anyURI") {
-		m_variableType = String;
-	} else if(szType == "xs:int") {
+	} else if(szType == (szNamespacePrefix + ":anyURI")) {
+		m_variableType = AnyURI;
+	} else if(szType == (szNamespacePrefix + ":int")) {
 		m_variableType = Int;
-	} else if(szType == "xs:integer") {
+	} else if(szType == (szNamespacePrefix + ":integer")) {
 		m_variableType = Int;
-	} else if(szType == "xs:unsignedInt") {
+	} else if(szType == (szNamespacePrefix + ":unsignedInt")) {
 		m_variableType = UnsignedInt;
-	} else if(szType == "xs:boolean") {
+	} else if(szType == (szNamespacePrefix + ":boolean")) {
 		m_variableType = Boolean;
-	}else if(szType == "xs:duration") {
+	}else if(szType == (szNamespacePrefix + ":duration")) {
 		m_variableType = Duration;
+	}else if(szType == (szNamespacePrefix + ":base64Binary")) {
+		m_variableType = Base64Binary;
+	}else if(szType == (szNamespacePrefix + ":float")){
+		m_variableType = Float;
+	}else if(szType == (szNamespacePrefix + ":dateTime")){
+		m_variableType = DateTime;
+	}else if(szType == (szNamespacePrefix + ":QName")){
+		m_variableType = QName;
+	}else if(szType == (szNamespacePrefix + ":NCName")){
+		m_variableType = NCName;
+	}else if(szType == (szNamespacePrefix + ":token")){
+		m_variableType = Token;
+	}else if(szType == (szNamespacePrefix + ":unsignedLong")){
+		m_variableType = UnsignedLong;
+	}else if(szType == (szNamespacePrefix + ":anyType")){
+		m_variableType = AnyType;
+	}else if(szType == (szNamespacePrefix + ":nonNegativeInteger")){
+		m_variableType = NonNegativeInteger;
 	}
 }
 
@@ -79,6 +98,36 @@ QString SimpleType::getVariableTypeString()const
 		case Duration:
 			return "XS::Duration";
 			break;
+		case Base64Binary:
+			return "XS::Base64Binary";
+			break;
+		case AnyURI:
+			return "XS::AnyURI";
+			break;
+		case Float:
+			return "XS::Float";
+			break;
+		case DateTime:
+			return "XS::DateTime";
+			break;
+		case QName:
+			return "XS::QName";
+			break;
+		case NCName:
+			return "XS::NCName";
+			break;
+		case Token:
+			return "XS::Token";
+			break;
+		case UnsignedLong:
+			return "XS::UnsignedLong";
+			break;
+		case AnyType:
+			return "XS::AnyType";
+			break;
+		case NonNegativeInteger:
+			return "XS::NonNegativeInteger";
+			break;
 		default:
 			return QString();
 		}
@@ -107,6 +156,36 @@ QString SimpleType::getVariableTypeFilenameString() const
 		case Duration:
 			return "XSDuration";
 			break;
+		case Base64Binary:
+			return "XSBase64Binary";
+			break;
+		case AnyURI:
+			return "XSAnyURI";
+			break;
+		case Float:
+			return "XSFloat";
+			break;
+		case DateTime:
+			return "XSDateTime";
+			break;
+		case QName:
+			return "XSQName";
+			break;
+		case NCName:
+			return "XSNCName";
+			break;
+		case Token:
+			return "XSToken";
+			break;
+		case UnsignedLong:
+			return "XSUnsignedLong";
+			break;
+		case AnyType:
+			return "XSAnyType";
+			break;
+		case NonNegativeInteger:
+			return "XSNonNegativeInteger";
+			break;
 		default:
 			return QString();
 		}
@@ -115,7 +194,14 @@ QString SimpleType::getVariableTypeFilenameString() const
 
 bool SimpleType::isEnumeration() const
 {
-	return m_bRestricted && m_variableType == String && m_listEnumerationValues.count() > 0;
+	return m_bRestricted &&
+			((m_variableType == String) ||
+					(m_variableType == Base64Binary) ||
+					(m_variableType == AnyURI) ||
+					(m_variableType == QName) ||
+					(m_variableType == NCName) ||
+					(m_variableType == Token)) &&
+			(m_listEnumerationValues.count() > 0);
 }
 
 QString SimpleType::getSetterDeclaration() const
@@ -226,9 +312,9 @@ QString SimpleType::getEnumerationDeclaration() const
 				bHasUnknownValue = true;
 			}
 			if(i==0) {
-				szDeclaration += m_listEnumerationValues[i];
+				szDeclaration += StringUtils::removeNonAlphaNum(m_listEnumerationValues[i]);
 			} else {
-				szDeclaration += ", " + m_listEnumerationValues[i];
+				szDeclaration += ", " + StringUtils::removeNonAlphaNum(m_listEnumerationValues[i]);
 			}
 		}
 		if(!bHasUnknownValue) {
@@ -369,13 +455,13 @@ QString SimpleType::getEnumConvertDefinition(const QString& szClassname) const
 		"void %0::set%1FromString(const QString& szValue)" CRLF
 		"{" CRLF
 		"\tif(szValue == \"" + getEnumerationValues()[0] + "\") {" CRLF
-		"\t\t %2 = %0::" + getEnumerationValues()[0] + ";" CRLF
+		"\t\t %2 = %0::" + StringUtils::removeNonAlphaNum(getEnumerationValues()[0]) + ";" CRLF
 		"\t}";
 
 		for(int i=1; i < getEnumerationValues().count(); ++i) {
 			szDefinition += ""
 			"else if(\"" + getEnumerationValues()[i] + "\" == szValue) {" CRLF
-			"\t\t%2 = %0::" + getEnumerationValues()[i] + ";" CRLF
+			"\t\t%2 = %0::" + StringUtils::removeNonAlphaNum(getEnumerationValues()[i]) + ";" CRLF
 			"\t}";
 		}
 		szDefinition += " else {" CRLF;
@@ -391,7 +477,7 @@ QString SimpleType::getEnumConvertDefinition(const QString& szClassname) const
 
 		for(int i=0; i < getEnumerationValues().count(); ++i) {
 			szDefinition += ""
-			"\tcase " + getEnumerationValues()[i] + ":" CRLF
+			"\tcase " + StringUtils::removeNonAlphaNum(getEnumerationValues()[i]) + ":" CRLF
 			"\t\treturn \"" + getEnumerationValues()[i] + "\";" CRLF;
 		}
 		szDefinition += "\tdefault:" CRLF;

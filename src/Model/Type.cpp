@@ -35,7 +35,6 @@ Type::ClassType Type::getClassType() const
 	return m_classType;
 }
 
-
 TypeList::TypeList()
 	:QList<TypeSharedPtr>()
 {
@@ -52,12 +51,13 @@ TypeListSharedPtr TypeList::create()
 	return TypeListSharedPtr(new TypeList());
 }
 
-TypeSharedPtr TypeList::getByName(const QString& szLocalName, const QString& szNamespace)
+TypeSharedPtr TypeList::getByName(const QString& szLocalName, const QString& szNamespace, const TypeListSharedPtr& pListIgnoredTypes)
 {
 	TypeList::const_iterator type;
 	for(type = constBegin(); type != constEnd(); ++type) {
 		if((*type)->getLocalName() == szLocalName &&
-				(*type)->getNamespace() == szNamespace) {
+				(*type)->getNamespace() == szNamespace &&
+				!pListIgnoredTypes->contains(*type)) {
 			return *type;
 		}
 	}

@@ -123,7 +123,7 @@ void TypeListBuilder::buildHeaderFiles()
 	}
 
 	for(type = m_pListType->constBegin(); type != m_pListType->constEnd(); ++type) {
-		if(!(*type)->getLocalName().isEmpty()) {
+		if(!(*type)->getLocalName().isEmpty() && ((*type)->getClassType() != Type::TypeUnknown)) {
 			buildHeaderFile(*type);
 		}
 	}
@@ -143,7 +143,7 @@ void TypeListBuilder::buildCppFiles()
 	RequestResponseElementList::const_iterator element;
 
 	for(type = m_pListType->constBegin(); type != m_pListType->constEnd(); ++type) {
-		if(!(*type)->getLocalName().isEmpty()) {
+		if(!(*type)->getLocalName().isEmpty() == ((*type)->getClassType() != Type::TypeUnknown)) {
 			buildCppFile(*type);
 		}
 	}
@@ -306,6 +306,16 @@ void TypeListBuilder::buildCppFile(const TypeSharedPtr& pType)
 		os << " */" << CRLF;
 		os << CRLF;
 		os << "#include \"" << szHeaderFilename << "\"" << CRLF;
+
+		if(pType->getClassType() == Type::TypeComplex){
+			ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pType);
+			if(pComplexType->getAttributeList()){
+				if(pComplexType->getAttributeList()->containsListAttribute()){
+					os << "#include <QStringList>" << CRLF;
+				}
+			}
+		}
+
 		os << CRLF;
 
 		if(!m_szNamespace.isEmpty()) {
@@ -410,7 +420,7 @@ void TypeListBuilder::buildHeaderClassType(QTextStream& os, const TypeSharedPtr&
 {
 	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pType->getLocalName();
 
-	os << "namespace " << pType->getNamespace().toUpper() << " {" << CRLF;
+	os << "namespace " << pType->getNamespace().toUpper().replace("-", "_") << " {" << CRLF;
 	os << CRLF;
 
 	if(pType->getClassType() == Type::TypeSimple) {
@@ -420,12 +430,9 @@ void TypeListBuilder::buildHeaderClassType(QTextStream& os, const TypeSharedPtr&
 		os << "{" << CRLF;
 		os << "public:" << CRLF;
 
-		if(pSimpleType->isRestricted()) {
-			if(pSimpleType->getVariableType() == SimpleType::String &&
-					pSimpleType->getEnumerationValues().count() > 0) {
-				os << "\t" << pSimpleType->getEnumerationDeclaration() << CRLF;
-				os << CRLF;
-			}
+		if(pSimpleType->isEnumeration()) {
+			os << "\t" << pSimpleType->getEnumerationDeclaration() << CRLF;
+			os << CRLF;
 		}
 
 		os << "\t" << szClassname << "();" << CRLF;
@@ -443,9 +450,15 @@ void TypeListBuilder::buildHeaderClassType(QTextStream& os, const TypeSharedPtr&
 		if(pComplexType->getExtensionType().isNull()) {
 			os << "class " << szClassname << CRLF;
 		}else{
-			QString szExtensionName = pComplexType->getExtensionType()->getNameWithNamespace();
+			QString szExtendedClassname;
+			if(pComplexType->getExtensionType()->getClassType() == Type::TypeSimple){
+				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pComplexType->getExtensionType());
+				szExtendedClassname = pSimpleType->getVariableTypeString();
+			}else{
+				QString szExtensionName = pComplexType->getExtensionType()->getNameWithNamespace();
+				szExtendedClassname = (!m_szPrefix.isEmpty() ? m_szPrefix : "") + szExtensionName;
+			}
 
-			QString szExtendedClassname = (!m_szPrefix.isEmpty() ? m_szPrefix : "") + szExtensionName;
 			os << "class " << szClassname << " : public " << szExtendedClassname << CRLF;
 		}
 		os << "{" << CRLF;
@@ -480,48 +493,46 @@ void TypeListBuilder::buildHeaderClassComplexType(QTextStream& os, const Complex
 {
 	AttributeListSharedPtr pListAttributes = pComplexType->getAttributeList();
 	AttributeList::const_iterator attr;
+	AttributeSharedPtr pAttribute;
 
 	ElementListSharedPtr pListElements = pComplexType->getElementList();
 	ElementList::const_iterator element;
+	ElementSharedPtr pElement;
 
 	if(pListAttributes->count() > 0 || pListElements->count() > 0) {
 
 		os << "public:" << CRLF;
 		for(attr = pListAttributes->constBegin(); attr != pListAttributes->constEnd(); ++attr) {
-			if(!(*attr)->getType()) {
-				qWarning("[TypeListBuilder] Attribute %s in %s has no type", qPrintable((*attr)->getName()), qPrintable(pComplexType->getQualifiedName()));
+			if((*attr)->hasRef()){
+				pAttribute = (*attr)->getRef();
+			}else{
+				pAttribute = *attr;
+			}
+
+			if(!pAttribute->getType()) {
+				qWarning("[TypeListBuilder] Attribute %s in %s has no type", qPrintable(pAttribute->getName()), qPrintable(pComplexType->getQualifiedName()));
 				continue;
 			}
 
-			if( (*attr)->getType()->getClassType() == Type::TypeSimple) {
-				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>((*attr)->getType());
-
-				if(pSimpleType->isEnumeration()) {
-					os << "\t" << pSimpleType->getSetterDeclarationForComplexType() << CRLF;
-					os << "\t" << pSimpleType->getGetterDeclarationForComplexType() << CRLF;
-				} else {
-					os << "\t" << pSimpleType->getSetterDeclaration() << CRLF;
-					os << "\t" << pSimpleType->getGetterDeclaration() << CRLF;
-				}
-				os << CRLF;
-
-			}else if( (*attr)->getType()->getClassType() == Type::TypeComplex) {
-				ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>((*attr)->getType());
-
-				os << "\t" << pComplexType->getSetterDeclaration() << CRLF ;
-				os << "\t" << pComplexType->getGetterDeclaration() << CRLF ;
-				os << CRLF;
-			}
+			os << "\t" << pAttribute->getSetterDeclaration();
+			os << "\t" << pAttribute->getGetterDeclaration();
+			os << CRLF;
 		}
-		for(element = pListElements->constBegin(); element != pListElements->constEnd(); ++element) {
 
-			if(!(*element)->getType()) {
-				qWarning("[TypeListBuilder] Element %s in %s has no type", qPrintable((*element)->getName()), qPrintable(pComplexType->getQualifiedName()));
+		for(element = pListElements->constBegin(); element != pListElements->constEnd(); ++element) {
+			if((*element)->hasRef()){
+				pElement = (*element)->getRef();
+			}else{
+				pElement = *element;
+			}
+
+			if(!pElement->getType()) {
+				qWarning("[TypeListBuilder] Element %s in %s has no type", qPrintable(pElement->getName()), qPrintable(pComplexType->getQualifiedName()));
 				continue;
 			}
 
-			os << "\t" << (*element)->getSetterDeclaration() << CRLF ;
-			os << "\t" << (*element)->getGetterDeclaration() << CRLF ;
+			os << "\t" << pElement->getSetterDeclaration() << CRLF ;
+			os << "\t" << pElement->getGetterDeclaration() << CRLF ;
 			os << CRLF;
 
 		}
@@ -535,25 +546,30 @@ void TypeListBuilder::buildHeaderClassComplexType(QTextStream& os, const Complex
 	if(pListAttributes->count() > 0 || pListElements->count() > 0) {
 		os << "private:" << CRLF;
 		for(attr = pListAttributes->constBegin(); attr != pListAttributes->constEnd(); ++attr) {
-			if(!(*attr)->getType()) {
+			if((*attr)->hasRef()){
+				pAttribute = (*attr)->getRef();
+			}else{
+				pAttribute = *attr;
+			}
+
+			if(!pAttribute->getType()) {
 				continue;
 			}
-			if( (*attr)->getType()->getClassType() == Type::TypeSimple) {
-				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>((*attr)->getType());
-				os << "\t" << pSimpleType->getVariableDeclarationForComplexType() << CRLF ;
 
-			}else if( (*attr)->getType()->getClassType() == Type::TypeComplex) {
-				ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>((*attr)->getType());
-				os << "\t" << pComplexType->getVariableDeclaration() << CRLF ;
-			}
+			os << "\t" << pAttribute->getVariableDeclaration() << CRLF;
 		}
 		for(element = pListElements->constBegin(); element != pListElements->constEnd(); ++element) {
+			if((*element)->hasRef()){
+				pElement = (*element)->getRef();
+			}else{
+				pElement = *element;
+			}
 
-			if(!(*element)->getType()) {
+			if(!pElement->getType()) {
 				continue;
 			}
 
-			os << "\t" << (*element)->getVariableDeclaration() << CRLF ;
+			os << "\t" << pElement->getVariableDeclaration() << CRLF ;
 		}
 	}
 }
@@ -563,7 +579,7 @@ void TypeListBuilder::buildHeaderClassElement(QTextStream& os, const RequestResp
 	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pElement->getLocalName();
 	ComplexTypeSharedPtr pComplexType = pElement->getComplexType();
 
-	os << "namespace " << pElement->getNamespace().toUpper() << " {" << CRLF;
+	os << "namespace " << pElement->getNamespace().toUpper().replace("-", "_") << " {" << CRLF;
 	os << CRLF;
 
 	if(!pComplexType.isNull()) {
@@ -625,12 +641,21 @@ void TypeListBuilder::buildHeaderIncludeType(QTextStream& os, const TypeSharedPt
 
 		AttributeListSharedPtr pListAttributes = pComplexType->getAttributeList();
 		AttributeList::const_iterator attr;
+		AttributeSharedPtr pAttribute;
 
 		ElementListSharedPtr pListElements = pComplexType->getElementList();
 		ElementList::const_iterator element;
+		ElementSharedPtr pElement;
 
 		if(!pComplexType->getExtensionType().isNull()) {
-			QString szExtensionName = pComplexType->getExtensionType()->getQualifiedName();
+			QString szExtensionName;
+			if(pComplexType->getExtensionType()->getClassType() == Type::TypeSimple){
+				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pComplexType->getExtensionType());
+				szExtensionName = pSimpleType->getVariableTypeFilenameString();
+			}else{
+				szExtensionName = pComplexType->getExtensionType()->getQualifiedName();
+			}
+
 			os << "#include \"" << szExtensionName << ".h\"" << CRLF;
 		}
 
@@ -639,19 +664,31 @@ void TypeListBuilder::buildHeaderIncludeType(QTextStream& os, const TypeSharedPt
 			QStringList list;
 
 			for(attr = pListAttributes->constBegin(); attr != pListAttributes->constEnd(); ++attr) {
-				if(!(*attr)->getType()) {
+				if((*attr)->hasRef()){
+					pAttribute = (*attr)->getRef();
+				}else{
+					pAttribute = *attr;
+				}
+
+				if(!pAttribute->getType()) {
 					continue;
 				}
-				if( (*attr)->getType()->getClassType() == Type::TypeSimple) {
-					SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>((*attr)->getType());
+
+				if(!bIncludeQList && pAttribute->isList()){
+					os << "#include <QList>" << CRLF;
+					bIncludeQList = true;
+				}
+
+				if( pAttribute->getType()->getClassType() == Type::TypeSimple) {
+					SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pAttribute->getType());
 
 					if(!list.contains(pSimpleType->getVariableTypeFilenameString())) {
 						os << "#include \"" << pSimpleType->getVariableTypeFilenameString() << ".h\"" << CRLF;
 						list.append(pSimpleType->getVariableTypeFilenameString());
 
 					}
-				}else if( (*attr)->getType()->getClassType() == Type::TypeComplex) {
-					ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>((*attr)->getType());
+				}else if( pAttribute->getType()->getClassType() == Type::TypeComplex) {
+					ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pAttribute->getType());
 
 					if(!list.contains(pComplexType->getQualifiedName())) {
 						os << "#include \"" << pComplexType->getQualifiedName() << ".h\"" << CRLF;
@@ -662,26 +699,31 @@ void TypeListBuilder::buildHeaderIncludeType(QTextStream& os, const TypeSharedPt
 				}
 			}
 			for(element = pListElements->constBegin(); element != pListElements->constEnd(); ++element) {
+				if((*element)->hasRef()){
+					pElement = (*element)->getRef();
+				}else{
+					pElement = *element;
+				}
 
-				if(!(*element)->getType()) {
+				if(!pElement->getType()) {
 					continue;
 				}
 
-				if(!bIncludeQList && ((*element)->getMaxOccurs() > 1 || (*element)->getMaxOccurs() == -1)) {
+				if(!bIncludeQList && (pElement->getMaxOccurs() > 1 || pElement->getMaxOccurs() == -1)) {
 					os << "#include <QList>" << CRLF;
 					bIncludeQList = true;
 				}
 
-				if( (*element)->getType()->getClassType() == Type::TypeSimple) {
-					SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>((*element)->getType());
+				if( pElement->getType()->getClassType() == Type::TypeSimple) {
+					SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pElement->getType());
 					if(!list.contains(pSimpleType->getVariableTypeFilenameString())) {
 						os << "#include \"" << pSimpleType->getVariableTypeFilenameString() << ".h\"" << CRLF;
 						list.append(pSimpleType->getVariableTypeFilenameString());
 
 					}
 
-				}else if( (*element)->getType()->getClassType() == Type::TypeComplex) {
-					ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>((*element)->getType());
+				}else if(pElement->getType()->getClassType() == Type::TypeComplex) {
+					ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pElement->getType());
 					if(!list.contains(pComplexType->getQualifiedName())) {
 						os << "#include \"" << pComplexType->getQualifiedName() << ".h\"" << CRLF;
 						list.append(pComplexType->getQualifiedName());
@@ -689,10 +731,10 @@ void TypeListBuilder::buildHeaderIncludeType(QTextStream& os, const TypeSharedPt
 					}
 
 				}else{
-					qWarning("[TypeListBuilder::buildHeaderIncludeType] Element %s has an unknown type : %s", qPrintable((*element)->getName()), qPrintable((*element)->getType()->getLocalName()));
-					if(!list.contains((*element)->getType()->getQualifiedName())) {
-						os << "#include \"" << (*element)->getType()->getQualifiedName() << ".h\"" << CRLF;
-						list.append((*element)->getType()->getQualifiedName());
+					qWarning("[TypeListBuilder::buildHeaderIncludeType] Element %s has an unknown type : %s", qPrintable(pElement->getName()), qPrintable(pElement->getType()->getLocalName()));
+					if(!list.contains(pElement->getType()->getQualifiedName())) {
+						os << "#include \"" << pElement->getType()->getQualifiedName() << ".h\"" << CRLF;
+						list.append(pElement->getType()->getQualifiedName());
 
 					}
 				}
@@ -701,21 +743,30 @@ void TypeListBuilder::buildHeaderIncludeType(QTextStream& os, const TypeSharedPt
 	}
 }
 
-void TypeListBuilder::buildHeaderIncludeElement(QTextStream& os, const RequestResponseElementSharedPtr& pElement) const
+void TypeListBuilder::buildHeaderIncludeElement(QTextStream& os, const RequestResponseElementSharedPtr& pRequestResponseElement) const
 {
-	ComplexTypeSharedPtr pComplexType = pElement->getComplexType();
+	ComplexTypeSharedPtr pComplexType = pRequestResponseElement->getComplexType();
 
 	os << "#include <QDomElement>" << CRLF;
 	os << "#include <QString>" << CRLF;
 
 	AttributeListSharedPtr pListAttributes = pComplexType->getAttributeList();
 	AttributeList::const_iterator attr;
+	AttributeSharedPtr pAttribute;
 
 	ElementListSharedPtr pListElements = pComplexType->getElementList();
 	ElementList::const_iterator element;
+	ElementSharedPtr pElement;
 
 	if(!pComplexType->getExtensionType().isNull()) {
-		QString szExtensionName = pComplexType->getExtensionType()->getQualifiedName();
+		QString szExtensionName;
+		if(pComplexType->getExtensionType()->getClassType() == Type::TypeSimple){
+			SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pComplexType->getExtensionType());
+			szExtensionName = pSimpleType->getVariableTypeFilenameString();
+		}else{
+			szExtensionName = pComplexType->getExtensionType()->getQualifiedName();
+		}
+
 		os << "#include \"../types/" << szExtensionName << ".h\"" << CRLF;
 	}
 
@@ -724,19 +775,25 @@ void TypeListBuilder::buildHeaderIncludeElement(QTextStream& os, const RequestRe
 		QStringList list;
 
 		for(attr = pListAttributes->constBegin(); attr != pListAttributes->constEnd(); ++attr) {
-			if(!(*attr)->getType()) {
+			if((*attr)->hasRef()){
+				pAttribute = (*attr)->getRef();
+			}else{
+				pAttribute = *attr;
+			}
+
+			if(!pAttribute->getType()) {
 				continue;
 			}
-			if( (*attr)->getType()->getClassType() == Type::TypeSimple) {
-				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>((*attr)->getType());
+			if( pAttribute->getType()->getClassType() == Type::TypeSimple) {
+				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pAttribute->getType());
 
 				if(!list.contains(pSimpleType->getVariableTypeFilenameString())) {
 					os << "#include \"../types/" << pSimpleType->getVariableTypeFilenameString() << ".h\"" << CRLF;
 					list.append(pSimpleType->getVariableTypeFilenameString());
 
 				}
-			}else if( (*attr)->getType()->getClassType() == Type::TypeComplex) {
-				ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>((*attr)->getType());
+			}else if( pAttribute->getType()->getClassType() == Type::TypeComplex) {
+				ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pAttribute->getType());
 
 				if(!list.contains(pComplexType->getQualifiedName())) {
 					os << "#include \"../types/" << pComplexType->getQualifiedName() << ".h\"" << CRLF;
@@ -747,22 +804,25 @@ void TypeListBuilder::buildHeaderIncludeElement(QTextStream& os, const RequestRe
 			}
 		}
 		for(element = pListElements->constBegin(); element != pListElements->constEnd(); ++element) {
+			if((*element)->hasRef()){
+				pElement = (*element)->getRef();
+			}else{
+				pElement = *element;
+			}
 
-			if(!(*element)->getType()) {
+			if(!pElement->getType()) {
 				continue;
 			}
 
-			if( (*element)->getMaxOccurs() > 1 || (*element)->getMaxOccurs() == -1) {
-				if(!list.contains("QList")) {
+			if(pElement->getMaxOccurs() > 1 || pElement->getMaxOccurs() == -1) {
+				if(!list.contains("QList")){
 					os << "#include <QList>" << CRLF;
 					list.append("QList");
-
 				}
-
 			}
 
-			if( (*element)->getType()->getClassType() == Type::TypeSimple) {
-				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>((*element)->getType());
+			if(pElement->getType()->getClassType() == Type::TypeSimple) {
+				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pElement->getType());
 				if(!list.contains(pSimpleType->getVariableTypeFilenameString())) {
 					os << "#include \"../types/" << pSimpleType->getVariableTypeFilenameString() << ".h\"" << CRLF;
 					list.append(pSimpleType->getVariableTypeFilenameString());
@@ -770,7 +830,7 @@ void TypeListBuilder::buildHeaderIncludeElement(QTextStream& os, const RequestRe
 				}
 
 			}else/* if( (*element)->getType()->getClassType() == Type::TypeComplex)*/ {
-				ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>((*element)->getType());
+				ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pElement->getType());
 				if(!list.contains(pComplexType->getQualifiedName())) {
 					os << "#include \"../types/" << pComplexType->getQualifiedName() << ".h\"" << CRLF;
 					list.append(pComplexType->getQualifiedName());
@@ -818,7 +878,7 @@ void TypeListBuilder::buildCppClassType(QTextStream& os, const TypeSharedPtr& pT
 {
 	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pType->getLocalName();
 
-	os << "namespace " << pType->getNamespace().toUpper() << " {" << CRLF;
+	os << "namespace " << pType->getNamespace().toUpper().replace("-", "_") << " {" << CRLF;
 	os << CRLF;
 
 	if(pType->getClassType() == Type::TypeSimple) {
@@ -849,7 +909,13 @@ void TypeListBuilder::buildCppClassType(QTextStream& os, const TypeSharedPtr& pT
 			os << szClassname << "::~" << szClassname << "() {}" << CRLF;
 			os << CRLF;
 		}else{
-			QString szExtensionName = pComplexType->getExtensionType()->getNameWithNamespace();
+			QString szExtensionName;
+			if(pComplexType->getExtensionType()->getClassType() == Type::TypeSimple){
+				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pComplexType->getExtensionType());
+				szExtensionName = pSimpleType->getVariableTypeString();
+			}else{
+				szExtensionName = pComplexType->getExtensionType()->getNameWithNamespace();
+			}
 			QString szExtendedClassname = (!m_szPrefix.isEmpty() ? m_szPrefix : "") + szExtensionName;
 
 			os << szClassname << "::" << szClassname << "() :" << szExtendedClassname << "() {}" << CRLF;
@@ -885,48 +951,46 @@ void TypeListBuilder::buildCppClassComplexType(QTextStream& os, const ComplexTyp
 
 	AttributeListSharedPtr pListAttributes = pComplexType->getAttributeList();
 	AttributeList::const_iterator attr;
+	AttributeSharedPtr pAttribute;
 
 	ElementListSharedPtr pListElements = pComplexType->getElementList();
 	ElementList::const_iterator element;
+	ElementSharedPtr pElement;
 
 	if(pListAttributes->count() > 0 || pListElements->count() > 0) {
 
 		for(attr = pListAttributes->constBegin(); attr != pListAttributes->constEnd(); ++attr) {
-			if(!(*attr)->getType()) {
-				qWarning("[TypeListBuilder] Attribute %s in %s has no type", qPrintable((*attr)->getName()), qPrintable(pComplexType->getQualifiedName()));
+			if((*attr)->hasRef()){
+				pAttribute = (*attr)->getRef();
+			}else{
+				pAttribute = *attr;
+			}
+
+			if(!pAttribute->getType()) {
+				qWarning("[TypeListBuilder] Attribute %s in %s has no type", qPrintable(pAttribute->getName()), qPrintable(pComplexType->getQualifiedName()));
 				continue;
 			}
-			if( (*attr)->getType()->getClassType() == Type::TypeSimple) {
-				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>((*attr)->getType());
 
-				if(!pSimpleType->isEnumeration()) {
-					os << pSimpleType->getSetterDefinition(szClassname) << CRLF ;
-					os << pSimpleType->getGetterDefinition(szClassname) << CRLF ;
-				} else {
-					os << pSimpleType->getSetterDefinitionForComplexType(szClassname) << CRLF ;
-					os << pSimpleType->getGetterDefinitionForComplexType(szClassname) << CRLF ;
-				}
-				os << CRLF;
-
-			}else if( (*attr)->getType()->getClassType() == Type::TypeComplex) {
-				ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>((*attr)->getType());
-
-				os << pComplexType->getSetterDefinition(szClassname) << CRLF ;
-				os << pComplexType->getGetterDefinition(szClassname) << CRLF ;
-				os << CRLF;
-			}
+			os << pAttribute->getSetterDefinition(szClassname);
+			os << pAttribute->getGetterDefinition(szClassname);
+			os << CRLF;
 		}
 		for(element = pListElements->constBegin(); element != pListElements->constEnd(); ++element) {
+			if((*element)->hasRef()){
+				pElement = (*element)->getRef();
+			}else{
+				pElement = *element;
+			}
 
-			ComplexTypeSharedPtr pType = qSharedPointerCast<ComplexType>((*element)->getType());
+			ComplexTypeSharedPtr pType = qSharedPointerCast<ComplexType>(pElement->getType());
 
-			if(!(*element)->getType()) {
-				qWarning("[TypeListBuilder] Element %s in %s has no type", qPrintable((*element)->getName()), qPrintable(pComplexType->getQualifiedName()));
+			if(!pElement->getType()) {
+				qWarning("[TypeListBuilder] Element %s in %s has no type", qPrintable(pElement->getName()), qPrintable(pComplexType->getQualifiedName()));
 				continue;
 			}
 
-			os << (*element)->getSetterDefinition(szClassname) << CRLF ;
-			os << (*element)->getGetterDefinition(szClassname) << CRLF ;
+			os << pElement->getSetterDefinition(szClassname) << CRLF ;
+			os << pElement->getGetterDefinition(szClassname) << CRLF ;
 			os << CRLF;
 		}
 	}
@@ -943,7 +1007,7 @@ void TypeListBuilder::buildCppClassElement(QTextStream& os, const RequestRespons
 	pComplexType->setLocalName(pElement->getLocalName());
 	pComplexType->setNamespace(pElement->getNamespace());
 
-	os << "namespace " << pElement->getNamespace().toUpper() << " {" << CRLF;
+	os << "namespace " << pElement->getNamespace().toUpper().replace("-", "_") << " {" << CRLF;
 	os << CRLF;
 
 	if(!pComplexType.isNull()) {

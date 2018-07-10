@@ -22,6 +22,17 @@ public:
 
 	static ElementSharedPtr create();
 
+	void setRef(const ElementSharedPtr& pRef);
+	ElementSharedPtr getRef() const;
+	bool hasRef() const;
+	bool needRef() const;
+
+	void setRefValue(const QString& szRefValue);
+	const QString& getRefValue() const;
+
+	void setNamespace(const QString& szNamespace);
+	const QString& getNamespace() const;
+
 	void setName(const QString& szName);
 	QString getName() const;
 
@@ -49,6 +60,10 @@ public:
 	QString getDeserializerDefinition(const QString& szClassname) const;
 
 private:
+	ElementSharedPtr m_pRef;
+	QString m_szRefValue;
+	QString m_szNamespace;
+
 	QString m_szName;
 	TypeSharedPtr m_pType;
 
@@ -65,6 +80,7 @@ public:
 
 	static ElementListSharedPtr create();
 
+	ElementSharedPtr getByRef(const QString& szRef) const;
 };
 
 class Attribute
@@ -75,6 +91,13 @@ public:
 
 	static AttributeSharedPtr create();
 
+	void setRef(const AttributeSharedPtr& pRef);
+	const AttributeSharedPtr& getRef() const;
+	bool hasRef() const;
+
+	void setNamespace(const QString& szNamespace);
+	const QString& getNamespace() const;
+
 	void setName(const QString& szName);
 	QString getName() const;
 
@@ -84,11 +107,24 @@ public:
 	void setRequired(bool bRequired);
 	bool isRequired() const;
 
+	void setIsList(bool bIsList);
+	bool isList() const;
+
+	QString getSetterDeclaration() const;
+	QString getGetterDeclaration() const;
+	QString getVariableDeclaration() const;
+
+	QString getSetterDefinition(const QString& szClassname) const;
+	QString getGetterDefinition(const QString& szClassname) const;
+
 private:
+	AttributeSharedPtr m_pRef;		//https://www.w3schools.com/xml/el_attribute.asp (see "ref" part)
+	QString m_szNamespace;			// Useful to identify the ref
+
 	QString m_szName;
 	TypeSharedPtr m_pType;
 	bool m_bRequired;
-
+	bool m_bIsList;
 };
 
 class AttributeList : public QList<AttributeSharedPtr>
@@ -99,6 +135,8 @@ public:
 
 	static AttributeListSharedPtr create();
 
+	AttributeSharedPtr getByRef(const QString& szRef) const;
+	bool containsListAttribute() const;
 };
 
 class ComplexType : public Type
