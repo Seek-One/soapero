@@ -338,6 +338,11 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 	{
 		QString szName;
 
+		if(inSection(Section::Attribute) && m_pCurrentAttribute && (attributes.count() == 0)){
+			TypeSharedPtr pCurrentType = SimpleType::create();
+			m_pCurrentAttribute->setType(pCurrentType);
+		}
+
 		if(attributes.index(ATTR_NAME) != -1){
 			szName = szName = attributes.value(ATTR_NAME);
 		}
@@ -702,11 +707,25 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 	 */
 	case Section::Restriction:
 	{
-		if(inSection(Section::SimpleType) && currentType()){
-			if(attributes.index(ATTR_BASE) != -1) {
-				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(currentType());
-				pSimpleType->setVariableTypeFromString(m_szCurrentNamespacePrefix, attributes.value(ATTR_BASE));
-				pSimpleType->setRestricted(true);
+		if(inSection(Section::SimpleType) &&
+				(currentType() || (m_pCurrentAttribute &&
+						m_pCurrentAttribute->getType() &&
+						(m_pCurrentAttribute->getType()->getClassType() == Type::TypeSimple)))){
+			SimpleTypeSharedPtr pSimpleType;
+			if(currentType()){
+				pSimpleType = qSharedPointerCast<SimpleType>(currentType());
+			}else{
+				pSimpleType = qSharedPointerCast<SimpleType>(m_pCurrentAttribute->getType());
+				if(pSimpleType){
+					pSimpleType->setName(m_pCurrentAttribute->getName());
+				}
+			}
+
+			if(pSimpleType){
+				if(attributes.index(ATTR_BASE) != -1) {
+					pSimpleType->setVariableTypeFromString(m_szCurrentNamespacePrefix, attributes.value(ATTR_BASE));
+					pSimpleType->setRestricted(true);
+				}
 			}
 		}
 	}

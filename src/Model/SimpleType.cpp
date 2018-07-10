@@ -68,6 +68,8 @@ void SimpleType::setVariableTypeFromString(const QString& szNamespacePrefix, con
 		m_variableType = AnyType;
 	}else if(szType == (szNamespacePrefix + ":nonNegativeInteger")){
 		m_variableType = NonNegativeInteger;
+	}else if(szType == (szNamespacePrefix + ":hexBinary")){
+		m_variableType = HexBinary;
 	}
 }
 
@@ -128,6 +130,9 @@ QString SimpleType::getVariableTypeString()const
 		case NonNegativeInteger:
 			return "XS::NonNegativeInteger";
 			break;
+		case HexBinary:
+			return "XS::HexBinary";
+			break;
 		default:
 			return QString();
 		}
@@ -185,6 +190,9 @@ QString SimpleType::getVariableTypeFilenameString() const
 			break;
 		case NonNegativeInteger:
 			return "XSNonNegativeInteger";
+			break;
+		case HexBinary:
+			return "XSHexBinary";
 			break;
 		default:
 			return QString();

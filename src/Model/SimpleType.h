@@ -35,6 +35,7 @@ public:
 		UnsignedLong,
 		AnyType,
 		NonNegativeInteger,
+		HexBinary,
 	};
 
 	SimpleType();

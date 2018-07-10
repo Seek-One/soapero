@@ -194,16 +194,16 @@ set (APP_SOURCES
     src/Base/XSDuration.h
     src/Base/XSFloat.cpp
     src/Base/XSFloat.h
+    src/Base/XSHexBinary.cpp
+    src/Base/XSHexBinary.h
     src/Base/XSInteger.cpp
     src/Base/XSInteger.h
-    src/Base/XSUnsignedInteger.cpp
-    src/Base/XSUnsignedInteger.h
-    src/Base/XSQName.cpp
-    src/Base/XSQName.h
     src/Base/XSNCName.cpp
     src/Base/XSNCName.h
     src/Base/XSNonNegativeInteger.cpp
     src/Base/XSNonNegativeInteger.h
+    src/Base/XSQName.cpp
+    src/Base/XSQName.h
     src/Base/XSString.cpp
     src/Base/XSString.h
     src/Base/XSToken.cpp
