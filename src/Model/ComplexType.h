@@ -39,6 +39,9 @@ public:
 	void setType(const TypeSharedPtr& pType);
 	TypeSharedPtr getType()const;
 
+	void setIsNested(bool bIsNested);
+	bool isNested() const;
+
 	void setMinOccurs(int iMinOccurs);
 	int getMinOccurs()const;
 
@@ -66,6 +69,7 @@ private:
 
 	QString m_szName;
 	TypeSharedPtr m_pType;
+	bool m_bIsNested;
 
 	int m_iMinOccurs;
 	int m_iMaxOccurs;

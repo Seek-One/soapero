@@ -530,6 +530,10 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 							element->setType(pType);
 						}
 					}
+
+					if(element->getType()->getNameWithNamespace() == currentType()->getNameWithNamespace()){
+						element->setIsNested(true);
+					}
 				}
 			}
 //			else {

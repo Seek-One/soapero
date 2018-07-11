@@ -705,7 +705,7 @@ void TypeListBuilder::buildHeaderIncludeType(QTextStream& os, const TypeSharedPt
 					pElement = *element;
 				}
 
-				if(!pElement->getType()) {
+				if(!pElement->getType() || pElement->isNested()){
 					continue;
 				}
 

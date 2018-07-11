@@ -14,6 +14,7 @@
 
 Element::Element()
 {
+	m_bIsNested = false;
 	m_iMinOccurs = 1;
 	m_iMaxOccurs = 1; // -1 means unbounded
 }
@@ -88,6 +89,16 @@ TypeSharedPtr Element::getType() const
 	return m_pType;
 }
 
+void Element::setIsNested(bool bIsNested)
+{
+	m_bIsNested = bIsNested;
+}
+
+bool Element::isNested() const
+{
+	return m_bIsNested;
+}
+
 void Element::setMinOccurs(int iMinOccurs)
 {
 	m_iMinOccurs = iMinOccurs;
@@ -159,9 +170,14 @@ QString Element::getSetterDeclaration() const
 		}else{
 			QString szLocalName = pComplexType->getLocalName();
 			QString szVarName = szLocalName.left(1).toLower() + szLocalName.mid(1);
-			QString szDeclaration = "void set%0(const %1& %2);";
+			QString szDeclaration;
+			if(m_bIsNested){
+				szDeclaration = QString("void set%0(%1* %2);").arg(getName()).arg(pComplexType->getLocalName()).arg(szVarName);
+			}else{
+				szDeclaration = QString("void set%0(const %1& %2);").arg(getName()).arg(pComplexType->getNameWithNamespace()).arg(szVarName);
+			}
 
-			return szDeclaration.arg(getName()).arg(pComplexType->getNameWithNamespace()).arg(szVarName);
+			return szDeclaration;
 		}
 	}
 }
@@ -191,8 +207,13 @@ QString Element::getGetterDeclaration() const
 			return szDeclaration.arg(pComplexType->getNameWithNamespace()).arg(getName());
 
 		}else{
-			QString szDeclaration = "const %0& get%1() const;";
-			return szDeclaration.arg(pComplexType->getNameWithNamespace()).arg(getName());
+			QString szDeclaration;
+			if(m_bIsNested){
+				szDeclaration = QString("%0* get%1() const;").arg(pComplexType->getLocalName()).arg(getName());
+			}else{
+				szDeclaration = QString("const %0& get%1() const;").arg(pComplexType->getNameWithNamespace()).arg(getName());
+			}
+			return szDeclaration;
 		}
 	}
 }
@@ -288,15 +309,20 @@ QString Element::getSetterDefinition(const QString& szClassname) const
 		}else{
 			QString szLocalName = getName();
 			QString szVarName = szLocalName.left(1).toLower() + szLocalName.mid(1);
+			QString szDeclaration;
+			if(m_bIsNested){
+				szDeclaration = QString("void %0::set%1(%2* %3)" CRLF
+						"{" CRLF
+						"\t%4 = %3;" CRLF
+						"}" CRLF).arg(szClassname).arg(szLocalName).arg(pComplexType->getLocalName()).arg(szVarName).arg(getVariableName());
+			}else{
+				szDeclaration = QString("void %0::set%1(const %2& %3)" CRLF
+						"{" CRLF
+						"\t%4 = %3;" CRLF
+						"}" CRLF).arg(szClassname).arg(szLocalName).arg(pComplexType->getNameWithNamespace()).arg(szVarName).arg(getVariableName());
+			}
 
-			QString szDeclaration = ""
-			"void %0::set%1(const %2& %3)" CRLF
-			"{" CRLF
-			"\t%4 = %3;" CRLF
-			"}" CRLF;
-
-			return szDeclaration.arg(szClassname).arg(szLocalName).arg(pComplexType->getNameWithNamespace())
-					.arg(szVarName).arg(getVariableName());
+			return szDeclaration;
 		}
 	}
 }
@@ -352,13 +378,20 @@ QString Element::getGetterDefinition(const QString& szClassname) const
 			return szDefinition.arg(pComplexType->getNameWithNamespace()).arg(szClassname).arg(getName()).arg(getVariableName());
 
 		}else{
-			QString szDefinition = ""
-			"const %0& %1::get%2() const" CRLF
-			"{" CRLF
-			"\treturn %3;" CRLF
-			"}" CRLF;
+			QString szDefinition;
+			if(m_bIsNested){
+				szDefinition = QString("%0* %1::get%2() const" CRLF
+						"{" CRLF
+						"\treturn %3;" CRLF
+						"}" CRLF).arg(pComplexType->getLocalName()).arg(szClassname).arg(getName()).arg(getVariableName());
+			}else{
+				szDefinition = QString("const %0& %1::get%2() const" CRLF
+						"{" CRLF
+						"\treturn %3;" CRLF
+						"}" CRLF).arg(pComplexType->getNameWithNamespace()).arg(szClassname).arg(getName()).arg(getVariableName());
+			}
 
-			return szDefinition.arg(pComplexType->getNameWithNamespace()).arg(szClassname).arg(getName()).arg(getVariableName());
+			return szDefinition;
 		}
 	}
 }
@@ -431,8 +464,8 @@ QString Element::getVariableDeclaration() const
 			szDeclaration += szVarName;
 			szDeclaration += "List";
 		} else {
-			szDeclaration += m_pType->getNameWithNamespace();
-			szDeclaration += " ";
+			szDeclaration += m_bIsNested ? m_pType->getLocalName() : m_pType->getNameWithNamespace();
+			szDeclaration += m_bIsNested ? "* " : " ";
 			szDeclaration += szVarName;
 		}
 
@@ -1007,8 +1040,9 @@ QString ComplexType::getSerializerDefinition(const QString& szClassname, const Q
 				szDefinition += QString("\t\t}" CRLF);
 				szDefinition += "\t}" CRLF;
 			} else{
-				szDefinition += "\tif(!" + pElement->getVariableName() + ".isNull()) {" CRLF;
-				szDefinition += "\t\tszValue += " + pElement->getVariableName() + ".serialize();" CRLF;
+				szDefinition += "\tif(" + (pElement->isNested() ? pElement->getVariableName() + " && " : "") +
+						"!" + pElement->getVariableName() + (pElement->isNested() ? "->" : ".") + "isNull()) {" CRLF;
+				szDefinition += "\t\tszValue += " + pElement->getVariableName() + (pElement->isNested() ? "->" : ".") + "serialize();" CRLF;
 				szDefinition += "\t}" CRLF;
 			}
 		}
@@ -1121,7 +1155,12 @@ QString ComplexType::getDeserializerDefinition(const QString& szClassname) const
 
 			} else{
 				szDefinition += "\t\tif(child.tagName() == \"" + pComplexType->getNamespace() + ":" + pElement->getName() + "\") {" CRLF;
-				szDefinition += "\t\t\t" + pElement->getVariableName() + ".deserialize(child);" CRLF;
+				if(pElement->isNested()){
+					szDefinition += "\t\t\tif(!" + pElement->getVariableName() + "){" CRLF;
+					szDefinition += "\t\t\t\t" + pElement->getVariableName() + " = new " + pElement->getType()->getLocalName() + "();" CRLF;
+					szDefinition += "\t\t\t}" CRLF;
+				}
+				szDefinition += "\t\t\t" + pElement->getVariableName() + (pElement->isNested() ? "->" : ".") + "deserialize(child);" CRLF;
 				szDefinition += "\t\t}" CRLF;
 			}
 		}
@@ -1138,6 +1177,7 @@ QString ComplexType::getIsNullDefinition(const QString& szClassname) const
 	AttributeList::const_iterator attr;
 	ElementList::const_iterator elem;
 	AttributeSharedPtr pAttribute;
+	ElementSharedPtr pElement;
 
 	QString szDefinition = ""
 	"bool %0::isNull() const" CRLF
@@ -1182,23 +1222,33 @@ QString ComplexType::getIsNullDefinition(const QString& szClassname) const
 		}
 	}
 	for(elem = m_pListElement->constBegin(); elem != m_pListElement->constEnd(); ++elem) {
-		if( !(*elem)->getType()) {
+		if((*elem)->hasRef()){
+			pElement = (*elem)->getRef();
+		}else{
+			pElement = *elem;
+		}
+
+		if( !pElement->getType()) {
 			continue;
 		}
-		if( (*elem)->getType()->getClassType() == Type::TypeSimple) {
-			SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>((*elem)->getType());
-			if( (*elem)->getMaxOccurs() > 1 || (*elem)->getMaxOccurs() == -1) {
-				szCond += (*elem)->getVariableName() + "List.isEmpty() && ";
+		if(pElement->getType()->getClassType() == Type::TypeSimple) {
+			SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pElement->getType());
+			if(pElement->getMaxOccurs() > 1 || pElement->getMaxOccurs() == -1) {
+				szCond += pElement->getVariableName() + "List.isEmpty() && ";
 			}else{
-				szCond += (*elem)->getVariableName() + ".isNull() && ";
+				szCond += pElement->getVariableName() + ".isNull() && ";
 			}
 
-		}else if( (*elem)->getType()->getClassType() == Type::TypeComplex) {
-			ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>((*elem)->getType());
-			if( (*elem)->getMaxOccurs() > 1 || (*elem)->getMaxOccurs() == -1) {
-				szCond += (*elem)->getVariableName() + "List.isEmpty() && ";
+		}else if(pElement->getType()->getClassType() == Type::TypeComplex) {
+			ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pElement->getType());
+			if(pElement->getMaxOccurs() > 1 || pElement->getMaxOccurs() == -1) {
+				szCond += pElement->getVariableName() + "List.isEmpty() && ";
 			}else{
-				szCond += (*elem)->getVariableName() + ".isNull() && ";
+				if(pElement->isNested()){
+					szCond += "(!" + pElement->getVariableName() + " || (" + pElement->getVariableName() + " && " + pElement->getVariableName() + "->isNull())) && ";
+				}else{
+					szCond += pElement->getVariableName() + ".isNull() && ";
+				}
 			}
 		}
 	}

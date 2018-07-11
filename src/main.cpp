@@ -39,7 +39,8 @@ int main(int argc, char **argv)
 //	QFile file("./wsdl/ws-addr.xsd");						// WORKS!
 //	QFile file("./wsdl/bf-2.xsd");							// WORKS!
 //	QFile file("./wsdl/b-2.xsd");							// WORKS!
-	QFile file("./wsdl/xmlmime.xml");
+//	QFile file("./wsdl/xmlmime.xml");						// WORKS!
+	QFile file("./wsdl/soap-envelope.xml");
 
 	if(file.open(QFile::ReadOnly)) {
 
