@@ -70,6 +70,10 @@ void SimpleType::setVariableTypeFromString(const QString& szNamespacePrefix, con
 		m_variableType = NonNegativeInteger;
 	}else if(szType == (szNamespacePrefix + ":hexBinary")){
 		m_variableType = HexBinary;
+	}else if(szType == (szNamespacePrefix + ":double")){
+		m_variableType = Double;
+	}else if(szType == (szNamespacePrefix + ":anySimpleType")){
+		m_variableType = AnySimpleType;
 	}
 }
 
@@ -87,52 +91,44 @@ QString SimpleType::getVariableTypeString()const
 		switch(m_variableType) {
 		case String:
 			return "XS::String";
-			break;
 		case Int:
 			return "XS::Integer";
-			break;
 		case UnsignedInt:
 			return "XS::UnsignedInteger";
-			break;
 		case Boolean:
 			return "XS::Boolean";
-			break;
 		case Duration:
 			return "XS::Duration";
-			break;
 		case Base64Binary:
 			return "XS::Base64Binary";
-			break;
 		case AnyURI:
 			return "XS::AnyURI";
-			break;
 		case Float:
 			return "XS::Float";
-			break;
 		case DateTime:
 			return "XS::DateTime";
-			break;
 		case QName:
 			return "XS::QName";
-			break;
 		case NCName:
 			return "XS::NCName";
-			break;
 		case Token:
 			return "XS::Token";
-			break;
 		case UnsignedLong:
 			return "XS::UnsignedLong";
-			break;
 		case AnyType:
 			return "XS::AnyType";
-			break;
 		case NonNegativeInteger:
 			return "XS::NonNegativeInteger";
-			break;
 		case HexBinary:
 			return "XS::HexBinary";
-			break;
+		case Double:
+			return "XS::Double";
+		case AnySimpleType:
+			return "XS::AnySimpleType";
+
+
+		case Custom:
+			return (m_szCustomNamespace + "::" + m_szCustomName);
 		default:
 			return QString();
 		}
@@ -148,56 +144,68 @@ QString SimpleType::getVariableTypeFilenameString() const
 		switch(m_variableType) {
 		case String:
 			return "XSString";
-			break;
 		case Int:
 			return "XSInteger";
-			break;
 		case UnsignedInt:
 			return "XSUnsignedInteger";
-			break;
 		case Boolean:
 			return "XSBoolean";
-			break;
 		case Duration:
 			return "XSDuration";
-			break;
 		case Base64Binary:
 			return "XSBase64Binary";
-			break;
 		case AnyURI:
 			return "XSAnyURI";
-			break;
 		case Float:
 			return "XSFloat";
-			break;
 		case DateTime:
 			return "XSDateTime";
-			break;
 		case QName:
 			return "XSQName";
-			break;
 		case NCName:
 			return "XSNCName";
-			break;
 		case Token:
 			return "XSToken";
-			break;
 		case UnsignedLong:
 			return "XSUnsignedLong";
-			break;
 		case AnyType:
 			return "XSAnyType";
-			break;
 		case NonNegativeInteger:
 			return "XSNonNegativeInteger";
-			break;
 		case HexBinary:
 			return "XSHexBinary";
-			break;
+		case Double:
+			return "XSDouble";
+		case AnySimpleType:
+			return "XSAnySimpleType";
+
+
+		case Custom:
+			return (m_szCustomNamespace + m_szCustomName);
 		default:
 			return QString();
 		}
 	}
+}
+
+void SimpleType::setCustomNamespace(const QString& szCustomNamespace)
+{
+	m_szCustomNamespace = szCustomNamespace;
+}
+
+const QString& SimpleType::getCustomNamespace() const
+{
+	return m_szCustomNamespace;
+}
+
+void SimpleType::setCustomName(const QString& szCustomName)
+{
+	m_szCustomName = szCustomName;
+}
+
+const QString& SimpleType::getCustomName() const
+{
+	return m_szCustomName;
 }
 
 bool SimpleType::isEnumeration() const
@@ -214,7 +222,7 @@ bool SimpleType::isEnumeration() const
 
 QString SimpleType::getSetterDeclaration() const
 {
-	QString szVarName = getLocalName().left(1).toLower() + getLocalName().mid(1);
+	QString szVarName = getLocalName(true).left(1).toLower() + getLocalName(true).mid(1);
 
 	QString szDeclaration;
 	if(isEnumeration()) {
@@ -222,16 +230,16 @@ QString SimpleType::getSetterDeclaration() const
 	}else{
 		szDeclaration = "void set%0(const %1& %2);";
 	}
-	return szDeclaration.arg(getLocalName()).arg(getVariableTypeString()).arg(szVarName);
+	return szDeclaration.arg(getLocalName(true)).arg(getVariableTypeString()).arg(szVarName);
 }
 
 QString SimpleType::getSetterDeclarationForComplexType() const
 {
-	QString szVarName = getLocalName().left(1).toLower() + getLocalName().mid(1);
+	QString szVarName = getLocalName(true).left(1).toLower() + getLocalName(true).mid(1);
 
 	QString szDeclaration = "void set%0(const %1& %2);";
 
-	return szDeclaration.arg(getLocalName()).arg(isEnumeration() ? getNameWithNamespace() : getVariableTypeString()).arg(szVarName);
+	return szDeclaration.arg(getLocalName(true)).arg(isEnumeration() ? getNameWithNamespace() : getVariableTypeString()).arg(szVarName);
 }
 
 QString SimpleType::getGetterDeclaration() const
@@ -242,17 +250,17 @@ QString SimpleType::getGetterDeclaration() const
 	}else{
 		szDeclaration = "const %0& get%1() const;";
 	}
-	return szDeclaration.arg(getVariableTypeString()).arg(getLocalName());
+	return szDeclaration.arg(getVariableTypeString()).arg(getLocalName(true));
 }
 
 QString SimpleType::getGetterDeclarationForComplexType() const
 {
 	QString szDeclaration;
-	if(isEnumeration()) {
-		szDeclaration = "%0 get%1() const;";
-	}else{
+//	if(isEnumeration()) {
+//		szDeclaration = "%0 get%1() const;";
+//	}else{
 		szDeclaration = "const %0& get%1() const;";
-	}
+//	}
 	return szDeclaration.arg(isEnumeration() ? getNameWithNamespace() : getVariableTypeString()).arg(getLocalName());
 }
 
@@ -263,7 +271,11 @@ QString SimpleType::getSerializerDeclaration() const
 
 QString SimpleType::getDeserializerDeclaration() const
 {
-	return "void deserialize(const QDomElement& element);";
+	QString szRet = "void deserialize(const QDomElement& element);";
+	if(isEnumeration()){
+		szRet += CRLF "\tvoid deserialize(const QDomAttr& attr);";
+	}
+	return szRet;
 }
 
 QString SimpleType::getEnumConvertDeclaration() const
@@ -335,7 +347,7 @@ QString SimpleType::getEnumerationDeclaration() const
 
 QString SimpleType::getSetterDefinition(const QString& szClassname) const
 {
-	QString szVarName = getLocalName().left(1).toLower() + getLocalName().mid(1);
+	QString szVarName = getLocalName(true).left(1).toLower() + getLocalName(true).mid(1);
 
 	QString szDefinition = "";
 	if(isEnumeration()) {
@@ -347,13 +359,13 @@ QString SimpleType::getSetterDefinition(const QString& szClassname) const
 	szDefinition += "\t%4 = %5;" CRLF;
 	szDefinition += "}" CRLF;
 
-	return szDefinition.arg(szClassname).arg(getLocalName()).arg(getVariableTypeString())
+	return szDefinition.arg(szClassname).arg(getLocalName(true)).arg(getVariableTypeString())
 						.arg(szVarName).arg(getVariableName()).arg(szVarName);
 }
 
 QString SimpleType::getSetterDefinitionForComplexType(const QString& szClassname) const
 {
-	QString szVarName = getLocalName().left(1).toLower() + getLocalName().mid(1);
+	QString szVarName = getLocalName(true).left(1).toLower() + getLocalName(true).mid(1);
 
 	QString szDefinition = "void %0::set%1(const %2& %3)" CRLF;
 
@@ -361,7 +373,7 @@ QString SimpleType::getSetterDefinitionForComplexType(const QString& szClassname
 	szDefinition += "\t%4 = %5;" CRLF;
 	szDefinition += "}" CRLF;
 
-	return szDefinition.arg(szClassname).arg(getLocalName()).arg(getNameWithNamespace())
+	return szDefinition.arg(szClassname).arg(getLocalName(true)).arg(getNameWithNamespace())
 						.arg(szVarName).arg(getVariableName()).arg(szVarName);
 }
 
@@ -382,7 +394,7 @@ QString SimpleType::getGetterDefinition(const QString& szClassname) const
 		"}" CRLF;
 	}
 
-	return szDefinition.arg(getVariableTypeString()).arg(szClassname).arg(getLocalName()).arg(getVariableName());
+	return szDefinition.arg(getVariableTypeString()).arg(szClassname).arg(getLocalName(true)).arg(getVariableName());
 }
 
 QString SimpleType::getGetterDefinitionForComplexType(const QString& szClassname) const
@@ -393,7 +405,7 @@ QString SimpleType::getGetterDefinitionForComplexType(const QString& szClassname
 	"\treturn %3;" CRLF
 	"}" CRLF;
 
-	return szDefinition.arg(getNameWithNamespace()).arg(szClassname).arg(getLocalName()).arg(getVariableName());
+	return szDefinition.arg(getNameWithNamespace()).arg(szClassname).arg(getLocalName(true)).arg(getVariableName());
 }
 
 QString SimpleType::getSerializerDefinition(const QString& szClassname) const
@@ -409,7 +421,7 @@ QString SimpleType::getSerializerDefinition(const QString& szClassname) const
 		"\t return \"\";" CRLF
 		"}" CRLF;
 
-		return szDefinition.arg(szClassname).arg(getLocalName()).arg(getLocalName());
+		return szDefinition.arg(szClassname).arg(getLocalName(true)).arg(getLocalName());
 
 	} else {
 		QString szDefinition = ""
@@ -421,7 +433,7 @@ QString SimpleType::getSerializerDefinition(const QString& szClassname) const
 		"\t return \"\";" CRLF
 		"}" CRLF;
 
-		return szDefinition.arg(szClassname).arg(getLocalName()).arg(getVariableName());
+		return szDefinition.arg(szClassname).arg(getLocalName(true)).arg(getVariableName());
 	}
 }
 
@@ -430,12 +442,17 @@ QString SimpleType::getDeserializerDefinition(const QString& szClassname) const
 	if(isEnumeration()) {
 
 		QString szDefinition = ""
-		"void %0::deserialize(const QDomElement& element)" CRLF
-		"{" CRLF
-		"\tset%1FromString(element.text().trimmed());" CRLF
-		"}" CRLF;
+				"void %0::deserialize(const QDomElement& element)" CRLF
+				"{" CRLF
+				"\tset%1FromString(element.text().trimmed());" CRLF
+				"}" CRLF CRLF;
 
-		return szDefinition.arg(szClassname).arg(getLocalName());
+		szDefinition += "void %0::deserialize(const QDomAttr& attr)" CRLF
+				"{" CRLF
+				"\tset%1FromString(attr.value().trimmed());" CRLF
+				"}" CRLF;
+
+		return szDefinition.arg(szClassname).arg(getLocalName(true));
 
 	} else {
 		QString szDefinition = ""
@@ -523,7 +540,7 @@ QString SimpleType::getIsNullDefinition(const QString& szClassname) const
 
 QString SimpleType::getVariableName() const
 {
-	return "_" + getLocalName().left(1).toLower() + getLocalName().mid(1);
+	return StringUtils::replaceNonConformCharacters(QString("_" + getLocalName().left(1).toLower() + getLocalName().mid(1)));
 }
 
 QString SimpleType::getVariableIsNullName() const

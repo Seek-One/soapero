@@ -46,6 +46,7 @@ public:
 	ElementListSharedPtr getElementList() const;
 
 private:
+	ElementSharedPtr getElementByRef(const QString& szRef);
 	TypeSharedPtr getTypeByName(const QString& szLocalName, const QString& szNamespace = QString(), const TypeListSharedPtr& pListIgnoredTypes = TypeList::create());
 
 	void loadFromHttp(const QString& szURL, const QString& szNamespace = QString());
@@ -91,7 +92,7 @@ private:
     AttributeSharedPtr m_pCurrentAttribute;
     ElementSharedPtr m_pCurrentElement;
 
-    QStack<Section::Name> m_SectionStack;
+    QStack<Section::Name> m_sectionStack;
 };
 
 #endif /* QWSDLPARSERHANDLER_H_ */

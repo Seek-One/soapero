@@ -36,6 +36,12 @@ public:
 		AnyType,
 		NonNegativeInteger,
 		HexBinary,
+		Double,
+		AnySimpleType,
+
+
+		Custom,				// Example:	<xs:simpleType name="ReceiverReference"> <xs:restriction base="tt:ReferenceToken"/> </xs:simpleType>
+							// where "tt:ReferenceToken" is a complex type.
 	};
 
 	SimpleType();
@@ -48,6 +54,11 @@ public:
 	VariableType getVariableType() const;
 	QString getVariableTypeString() const;
 	QString getVariableTypeFilenameString() const;
+
+	void setCustomNamespace(const QString& szCustomNamespace);
+	const QString& getCustomNamespace() const;
+	void setCustomName(const QString& szCustomName);
+	const QString& getCustomName() const;
 
 	bool isEnumeration() const;
 
@@ -92,6 +103,8 @@ public:
 
 private:
 	VariableType m_variableType;
+	QString m_szCustomNamespace;
+	QString m_szCustomName;
 
 	//For base string
 	int m_iMaxLength;

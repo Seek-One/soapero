@@ -10,6 +10,7 @@
 #include <QStringList>
 #include <QDir>
 
+#include "../Utils/StringUtils.h"
 #include "TypeListBuilder.h"
 
 #ifndef CRLF
@@ -288,6 +289,7 @@ void TypeListBuilder::buildHeaderFile(const ServiceSharedPtr& pService)
 
 void TypeListBuilder::buildCppFile(const TypeSharedPtr& pType)
 {
+	bool bQStringListIncluded = false;
 	QString szCppFilename = pType->getQualifiedName() + ".cpp";
 	QString szHeaderFilename = pType->getQualifiedName() + ".h";
 
@@ -312,6 +314,20 @@ void TypeListBuilder::buildCppFile(const TypeSharedPtr& pType)
 			if(pComplexType->getAttributeList()){
 				if(pComplexType->getAttributeList()->containsListAttribute()){
 					os << "#include <QStringList>" << CRLF;
+					bQStringListIncluded = true;
+				}
+			}
+			if(!bQStringListIncluded && pComplexType->getExtensionType() && pComplexType->isExtensionTypeList()){
+				os << "#include <QStringList>" << CRLF;
+				bQStringListIncluded = true;
+			}
+
+			if(pComplexType->getElementList()){
+				ElementList::const_iterator iter;
+				for(iter = pComplexType->getElementList()->constBegin(); iter != pComplexType->getElementList()->constEnd(); ++iter){
+					if((*iter)->getType() && (*iter)->isPointer()){
+						os << "#include \"" << (*iter)->getType()->getQualifiedName() << ".h\"" << CRLF;
+					}
 				}
 			}
 		}
@@ -418,9 +434,9 @@ void TypeListBuilder::buildCppFile(const ServiceSharedPtr& pService)
 
 void TypeListBuilder::buildHeaderClassType(QTextStream& os, const TypeSharedPtr& pType) const
 {
-	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pType->getLocalName();
+	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pType->getLocalName(true);
 
-	os << "namespace " << pType->getNamespace().toUpper().replace("-", "_") << " {" << CRLF;
+	os << "namespace " << StringUtils::replaceNonConformCharacters(pType->getNamespace().toUpper()) << " {" << CRLF;
 	os << CRLF;
 
 	if(pType->getClassType() == Type::TypeSimple) {
@@ -447,16 +463,31 @@ void TypeListBuilder::buildHeaderClassType(QTextStream& os, const TypeSharedPtr&
 	} else if(pType->getClassType() == Type::TypeComplex) {
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pType);
 
+		if(pComplexType->getElementList()){
+			ElementList::const_iterator iter;
+			for(iter = pComplexType->getElementList()->constBegin(); iter != pComplexType->getElementList()->constEnd(); ++iter){
+				if((*iter)->getType() && (*iter)->isPointer()){
+					os << "class " << (*iter)->getType()->getLocalName(true) << ";" << CRLF << CRLF;
+				}
+			}
+		}
+
 		if(pComplexType->getExtensionType().isNull()) {
 			os << "class " << szClassname << CRLF;
 		}else{
 			QString szExtendedClassname;
+			if(pComplexType->isExtensionTypeList()){
+				szExtendedClassname = "QList<";
+			}
 			if(pComplexType->getExtensionType()->getClassType() == Type::TypeSimple){
 				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pComplexType->getExtensionType());
-				szExtendedClassname = pSimpleType->getVariableTypeString();
+				szExtendedClassname += pSimpleType->getVariableTypeString();
 			}else{
 				QString szExtensionName = pComplexType->getExtensionType()->getNameWithNamespace();
-				szExtendedClassname = (!m_szPrefix.isEmpty() ? m_szPrefix : "") + szExtensionName;
+				szExtendedClassname += (!m_szPrefix.isEmpty() ? m_szPrefix : "") + szExtensionName;
+			}
+			if(pComplexType->isExtensionTypeList()){
+				szExtendedClassname += ">";
 			}
 
 			os << "class " << szClassname << " : public " << szExtendedClassname << CRLF;
@@ -576,10 +607,10 @@ void TypeListBuilder::buildHeaderClassComplexType(QTextStream& os, const Complex
 
 void TypeListBuilder::buildHeaderClassElement(QTextStream& os, const RequestResponseElementSharedPtr& pElement) const
 {
-	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pElement->getLocalName();
+	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pElement->getLocalName(true);
 	ComplexTypeSharedPtr pComplexType = pElement->getComplexType();
 
-	os << "namespace " << pElement->getNamespace().toUpper().replace("-", "_") << " {" << CRLF;
+	os << "namespace " << StringUtils::replaceNonConformCharacters(pElement->getNamespace().toUpper()) << " {" << CRLF;
 	os << CRLF;
 
 	if(!pComplexType.isNull()) {
@@ -657,6 +688,10 @@ void TypeListBuilder::buildHeaderIncludeType(QTextStream& os, const TypeSharedPt
 			}
 
 			os << "#include \"" << szExtensionName << ".h\"" << CRLF;
+			if(!bIncludeQList && pComplexType->isExtensionTypeList()){
+				os << "#include <QList>" << CRLF;
+				bIncludeQList = true;
+			}
 		}
 
 		if(pListAttributes->count() > 0 || pListElements->count() > 0) {
@@ -712,6 +747,10 @@ void TypeListBuilder::buildHeaderIncludeType(QTextStream& os, const TypeSharedPt
 				if(!bIncludeQList && (pElement->getMaxOccurs() > 1 || pElement->getMaxOccurs() == -1)) {
 					os << "#include <QList>" << CRLF;
 					bIncludeQList = true;
+				}
+
+				if(pElement->isPointer()){
+					continue;
 				}
 
 				if( pElement->getType()->getClassType() == Type::TypeSimple) {
@@ -876,9 +915,9 @@ void TypeListBuilder::buildHeaderIncludeService(QTextStream& os, const ServiceSh
 
 void TypeListBuilder::buildCppClassType(QTextStream& os, const TypeSharedPtr& pType) const
 {
-	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pType->getLocalName();
+	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pType->getLocalName(true);
 
-	os << "namespace " << pType->getNamespace().toUpper().replace("-", "_") << " {" << CRLF;
+	os << "namespace " << StringUtils::replaceNonConformCharacters(pType->getNamespace().toUpper()) << " {" << CRLF;
 	os << CRLF;
 
 	if(pType->getClassType() == Type::TypeSimple) {
@@ -906,15 +945,37 @@ void TypeListBuilder::buildCppClassType(QTextStream& os, const TypeSharedPtr& pT
 
 		if(pComplexType->getExtensionType().isNull()) {
 			os << szClassname << "::" << szClassname << "() {}" << CRLF;
-			os << szClassname << "::~" << szClassname << "() {}" << CRLF;
+			os << szClassname << "::~" << szClassname << "() {";
+
+			if(pComplexType->getElementList()){
+				ElementList::const_iterator iter;
+				for(iter = pComplexType->getElementList()->constBegin(); iter != pComplexType->getElementList()->constEnd(); ++iter){
+					if((*iter)->getMaxOccurs() == 1){
+						if((*iter)->getType() && ((*iter)->isNested() || (*iter)->isPointer())){
+							os << CRLF << "\tif(" << (*iter)->getVariableName() << "){" << CRLF;
+							os << "\t\tdelete " << (*iter)->getVariableName() << ";" << CRLF;
+							os << "\t\t" << (*iter)->getVariableName() << " = NULL;" << CRLF;
+							os << "\t}" << CRLF;
+						}
+					}
+				}
+			}
+
+			os << "}" << CRLF;
 			os << CRLF;
 		}else{
 			QString szExtensionName;
+			if(pComplexType->isExtensionTypeList()){
+				szExtensionName = "QList<";
+			}
 			if(pComplexType->getExtensionType()->getClassType() == Type::TypeSimple){
 				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pComplexType->getExtensionType());
-				szExtensionName = pSimpleType->getVariableTypeString();
+				szExtensionName += pSimpleType->getVariableTypeString();
 			}else{
-				szExtensionName = pComplexType->getExtensionType()->getNameWithNamespace();
+				szExtensionName += pComplexType->getExtensionType()->getNameWithNamespace();
+			}
+			if(pComplexType->isExtensionTypeList()){
+				szExtensionName += ">";
 			}
 			QString szExtendedClassname = (!m_szPrefix.isEmpty() ? m_szPrefix : "") + szExtensionName;
 
@@ -935,6 +996,7 @@ void TypeListBuilder::buildCppClassType(QTextStream& os, const TypeSharedPtr& pT
 void TypeListBuilder::buildCppClassSimpleType(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const
 {
 	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pSimpleType->getLocalName();
+	szClassname = StringUtils::replaceNonConformCharacters(szClassname);
 
 	os << pSimpleType->getSetterDefinition(szClassname) << CRLF;
 	os << pSimpleType->getGetterDefinition(szClassname) << CRLF;
@@ -1007,7 +1069,7 @@ void TypeListBuilder::buildCppClassElement(QTextStream& os, const RequestRespons
 	pComplexType->setLocalName(pElement->getLocalName());
 	pComplexType->setNamespace(pElement->getNamespace());
 
-	os << "namespace " << pElement->getNamespace().toUpper().replace("-", "_") << " {" << CRLF;
+	os << "namespace " << StringUtils::replaceNonConformCharacters(pElement->getNamespace().toUpper()) << " {" << CRLF;
 	os << CRLF;
 
 	if(!pComplexType.isNull()) {

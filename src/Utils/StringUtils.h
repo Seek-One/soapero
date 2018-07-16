@@ -17,6 +17,15 @@ public:
 	{
 		QString szRet = szString;
 		szRet.remove(QRegExp(QString::fromUtf8("[-`~!@#$%^&*()_—+=|:;<>«»,.?/{}\'\"\\\[\\\]\\\\]")));
+		szRet.replace(" ", "");
+		return szRet;
+	}
+
+	static inline QString replaceNonConformCharacters(const QString& szString)
+	{
+		QString szRet = szString;
+		szRet.replace("-", "_");
+		szRet.replace(".", "");
 		return szRet;
 	}
 };

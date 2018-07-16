@@ -180,6 +180,8 @@ set (APP_SOURCES
 #    generated/doorcontrol.cpp
 #    generated/doorcontrol.h
 
+	src/Base/XSAnySimpleType.cpp
+	src/Base/XSAnySimpleType.h
 	src/Base/XSAnyType.cpp
 	src/Base/XSAnyType.h
 	src/Base/XSAnyURI.cpp
@@ -190,6 +192,8 @@ set (APP_SOURCES
     src/Base/XSBoolean.h
     src/Base/XSDateTime.cpp
     src/Base/XSDateTime.h
+    src/Base/XSDouble.cpp
+    src/Base/XSDouble.h
     src/Base/XSDuration.cpp
     src/Base/XSDuration.h
     src/Base/XSFloat.cpp

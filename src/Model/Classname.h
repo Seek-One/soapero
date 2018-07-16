@@ -24,7 +24,7 @@ public:
 	QString getNameWithNamespace() const;
 	QString getQualifiedName() const;
 	QString getNamespace() const;
-	QString getLocalName() const;
+	QString getLocalName(bool bSafe = false) const;
 	QString getName() const;
 
 private:

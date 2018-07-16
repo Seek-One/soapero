@@ -41,6 +41,8 @@ public:
 
 	void setIsNested(bool bIsNested);
 	bool isNested() const;
+	void setIsPointer(bool bIsPointer);
+	bool isPointer() const;
 
 	void setMinOccurs(int iMinOccurs);
 	int getMinOccurs()const;
@@ -70,6 +72,7 @@ private:
 	QString m_szName;
 	TypeSharedPtr m_pType;
 	bool m_bIsNested;
+	bool m_bIsPointer;	// Difference with "isNested" is that "isPointer" means need at least a class declaration in the .h and an "#include" in the .cpp
 
 	int m_iMinOccurs;
 	int m_iMaxOccurs;
@@ -151,8 +154,9 @@ public:
 
 	static ComplexTypeSharedPtr create();
 
-	void setExtensionType(TypeSharedPtr pType);
+	void setExtensionType(TypeSharedPtr pType, bool bIsList = false);
 	TypeSharedPtr getExtensionType() const;
+	bool isExtensionTypeList() const;
 
 	void addAttribute(const AttributeSharedPtr& pAttribute);
 	AttributeListSharedPtr getAttributeList() const;
@@ -180,6 +184,7 @@ private:
 	ElementListSharedPtr m_pListElement;
 
 	TypeSharedPtr m_pExtensionType;
+	bool m_bIsListExtension;
 };
 
 class ComplexTypeList : public QList<ComplexTypeSharedPtr>

@@ -7,6 +7,7 @@
 
 #include <QStringList>
 
+#include "../Utils/StringUtils.h"
 #include "Model/Classname.h"
 
 Classname::Classname()
@@ -56,19 +57,23 @@ QString Classname::getTagQualifiedName() const
 
 QString Classname::getNameWithNamespace() const
 {
+	QString szSafeLocalName = StringUtils::replaceNonConformCharacters(m_szLocalName);
+
 	if(m_szNamespace.isEmpty()) {
-		return m_szLocalName;
+		return szSafeLocalName;
 	}else{
-		return m_szNamespace.toUpper().replace("-", "_") + "::" + m_szLocalName;
+		return m_szNamespace.toUpper().replace("-", "_") + "::" + szSafeLocalName;
 	}
 }
 
 QString Classname::getQualifiedName() const
 {
+	QString szSafeLocalName = StringUtils::replaceNonConformCharacters(m_szLocalName);
+
 	if(m_szNamespace.isEmpty()) {
 		return m_szLocalName;
 	}else{
-		return m_szNamespace.toUpper().replace("-", "_") + m_szLocalName;
+		return m_szNamespace.toUpper().replace("-", "_") + szSafeLocalName;
 	}
 }
 
@@ -77,8 +82,12 @@ QString Classname::getNamespace() const
 	return m_szNamespace;
 }
 
-QString Classname::getLocalName() const
+QString Classname::getLocalName(bool bSafe) const
 {
+	if(bSafe){
+		QString szSafeLocalName = StringUtils::replaceNonConformCharacters(m_szLocalName);
+		return szSafeLocalName;
+	}
 	return m_szLocalName;
 }
 

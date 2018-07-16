@@ -78,7 +78,7 @@ bool QWSDLParserHandler::endDocument()
 	// Resolve ref for element
 	for(element = m_pListElements->begin(); element != m_pListElements->end(); ++element){
 		if((*element)->needRef()){
-			ElementSharedPtr pRefElement = m_pListElements->getByRef((*element)->getRefValue());
+			ElementSharedPtr pRefElement = getElementByRef((*element)->getRefValue());
 			if(pRefElement){
 				(*element)->setRef(pRefElement);
 			}
@@ -189,6 +189,42 @@ bool QWSDLParserHandler::endDocument()
 				}
 
 
+			}
+		}
+	}
+
+	// Resolve recursive inclusion (class1 includes class2 and class2 includes class1)
+	// by using pointers (only check elements type for now).
+	// TODO: check attributes type too.
+	for(type = m_pListTypes->constBegin(); type != m_pListTypes->constEnd(); ++type){
+		if((*type)->getClassType() == Type::TypeComplex) {
+			ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(*type);
+
+			if(pComplexType->getElementList() && pComplexType->getElementList()->count() > 0){
+				for(element = pComplexType->getElementList()->begin(); element != pComplexType->getElementList()->end(); ++element){
+					if((*element)->hasRef()){
+						pElement = (*element)->getRef();
+					}else{
+						pElement = *element;
+					}
+
+					if(pElement->getType() && pElement->getType()->getClassType() == Type::TypeComplex){
+						ComplexTypeSharedPtr pComplexTypeElem = qSharedPointerCast<ComplexType>(pElement->getType());
+
+						if(pComplexTypeElem->getElementList() && pComplexTypeElem->getElementList()->count() > 0){
+							ElementList::const_iterator iter;
+							for(iter = pComplexTypeElem->getElementList()->constBegin(); iter != pComplexTypeElem->getElementList()->constEnd(); ++iter){
+								if((*iter)->getType() && (*iter)->getType()->getNameWithNamespace() == pComplexType->getNameWithNamespace()){
+									// No need to use a pointer if it's a list, or if it's already nested
+									if(((*iter)->getMaxOccurs() == 1) && !(*iter)->isNested()){
+										(*iter)->setIsPointer(true);
+										pElement->setIsPointer(true);
+									}
+								}
+							}
+						}
+					}
+				}
 			}
 		}
 	}
@@ -495,7 +531,7 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 			m_pCurrentElement = element;
 
 			if(attributes.index(ATTR_REF) != -1){
-				ElementSharedPtr pRefElement = m_pListElements->getByRef(attributes.value(ATTR_REF));
+				ElementSharedPtr pRefElement = getElementByRef(attributes.value(ATTR_REF));
 				if(pRefElement){
 					element->setRef(pRefElement);
 				}else{
@@ -727,7 +763,15 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 
 			if(pSimpleType){
 				if(attributes.index(ATTR_BASE) != -1) {
-					pSimpleType->setVariableTypeFromString(m_szCurrentNamespacePrefix, attributes.value(ATTR_BASE));
+					QString szValue = attributes.value(ATTR_BASE);
+
+					if(szValue.startsWith(m_szCurrentNamespacePrefix + ":")) {
+						pSimpleType->setVariableTypeFromString(m_szCurrentNamespacePrefix, szValue);
+					}else{
+						pSimpleType->setVariableType(SimpleType::Custom);
+						pSimpleType->setCustomNamespace(szValue.split(":")[0].toUpper());
+						pSimpleType->setCustomName(szValue.split(":")[1]);
+					}
 					pSimpleType->setRestricted(true);
 				}
 			}
@@ -787,6 +831,48 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 					m_pCurrentAttribute->setType(pType);
 					m_pCurrentAttribute->setIsList(true);
 				}
+			}
+		}else if((parentSection() == Section::SimpleType) && currentType()){
+			if(attributes.index(ATTR_ITEM_TYPE) != -1){
+//				 We consider representing (for example):
+//
+//				<xs:simpleType name="IntAttrList">
+//					<xs:list itemType="xs:int"/>
+//				</xs:simpleType>
+//
+//				by:
+//				class IntAttrList : public QList<XS::Int> ...
+//
+//				So we admit it's a complex type with an extension. We remove the existing current type to build a new one.
+
+				QString szValue = attributes.value(ATTR_ITEM_TYPE);
+				QString szLocalName = currentType()->getLocalName();
+				QString szNamespace = currentType()->getNamespace();
+				leaveCurrentType();
+
+				ComplexTypeSharedPtr pComplexType = ComplexType::create();
+				pComplexType->setLocalName(szLocalName);
+				pComplexType->setNamespace(szNamespace);
+
+				TypeSharedPtr pType = getTypeByName(szValue.split(":")[1], szValue.split(":")[0]);
+				if(!pType.isNull()){
+					pComplexType->setExtensionType(pType, true);
+				}else{
+					if(szValue.startsWith(m_szCurrentNamespacePrefix + ":")) {
+						SimpleTypeSharedPtr pType = SimpleType::create();
+						pType->setVariableTypeFromString(m_szCurrentNamespacePrefix, szValue);
+						pComplexType->setExtensionType(pType, true);
+					}else{
+						TypeSharedPtr pType = Type::create();
+						pType->setNamespace(szValue.split(":")[0]);
+						pType->setLocalName(szValue.split(":")[1]);
+						m_pListTypes->append(pType);
+
+						pComplexType->setExtensionType(pType, true);
+					}
+				}
+
+				m_pListTypes->append(pComplexType);
 			}
 		}
 	}
@@ -974,11 +1060,32 @@ ElementListSharedPtr QWSDLParserHandler::getElementList() const
 	return m_pListElements;
 }
 
+ElementSharedPtr QWSDLParserHandler::getElementByRef(const QString& szRef)
+{
+	ElementSharedPtr pElement = m_pListElements->getByRef(szRef);
+	if(!pElement){
+		QString szNamespace = szRef.split(":")[0];
+		QString szName = szRef.split(":")[1];
+		if(m_pNamespaceRoutingMap->contains(szNamespace)){
+			QStringList namespaceList = m_pNamespaceRoutingMap->value(szNamespace);
+			for(int i = 0; i < namespaceList.size(); ++i){
+				QString szNamespaceTmp = namespaceList[i];
+				pElement = m_pListElements->getByRef(szNamespaceTmp + ":" + szName);
+				if(pElement){
+					break;
+				}
+			}
+		}
+	}
+	return pElement;
+}
+
 TypeSharedPtr QWSDLParserHandler::getTypeByName(const QString& szLocalName, const QString& szNamespace, const TypeListSharedPtr& pListIgnoredTypes)
 {
 	TypeSharedPtr pType = m_pListTypes->getByName(szLocalName, szNamespace, pListIgnoredTypes);
 	if(!pType && m_pNamespaceRoutingMap->contains(szNamespace)){
-		QStringList namespaceList = m_pNamespaceRoutingMap->value(szNamespace);for(int i = 0; i < namespaceList.size(); ++i){
+		QStringList namespaceList = m_pNamespaceRoutingMap->value(szNamespace);
+		for(int i = 0; i < namespaceList.size(); ++i){
 			QString szNamespaceTmp = namespaceList[i];
 			pType = m_pListTypes->getByName(szLocalName, szNamespaceTmp, pListIgnoredTypes);
 			if(pType){
@@ -996,6 +1103,18 @@ void QWSDLParserHandler::loadFromHttp(const QString& szURL, const QString& szNam
 	QEventLoop loop;
 	QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
 	loop.exec();
+
+	// Handle HTTP 301: redirected url
+	QVariant possibleRedirectUrl = reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
+	if(!possibleRedirectUrl.isNull()){
+		QUrl redirectedUrl = possibleRedirectUrl.toUrl();
+		if(!redirectedUrl.isEmpty()){
+			reply = manager.get(QNetworkRequest(redirectedUrl));
+			QEventLoop loop;
+			QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+			loop.exec();
+		}
+	}
 
 	QByteArray bytes(reply->readAll());
 	QBuffer buffer;
@@ -1145,28 +1264,28 @@ void QWSDLParserHandler::enterSection(QString szSection)
 
 void QWSDLParserHandler::enterSection(Section::Name section)
 {
-	m_SectionStack.push(section);
+	m_sectionStack.push(section);
 }
 
 void QWSDLParserHandler::leaveSection()
 {
-	m_SectionStack.pop();
+	m_sectionStack.pop();
 }
 
 bool QWSDLParserHandler::inSection(Section::Name section) const
 {
-	return m_SectionStack.contains(section);
+	return m_sectionStack.contains(section);
 }
 
 Section::Name QWSDLParserHandler::parentSection() const
 {
-	if(m_SectionStack.count() > 1){
-		return m_SectionStack.at(m_SectionStack.count() - 2);
+	if(m_sectionStack.count() > 1){
+		return m_sectionStack.at(m_sectionStack.count() - 2);
 	}
 	return Section::Other;
 }
 
 Section::Name QWSDLParserHandler::currentSection() const
 {
-	return m_SectionStack.top();
+	return m_sectionStack.top();
 }
