@@ -57,7 +57,7 @@ QString Classname::getTagQualifiedName() const
 
 QString Classname::getNameWithNamespace() const
 {
-	QString szSafeLocalName = StringUtils::replaceNonConformCharacters(m_szLocalName);
+	QString szSafeLocalName = StringUtils::secureString(m_szLocalName);
 
 	if(m_szNamespace.isEmpty()) {
 		return szSafeLocalName;
@@ -68,7 +68,7 @@ QString Classname::getNameWithNamespace() const
 
 QString Classname::getQualifiedName() const
 {
-	QString szSafeLocalName = StringUtils::replaceNonConformCharacters(m_szLocalName);
+	QString szSafeLocalName = StringUtils::secureString(m_szLocalName);
 
 	if(m_szNamespace.isEmpty()) {
 		return m_szLocalName;
@@ -85,7 +85,7 @@ QString Classname::getNamespace() const
 QString Classname::getLocalName(bool bSafe) const
 {
 	if(bSafe){
-		QString szSafeLocalName = StringUtils::replaceNonConformCharacters(m_szLocalName);
+		QString szSafeLocalName = StringUtils::secureString(m_szLocalName);
 		return szSafeLocalName;
 	}
 	return m_szLocalName;

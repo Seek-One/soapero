@@ -43,7 +43,8 @@ int main(int argc, char **argv)
 //	QFile file("./wsdl/soap-envelope.xml");					// WORKS!
 //	QFile file("./wsdl/ONVIF/common.xsd");					// WORKS!
 //	QFile file("./wsdl/include.xml");						// WORKS!
-	QFile file("./wsdl/ONVIF/onvif.xsd");
+//	QFile file("./wsdl/ONVIF/onvif.xsd");					// WORKS!
+	QFile file("./wsdl/ONVIF/devicemgmt.wsdl");
 
 	if(file.open(QFile::ReadOnly)) {
 

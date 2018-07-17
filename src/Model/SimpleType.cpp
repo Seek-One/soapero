@@ -540,7 +540,7 @@ QString SimpleType::getIsNullDefinition(const QString& szClassname) const
 
 QString SimpleType::getVariableName() const
 {
-	return StringUtils::replaceNonConformCharacters(QString("_" + getLocalName().left(1).toLower() + getLocalName().mid(1)));
+	return StringUtils::secureString(QString("_" + getLocalName().left(1).toLower() + getLocalName().mid(1)));
 }
 
 QString SimpleType::getVariableIsNullName() const

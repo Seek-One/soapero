@@ -326,7 +326,9 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 			if(szLocation.startsWith("http://") || szLocation.startsWith("https://")) {
 				loadFromHttp(szLocation, szRoutedNamespace);
 			}else if(szNamespace.startsWith("http://") || szNamespace.startsWith("https://")){
-				loadFromHttp(szNamespace + (szNamespace.endsWith("/") ? szLocation : ("/" + szLocation)), szRoutedNamespace);
+				if(!loadFromHttp(szNamespace + (szNamespace.endsWith("/") ? szLocation : ("/" + szLocation)), szRoutedNamespace)){
+					loadFromFile(szLocation, szRoutedNamespace);
+				}
 			}else{
 				loadFromFile(szLocation, szRoutedNamespace);
 			}
@@ -1096,8 +1098,9 @@ TypeSharedPtr QWSDLParserHandler::getTypeByName(const QString& szLocalName, cons
 	return pType;
 }
 
-void QWSDLParserHandler::loadFromHttp(const QString& szURL, const QString& szNamespace)
+bool QWSDLParserHandler::loadFromHttp(const QString& szURL, const QString& szNamespace)
 {
+	bool bRes = false;
 	QNetworkAccessManager manager;
 	QNetworkReply* reply = manager.get(QNetworkRequest(QUrl::fromUserInput(szURL)));
 	QEventLoop loop;
@@ -1129,6 +1132,8 @@ void QWSDLParserHandler::loadFromHttp(const QString& szURL, const QString& szNam
 	reader.setFeature("http://xml.org/sax/features/namespaces", true);
 
 	if(reader.parse(source)){
+		bRes = true;
+
 		TypeListSharedPtr pList = handler.getTypeList();
 		TypeList::const_iterator type;
 		for(type = pList->constBegin(); type != pList->constEnd(); ++type) {
@@ -1149,6 +1154,8 @@ void QWSDLParserHandler::loadFromHttp(const QString& szURL, const QString& szNam
 				qPrintable(szURL),
 				qPrintable(reader.errorHandler()->errorString()));
 	}
+
+	return bRes;
 }
 
 void QWSDLParserHandler::loadFromFile(const QString& szFileName, const QString& szNamespace)

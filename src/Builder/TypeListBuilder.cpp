@@ -436,7 +436,7 @@ void TypeListBuilder::buildHeaderClassType(QTextStream& os, const TypeSharedPtr&
 {
 	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pType->getLocalName(true);
 
-	os << "namespace " << StringUtils::replaceNonConformCharacters(pType->getNamespace().toUpper()) << " {" << CRLF;
+	os << "namespace " << StringUtils::secureString(pType->getNamespace().toUpper()) << " {" << CRLF;
 	os << CRLF;
 
 	if(pType->getClassType() == Type::TypeSimple) {
@@ -610,7 +610,7 @@ void TypeListBuilder::buildHeaderClassElement(QTextStream& os, const RequestResp
 	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pElement->getLocalName(true);
 	ComplexTypeSharedPtr pComplexType = pElement->getComplexType();
 
-	os << "namespace " << StringUtils::replaceNonConformCharacters(pElement->getNamespace().toUpper()) << " {" << CRLF;
+	os << "namespace " << StringUtils::secureString(pElement->getNamespace().toUpper()) << " {" << CRLF;
 	os << CRLF;
 
 	if(!pComplexType.isNull()) {
@@ -917,7 +917,7 @@ void TypeListBuilder::buildCppClassType(QTextStream& os, const TypeSharedPtr& pT
 {
 	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pType->getLocalName(true);
 
-	os << "namespace " << StringUtils::replaceNonConformCharacters(pType->getNamespace().toUpper()) << " {" << CRLF;
+	os << "namespace " << StringUtils::secureString(pType->getNamespace().toUpper()) << " {" << CRLF;
 	os << CRLF;
 
 	if(pType->getClassType() == Type::TypeSimple) {
@@ -996,7 +996,7 @@ void TypeListBuilder::buildCppClassType(QTextStream& os, const TypeSharedPtr& pT
 void TypeListBuilder::buildCppClassSimpleType(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const
 {
 	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pSimpleType->getLocalName();
-	szClassname = StringUtils::replaceNonConformCharacters(szClassname);
+	szClassname = StringUtils::secureString(szClassname);
 
 	os << pSimpleType->getSetterDefinition(szClassname) << CRLF;
 	os << pSimpleType->getGetterDefinition(szClassname) << CRLF;
@@ -1069,7 +1069,7 @@ void TypeListBuilder::buildCppClassElement(QTextStream& os, const RequestRespons
 	pComplexType->setLocalName(pElement->getLocalName());
 	pComplexType->setNamespace(pElement->getNamespace());
 
-	os << "namespace " << StringUtils::replaceNonConformCharacters(pElement->getNamespace().toUpper()) << " {" << CRLF;
+	os << "namespace " << StringUtils::secureString(pElement->getNamespace().toUpper()) << " {" << CRLF;
 	os << CRLF;
 
 	if(!pComplexType.isNull()) {

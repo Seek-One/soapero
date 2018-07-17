@@ -49,7 +49,7 @@ private:
 	ElementSharedPtr getElementByRef(const QString& szRef);
 	TypeSharedPtr getTypeByName(const QString& szLocalName, const QString& szNamespace = QString(), const TypeListSharedPtr& pListIgnoredTypes = TypeList::create());
 
-	void loadFromHttp(const QString& szURL, const QString& szNamespace = QString());
+	bool loadFromHttp(const QString& szURL, const QString& szNamespace = QString());
 	void loadFromFile(const QString& szFileName, const QString& szNamespace = QString());
 
 	void addCurrentType(const TypeSharedPtr& pCurrentType);

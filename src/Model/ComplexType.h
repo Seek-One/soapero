@@ -164,15 +164,15 @@ public:
 	void addElement(const ElementSharedPtr& pElement);
 	ElementListSharedPtr getElementList() const;
 
-	QString getSetterDeclaration() const;
-	QString getGetterDeclaration() const;
+	QString getSetterDeclaration(const QString& szName = QString()) const;
+	QString getGetterDeclaration(const QString& szName = QString()) const;
 	QString getSerializerDeclaration() const;
 	QString getDeserializerDeclaration() const;
-	QString getVariableDeclaration() const;
+	QString getVariableDeclaration(const QString& szName = QString()) const;
 	QString getIsNullDeclaration() const;
 
-	QString getSetterDefinition(const QString& szClassname) const;
-	QString getGetterDefinition(const QString& szClassname) const;
+	QString getSetterDefinition(const QString& szClassname, const QString& szName = QString()) const;
+	QString getGetterDefinition(const QString& szClassname, const QString& szName = QString()) const;
 	QString getSerializerDefinition(const QString& szClassname, const QString& szNamespace = QString()) const;
 	QString getDeserializerDefinition(const QString& szClassname) const;
 	QString getIsNullDefinition(const QString& szClassname) const;

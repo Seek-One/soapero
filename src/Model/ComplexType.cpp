@@ -133,7 +133,7 @@ int Element::getMaxOccurs()const
 
 QString Element::getVariableName() const
 {
-	return StringUtils::replaceNonConformCharacters(QString("_%0%1").arg(getName().left(1).toLower()).arg(getName().mid(1)));
+	return StringUtils::secureString(QString("_%0%1").arg(getName().left(1).toLower()).arg(getName().mid(1)));
 }
 
 QString Element::getTagQualifiedName() const
@@ -165,10 +165,10 @@ QString Element::getSetterDeclaration() const
 				return szDeclaration.arg(getName()).arg(pSimpleType->getNameWithNamespace()).arg(szVarName);
 
 			} else {
-				QString szVarName = StringUtils::replaceNonConformCharacters(getName().left(1).toLower() + getName().mid(1));
+				QString szVarName = StringUtils::secureString(getName().left(1).toLower() + getName().mid(1));
 				QString szDeclaration = "void set%0(const %1& %2);";
 
-				return szDeclaration.arg(StringUtils::replaceNonConformCharacters(getName())).arg(pSimpleType->getVariableTypeString()).arg(szVarName);
+				return szDeclaration.arg(StringUtils::secureString(getName())).arg(pSimpleType->getVariableTypeString()).arg(szVarName);
 			}
 		}
 	}else{
@@ -221,7 +221,7 @@ QString Element::getGetterDeclaration() const
 				return szDeclaration.arg(pSimpleType->getNameWithNamespace()).arg(getName());
 			} else {
 				QString szDeclaration = "const %0& get%1() const;";
-				return szDeclaration.arg(pSimpleType->getVariableTypeString()).arg(StringUtils::replaceNonConformCharacters(getName()));
+				return szDeclaration.arg(pSimpleType->getVariableTypeString()).arg(StringUtils::secureString(getName()));
 			}
 		}
 
@@ -300,7 +300,7 @@ QString Element::getSetterDefinition(const QString& szClassname) const
 
 		}else{
 			if(!pSimpleType->isEnumeration()) {
-				QString szVarName = StringUtils::replaceNonConformCharacters(getName().left(1).toLower() + getName().mid(1));
+				QString szVarName = StringUtils::secureString(getName().left(1).toLower() + getName().mid(1));
 
 				QString szDefinition = "";
 				szDefinition = "void %0::set%1(const %2& %3)" CRLF;
@@ -308,10 +308,10 @@ QString Element::getSetterDefinition(const QString& szClassname) const
 				szDefinition += "\t%4 = %5;" CRLF;
 				szDefinition += "}" CRLF;
 
-				return szDefinition.arg(szClassname).arg(StringUtils::replaceNonConformCharacters(getName())).arg(pSimpleType->getVariableTypeString())
+				return szDefinition.arg(szClassname).arg(StringUtils::secureString(getName())).arg(pSimpleType->getVariableTypeString())
 									.arg(szVarName).arg(getVariableName()).arg(szVarName);
 			} else {
-				QString szLocalName = StringUtils::replaceNonConformCharacters(getName());
+				QString szLocalName = StringUtils::secureString(getName());
 				QString szVarName = szLocalName.left(1).toLower() + szLocalName.mid(1);
 
 				QString szDefinition = "void %0::set%1(const %2& %3)" CRLF;
@@ -412,7 +412,7 @@ QString Element::getGetterDefinition(const QString& szClassname) const
 				"\treturn %3;" CRLF
 				"}" CRLF;
 
-				return szDefinition.arg(pSimpleType->getVariableTypeString()).arg(szClassname).arg(StringUtils::replaceNonConformCharacters(getName())).arg(getVariableName());
+				return szDefinition.arg(pSimpleType->getVariableTypeString()).arg(szClassname).arg(StringUtils::secureString(getName())).arg(getVariableName());
 			}
 		}
 
@@ -488,7 +488,7 @@ QString Element::getVariableDeclaration() const
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
 		QString szDeclaration;
 
-		QString szVarName = StringUtils::replaceNonConformCharacters("_" + getName().left(1).toLower() + getName().mid(1));
+		QString szVarName = StringUtils::secureString("_" + getName().left(1).toLower() + getName().mid(1));
 
 		if(m_iMaxOccurs > 1 || m_iMaxOccurs == -1) {
 			szDeclaration += "QList<";
@@ -681,7 +681,7 @@ QString Attribute::getSetterDeclaration() const
 			szDeclaration += "\tvoid add%0(const %1& %3);" CRLF;
 			szDeclaration = szDeclaration.arg(szLocalName).arg(pComplexType->getNameWithNamespace()).arg(szVarListName).arg(szVarName);
 		}else{
-			szDeclaration += pComplexType->getSetterDeclaration() + CRLF ;
+			szDeclaration += pComplexType->getSetterDeclaration(getName()) + CRLF;
 		}
 	}
 	return szDeclaration;
@@ -708,7 +708,7 @@ QString Attribute::getGetterDeclaration() const
 			szDeclaration = "const QList<%0>& get%1List() const;" CRLF;
 			szDeclaration = szDeclaration.arg(pComplexType->getNameWithNamespace()).arg(getName());
 		}else{
-			szDeclaration += pComplexType->getGetterDeclaration() + CRLF ;
+			szDeclaration += pComplexType->getGetterDeclaration(getName()) + CRLF ;
 		}
 	}
 	return szDeclaration;
@@ -738,7 +738,7 @@ QString Attribute::getVariableDeclaration() const
 			szDeclaration += "List";
 			szDeclaration += ";";
 		}else{
-			szDeclaration += pComplexType->getVariableDeclaration();
+			szDeclaration += pComplexType->getVariableDeclaration(getName());
 		}
 	}
 	return szDeclaration;
@@ -789,7 +789,7 @@ QString Attribute::getSetterDefinition(const QString& szClassname) const
 			szDefinition = szDefinition.arg(szClassname).arg(szLocalName).arg(pComplexType->getNameWithNamespace())
 					.arg(szVarListName).arg(szLocalName).arg(szVarName);
 		}else{
-			szDefinition += pComplexType->getSetterDefinition(szClassname) + CRLF;
+			szDefinition += pComplexType->getSetterDefinition(szClassname, getName()) + CRLF;
 		}
 	}
 	return szDefinition;
@@ -833,7 +833,7 @@ QString Attribute::getGetterDefinition(const QString& szClassname) const
 
 			szDefinition = szDefinition.arg(pComplexType->getNameWithNamespace()).arg(szClassname).arg(getName()).arg(szVarName);
 		}else{
-			szDefinition += pComplexType->getGetterDefinition(szClassname);
+			szDefinition += pComplexType->getGetterDefinition(szClassname, getName());
 		}
 	}
 	return szDefinition;
@@ -939,18 +939,31 @@ ElementListSharedPtr ComplexType::getElementList() const
 	return m_pListElement;
 }
 
-QString ComplexType::getSetterDeclaration() const
+QString ComplexType::getSetterDeclaration(const QString& szName) const
 {
-	QString szVarName = getLocalName().left(1).toLower() + getLocalName().mid(1);
+	QString szLocalName;
+	QString szVarName;
+	if(!szName.isEmpty()){
+		szLocalName = szName;
+	}else{
+		szLocalName = getLocalName();
+	}
+	szVarName = szLocalName.left(1).toLower() + szLocalName.mid(1);
 
 	QString szDeclaration = "void set%0(const %1& %2);";
-	return szDeclaration.arg(getLocalName()).arg(getNameWithNamespace()).arg(szVarName);
+	return szDeclaration.arg(szLocalName).arg(getNameWithNamespace()).arg(szVarName);
 }
 
-QString ComplexType::getGetterDeclaration() const
+QString ComplexType::getGetterDeclaration(const QString& szName) const
 {
+	QString szLocalName;
+	if(!szName.isEmpty()){
+		szLocalName = szName;
+	}else{
+		szLocalName = getLocalName();
+	}
 	QString szDeclaration = "const %0& get%1() const;";
-	return szDeclaration.arg(getNameWithNamespace()).arg(getLocalName());
+	return szDeclaration.arg(getNameWithNamespace()).arg(szLocalName);
 }
 
 QString ComplexType::getSerializerDeclaration() const
@@ -963,9 +976,16 @@ QString ComplexType::getDeserializerDeclaration() const
 	return "void deserialize(QDomElement& element);";
 }
 
-QString ComplexType::getSetterDefinition(const QString& szClassname) const
+QString ComplexType::getSetterDefinition(const QString& szClassname, const QString& szName) const
 {
-	QString szVarName = getLocalName().left(1).toLower() + getLocalName().mid(1);
+	QString szLocalName;
+	QString szVarName;
+	if(!szName.isEmpty()){
+		szLocalName = szName;
+	}else{
+		szLocalName = getLocalName();
+	}
+	szVarName = szLocalName.left(1).toLower() + szLocalName.mid(1);
 
 	QString szDeclaration = ""
 	"void %0::set%1(const %2& %3)" CRLF
@@ -973,19 +993,28 @@ QString ComplexType::getSetterDefinition(const QString& szClassname) const
 	"\t%4 = %5;" CRLF
 	"}" CRLF;
 
-	return szDeclaration.arg(szClassname).arg(getLocalName()).arg(getNameWithNamespace())
-			.arg(szVarName).arg(getVariableName()).arg(szVarName);
+	return szDeclaration.arg(szClassname).arg(szLocalName).arg(getNameWithNamespace())
+			.arg(szVarName).arg("_" + szVarName).arg(szVarName);
 }
 
-QString ComplexType::getGetterDefinition(const QString& szClassname) const
+QString ComplexType::getGetterDefinition(const QString& szClassname, const QString& szName) const
 {
+	QString szLocalName;
+	QString szVarName;
+	if(!szName.isEmpty()){
+		szLocalName = szName;
+	}else{
+		szLocalName = getLocalName();
+	}
+	szVarName = szLocalName.left(1).toLower() + szLocalName.mid(1);
+
 	QString szDefinition = ""
 	"const %0& %1::get%2() const" CRLF
 	"{" CRLF
 	"\treturn %3;" CRLF
 	"}" CRLF;
 
-	return szDefinition.arg(getNameWithNamespace()).arg(szClassname).arg(getLocalName()).arg(getVariableName());
+	return szDefinition.arg(getNameWithNamespace()).arg(szClassname).arg(szLocalName).arg("_" + szVarName);
 }
 
 QString ComplexType::getSerializerDefinition(const QString& szClassname, const QString& szNamespace) const
@@ -1052,8 +1081,9 @@ QString ComplexType::getSerializerDefinition(const QString& szClassname, const Q
 				szDefinition += "\t\tszValue +=\"\\\"\";" CRLF;
 				szDefinition += "\t}" CRLF;
 			}else{
-				szDefinition += "\tif(!" + pComplexType->getVariableName() + ".isNull()) {" CRLF;
-				szDefinition += "\t\tszValue += \" " + pAttribute->getName() + "=\\\"\" + " + pComplexType->getVariableName() + ".serialize() + \"\\\"\";" CRLF;
+				QString szVariableName = "_" + pAttribute->getName().left(1).toLower() + pAttribute->getName().mid(1);
+				szDefinition += "\tif(!" + szVariableName + ".isNull()) {" CRLF;
+				szDefinition += "\t\tszValue += \" " + pAttribute->getName() + "=\\\"\" + " + szVariableName + ".serialize() + \"\\\"\";" CRLF;
 				szDefinition += "\t}" CRLF;
 			}
 		}
@@ -1344,7 +1374,8 @@ QString ComplexType::getIsNullDefinition(const QString& szClassname) const
 			if(pAttribute->isList()){
 				szCond += "(_" + pAttribute->getName() + "List.size() > 0) && ";
 			}else{
-				szCond += pComplexType->getVariableName() + ".isNull() && ";
+				QString szVariableName = "_" + pAttribute->getName().left(1).toLower() + pAttribute->getName().mid(1);
+				szCond += szVariableName + ".isNull() && ";
 			}
 		}
 	}
@@ -1390,12 +1421,18 @@ QString ComplexType::getIsNullDefinition(const QString& szClassname) const
 	return szDefinition.arg(szClassname);
 }
 
-QString ComplexType::getVariableDeclaration() const
+QString ComplexType::getVariableDeclaration(const QString& szName) const
 {
+	QString szVarName;
 	QString szDeclaration;
+	if(!szName.isEmpty()){
+		szVarName = "_" + szName.left(1).toLower() + szName.mid(1);
+	}else{
+		szVarName = getVariableName();
+	}
 	szDeclaration += getNameWithNamespace();
 	szDeclaration += " ";
-	szDeclaration += getVariableName();
+	szDeclaration += szVarName;
 	szDeclaration += ";";
 
 	return szDeclaration;
