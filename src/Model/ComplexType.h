@@ -154,9 +154,15 @@ public:
 
 	static ComplexTypeSharedPtr create();
 
+	void setTargetNamespaceURI(const QString& szTargetNamespaceURI);
+	const QString& getTargetNamespaceURI() const;
+
 	void setExtensionType(TypeSharedPtr pType, bool bIsList = false);
 	TypeSharedPtr getExtensionType() const;
 	bool isExtensionTypeList() const;
+
+	void setIsSoapEnvelopeFault(bool bIsSoapEnvelopeFault);
+	bool isSoapEnvelopeFault() const;
 
 	void addAttribute(const AttributeSharedPtr& pAttribute);
 	AttributeListSharedPtr getAttributeList() const;
@@ -183,8 +189,12 @@ private:
 	AttributeListSharedPtr m_pListAttribute;
 	ElementListSharedPtr m_pListElement;
 
+	QString m_szTargetNamespaceURI;
+
 	TypeSharedPtr m_pExtensionType;
 	bool m_bIsListExtension;
+
+	bool m_bIsSoapEnvelopeFault;
 };
 
 class ComplexTypeList : public QList<ComplexTypeSharedPtr>

@@ -13,23 +13,58 @@
 
 #include "Service.h"
 
-namespace Onvif {
+namespace ONVIF {
 
 IQueryExecutor::IQueryExecutor(){}
 IQueryExecutor::~IQueryExecutor(){}
 
+IQueryExecutorResponse::IQueryExecutorResponse()
+{
+	m_iHttpStatusCode = 0;
+}
+
+IQueryExecutorResponse::~IQueryExecutorResponse()
+{
+
+}
+
+void IQueryExecutorResponse::setResponse(const QByteArray& response)
+{
+	m_response = response;
+}
+
+const QByteArray& IQueryExecutorResponse::getResponse() const
+{
+	return m_response;
+}
+
+void IQueryExecutorResponse::setHttpStatusCode(int iHttpStatusCode)
+{
+	m_iHttpStatusCode = iHttpStatusCode;
+}
+
+int IQueryExecutorResponse::getHttpStatusCode() const
+{
+	return m_iHttpStatusCode;
+}
+
 class CustomQueryExecutor : public IQueryExecutor
 {
 public:
-	virtual QByteArray execQuery(const QNetworkRequest& request, const QByteArray& bytes)
+	virtual IQueryExecutorResponse execQuery(const QNetworkRequest& request, const QByteArray& bytes)
 	{
+		IQueryExecutorResponse response;
 		QNetworkAccessManager *manager = new QNetworkAccessManager();
 		QNetworkReply *reply = manager->post(request, bytes);
 		QEventLoop loop;
 		QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
 		loop.exec();
 
-		QByteArray response(reply->readAll());
+		QVariant statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
+		if(statusCode.isValid()){
+			response.setHttpStatusCode(statusCode.toInt());
+		}
+		response.setResponse(reply->readAll());
 
 		if(manager) {
 			delete manager;
@@ -37,8 +72,7 @@ public:
 		}
 
 		if(reply) {
-			delete reply;
-			reply = NULL;
+			reply->deleteLater();
 		}
 
 		return response;
@@ -104,14 +138,16 @@ QByteArray Service::buildSoapMessage(const QString& szSerializedObject) const
 	QByteArray bytes;
 	bytes += "<s:Envelope xmlns:s=\"http://www.w3.org/2003/05/soap-envelope\">";
 	bytes +=     "<s:Header>";
-	bytes +=         "<Security s:mustUnderstand=\"1\" xmlns=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd\">";
-	bytes +=             "<UsernameToken>";
-	bytes +=                 "<Username>" + m_url.userName() + "</Username>";
-	bytes +=                 "<Password Type=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordDigest\">" + szDigestPassword +  "</Password>";
-	bytes +=                 "<Nonce EncodingType=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary\">" + szNonce64 +  "</Nonce>";
-	bytes +=                 "<Created xmlns=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd\">" + szDatetime +  "</Created>";
-	bytes +=             "</UsernameToken>";
-	bytes +=         "</Security>";
+	if(!m_url.userName().isEmpty() && !m_url.password().isEmpty()){
+		bytes +=         "<Security s:mustUnderstand=\"1\" xmlns=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd\">";
+		bytes +=             "<UsernameToken>";
+		bytes +=                 "<Username>" + m_url.userName() + "</Username>";
+		bytes +=                 "<Password Type=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordDigest\">" + szDigestPassword +  "</Password>";
+		bytes +=                 "<Nonce EncodingType=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary\">" + szNonce64 +  "</Nonce>";
+		bytes +=                 "<Created xmlns=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd\">" + szDatetime +  "</Created>";
+		bytes +=             "</UsernameToken>";
+		bytes +=         "</Security>";
+	}
 	bytes +=     "</s:Header>";
 	bytes +=     "<s:Body xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">";
 	bytes +=		szSerializedObject;

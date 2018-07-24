@@ -35,11 +35,14 @@ public:
 	void setOutputMessage(const MessageSharedPtr& pMessage);
 	MessageSharedPtr getOutputMessage() const;
 
+	void setSoapEnvelopeFaultType(const ComplexTypeSharedPtr& pSoapEnvFaultType);
+	const ComplexTypeSharedPtr& getSoapEnvelopeFaultType() const;
+
 	void setSoapAction(const QString& szSoapAction);
 	QString getSoapAction() const;
 
 	QString getOperationDeclaration() const;
-	QString getOperationDefinition(const QString& szClassname) const;
+	QString getOperationDefinition(const QString& szClassname, const QString& szNamespace) const;
 
 private:
 	QString m_szName;
@@ -47,6 +50,8 @@ private:
 
 	MessageSharedPtr m_pInputMessage;
 	MessageSharedPtr m_pOutputMessage;
+
+	ComplexTypeSharedPtr m_pSoapEnvFaultType;
 };
 
 class OperationList : public QList<OperationSharedPtr>
@@ -58,7 +63,6 @@ public:
 	static OperationListSharedPtr create();
 
 	OperationSharedPtr getByName(const QString& szName);
-
 };
 
 #endif /* OPERATION_H_ */

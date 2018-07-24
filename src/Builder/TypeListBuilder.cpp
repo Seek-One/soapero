@@ -463,6 +463,10 @@ void TypeListBuilder::buildHeaderClassType(QTextStream& os, const TypeSharedPtr&
 	} else if(pType->getClassType() == Type::TypeComplex) {
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pType);
 
+		os << "const QString " << pComplexType->getLocalName(true) << "TargetNamespaceURI = \"" << pComplexType->getTargetNamespaceURI() << "\";" CRLF;
+		os << "const QString " << pComplexType->getLocalName(true) << "TargetNamespace = \"" << pComplexType->getNamespace() << "\";" CRLF;
+		os << CRLF;
+
 		if(pComplexType->getElementList()){
 			ElementList::const_iterator iter;
 			for(iter = pComplexType->getElementList()->constBegin(); iter != pComplexType->getElementList()->constEnd(); ++iter){
@@ -649,6 +653,8 @@ void TypeListBuilder::buildHeaderClassService(QTextStream& os, const ServiceShar
 		}
 		os << "\t" << (*operation)->getOperationDeclaration() << CRLF;
 	}
+
+	os << "\tQMap<QString, QString> buildNamespaceRoutingMap(const QDomDocument& doc) const;" << CRLF;
 
 	os << "};" << CRLF;
 }
@@ -884,6 +890,7 @@ void TypeListBuilder::buildHeaderIncludeElement(QTextStream& os, const RequestRe
 void TypeListBuilder::buildHeaderIncludeService(QTextStream& os, const ServiceSharedPtr& pService) const
 {
 	QStringList list;
+	bool bSoapEnvelopeFaultIncluded = false;
 
 	os << "#include \"Service.h\"" << CRLF << CRLF;
 
@@ -899,6 +906,11 @@ void TypeListBuilder::buildHeaderIncludeService(QTextStream& os, const ServiceSh
 		//qDebug(qPrintable(pOperation->getInputMessage() ? "NotNull" : "Null"));
 		//qDebug(qPrintable(pOperation->getInputMessage()->getLocalName()));
 		//qDebug(qPrintable(pOperation->getInputMessage()->getParameter() ? "NotNull" : "Null"));
+
+		if(!bSoapEnvelopeFaultIncluded && pOperation->getSoapEnvelopeFaultType()){
+			os << "#include \"types/" << (*operation)->getSoapEnvelopeFaultType()->getQualifiedName() << ".h\"" << CRLF;
+			bSoapEnvelopeFaultIncluded = true;
+		}
 
 		if(!list.contains((*operation)->getInputMessage()->getParameter()->getQualifiedName())) {
 			os << "#include \"messages/" << (*operation)->getInputMessage()->getParameter()->getQualifiedName() << ".h\"" << CRLF;
@@ -944,9 +956,20 @@ void TypeListBuilder::buildCppClassType(QTextStream& os, const TypeSharedPtr& pT
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pType);
 
 		if(pComplexType->getExtensionType().isNull()) {
-			os << szClassname << "::" << szClassname << "() {}" << CRLF;
-			os << szClassname << "::~" << szClassname << "() {";
+			os << szClassname << "::" << szClassname << "() {";
+			if(pComplexType->getElementList()){
+				ElementList::const_iterator iter;
+				for(iter = pComplexType->getElementList()->constBegin(); iter != pComplexType->getElementList()->constEnd(); ++iter){
+					if((*iter)->getMaxOccurs() == 1){
+						if((*iter)->getType() && ((*iter)->isNested() || (*iter)->isPointer())){
+							os << CRLF << "\t" << (*iter)->getVariableName() << " = NULL;" << CRLF;
+						}
+					}
+				}
+			}
+			os << "}" << CRLF;
 
+			os << szClassname << "::~" << szClassname << "() {";
 			if(pComplexType->getElementList()){
 				ElementList::const_iterator iter;
 				for(iter = pComplexType->getElementList()->constBegin(); iter != pComplexType->getElementList()->constEnd(); ++iter){
@@ -960,7 +983,6 @@ void TypeListBuilder::buildCppClassType(QTextStream& os, const TypeSharedPtr& pT
 					}
 				}
 			}
-
 			os << "}" << CRLF;
 			os << CRLF;
 		}else{
@@ -1100,6 +1122,21 @@ void TypeListBuilder::buildCppClassService(QTextStream& os, const ServiceSharedP
 		if(!(*operation)->getInputMessage()) {
 			continue;
 		}
-		os << (*operation)->getOperationDefinition(szClassname) << CRLF;
+		os << (*operation)->getOperationDefinition(szClassname, m_szNamespace) << CRLF;
 	}
+
+	os << "QMap<QString, QString> " << szClassname << "::buildNamespaceRoutingMap(const QDomDocument& doc) const" CRLF;
+	os << "{" CRLF;
+	os << "\tQMap<QString, QString> map;" CRLF;
+	os << "\tif(doc.elementsByTagName(\"SOAP-ENV:Envelope\").size() > 0){" << CRLF;
+	os << "\t\tQDomElement root = doc.elementsByTagName(\"SOAP-ENV:Envelope\").at(0).toElement();" << CRLF;
+	os << "\t\tint iNbAttributes = root.attributes().size();" << CRLF;
+	os << "\t\tfor(int i = 0; i < iNbAttributes; ++i){" << CRLF;
+	os << "\t\t\tQDomAttr attr = root.attributes().item(i).toAttr();" << CRLF;
+	os << "\t\t\tQStringList nameList = attr.name().split(\":\");" << CRLF;
+	os << "\t\t\tmap.insert(attr.value(), nameList[1]);" << CRLF;
+	os << "\t\t}" CRLF;
+	os << "\t}" CRLF;
+	os << "\treturn map;" CRLF;
+	os << "}" CRLF;
 }

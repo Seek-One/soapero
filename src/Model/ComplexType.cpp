@@ -891,6 +891,8 @@ ComplexType::ComplexType()
 	m_pListElement = ElementList::create();
 
 	m_bIsListExtension = false;
+
+	m_bIsSoapEnvelopeFault = false;
 }
 
 ComplexType::~ComplexType()
@@ -901,6 +903,16 @@ ComplexType::~ComplexType()
 ComplexTypeSharedPtr ComplexType::create()
 {
 	return ComplexTypeSharedPtr(new ComplexType());
+}
+
+void ComplexType::setTargetNamespaceURI(const QString& szTargetNamespaceURI)
+{
+	m_szTargetNamespaceURI = szTargetNamespaceURI;
+}
+
+const QString& ComplexType::getTargetNamespaceURI() const
+{
+	return m_szTargetNamespaceURI;
 }
 
 void ComplexType::setExtensionType(TypeSharedPtr pType, bool bIsList)
@@ -917,6 +929,16 @@ TypeSharedPtr ComplexType::getExtensionType() const
 bool ComplexType::isExtensionTypeList() const
 {
 	return m_bIsListExtension;
+}
+
+void ComplexType::setIsSoapEnvelopeFault(bool bIsSoapEnvelopeFault)
+{
+	m_bIsSoapEnvelopeFault = bIsSoapEnvelopeFault;
+}
+
+bool ComplexType::isSoapEnvelopeFault() const
+{
+	return m_bIsSoapEnvelopeFault;
 }
 
 void ComplexType::addAttribute(const AttributeSharedPtr& pAttribute)
@@ -1284,7 +1306,8 @@ QString ComplexType::getDeserializerDefinition(const QString& szClassname) const
 				szDefinition += "\t\t}" CRLF;
 
 			} else{
-				szDefinition += "\t\tif(child.tagName() == \"" + getNamespace() + ":" + pElement->getName() + "\") {" CRLF;
+				szDefinition += "\t\tif((child.tagName() == \"" + getNamespace() + ":" + pElement->getName() + "\")" +
+						" || child.tagName().endsWith(\":" + pElement->getName() + "\"" + ")){" CRLF;
 				szDefinition += "\t\t\t" + pElement->getVariableName() + ".deserialize(child);" CRLF;
 				szDefinition += "\t\t}" CRLF;
 			}
@@ -1300,14 +1323,16 @@ QString ComplexType::getDeserializerDefinition(const QString& szClassname) const
 					szDefinition += "\t\t\t" + pElement->getVariableName() + "List.append(item);" CRLF;
 					szDefinition += "\t\t}" CRLF;
 				}else{
-					szDefinition += "\t\tif(child.tagName() == \"" + pComplexType->getNamespace() + ":" + pElement->getName() + "\") {" CRLF;
+					szDefinition += "\t\tif((child.tagName() == \"" + pComplexType->getNamespace() + ":" + pElement->getName() + "\") " +
+							" || child.tagName().endsWith(\":" + pElement->getName() + "\"" + ")){" CRLF;
 					szDefinition += "\t\t\t" + pComplexType->getNameWithNamespace() + " item;" CRLF;
 					szDefinition += "\t\t\titem.deserialize(child);" CRLF;
 					szDefinition += "\t\t\t" + pElement->getVariableName() + "List.append(item);" CRLF;
 					szDefinition += "\t\t}" CRLF;
 				}
 			} else{
-				szDefinition += "\t\tif(child.tagName() == \"" + pComplexType->getNamespace() + ":" + pElement->getName() + "\") {" CRLF;
+				szDefinition += "\t\tif((child.tagName() == \"" + pComplexType->getNamespace() + ":" + pElement->getName() + "\") " +
+						" || child.tagName().endsWith(\":" + pElement->getName() + "\"" + ")){" CRLF;
 				if((pElement->isNested() || pElement->isPointer())){
 					szDefinition += "\t\t\tif(!" + pElement->getVariableName() + "){" CRLF;
 					szDefinition += "\t\t\t\t" + pElement->getVariableName() + " = new " + pElement->getType()->getLocalName() + "();" CRLF;

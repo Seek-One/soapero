@@ -76,6 +76,8 @@ private:
     QString m_szOutNamespace;
     bool m_bOwnNamespaceRoutingMap;
 
+    bool m_bWaitForSoapEnvelopeFault;
+
     TypeListSharedPtr m_pListTypes;
     RequestResponseElementListSharedPtr m_pListRequestResponseElements;
     MessageListSharedPtr m_pListMessages;

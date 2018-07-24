@@ -57,6 +57,16 @@ MessageSharedPtr Operation::getOutputMessage() const
 	return m_pOutputMessage;
 }
 
+void Operation::setSoapEnvelopeFaultType(const ComplexTypeSharedPtr& pSoapEnvFaultType)
+{
+	m_pSoapEnvFaultType = pSoapEnvFaultType;
+}
+
+const ComplexTypeSharedPtr& Operation::getSoapEnvelopeFaultType() const
+{
+	return m_pSoapEnvFaultType;
+}
+
 void Operation::setSoapAction(const QString& szSoapAction)
 {
 	m_szSoapAction = szSoapAction;
@@ -80,45 +90,78 @@ QString Operation::getOperationDeclaration() const
 	szDeclaration += m_pOutputMessage->getParameter()->getNameWithNamespace();
 	szDeclaration += "& ";
 	szDeclaration += m_pOutputMessage->getParameter()->getLocalName();
+	if(m_pSoapEnvFaultType){
+		szDeclaration += ", ";
+		szDeclaration += m_pSoapEnvFaultType->getNameWithNamespace();
+		szDeclaration += "& ";
+		szDeclaration += m_pSoapEnvFaultType->getLocalName();
+	}
 	szDeclaration += ");";
 
 	return szDeclaration;
 }
 
-QString Operation::getOperationDefinition(const QString& szClassname) const
+QString Operation::getOperationDefinition(const QString& szClassname, const QString& szNamespace) const
 {
-	QString szDefinition = ""
-	"bool %0::%1(const %2& %3, %4& %5)" CRLF
-	"{" CRLF
-	"\tQNetworkRequest request = buildNetworkRequest();" CRLF
-	"\trequest.setRawHeader(QString(\"Content-Type\").toLatin1(), QString(\"application/soap+xml; charset=utf-8; action=\\\"%6\\\"\").toLatin1());" CRLF
-	"\trequest.setRawHeader(QString(\"Accept-Encoding\").toLatin1(), QString(\"gzip, deflate\").toLatin1());" CRLF
-	"\trequest.setRawHeader(QString(\"SoapAction\").toLatin1(), QString(\"%6\").toLatin1());" CRLF
-	CRLF
-	"\tQByteArray soapMessage = buildSoapMessage(%3.serialize());" CRLF
-	CRLF
-	"\tQByteArray bytes = m_pQueryExecutor->execQuery(request, soapMessage);" CRLF
-	"\tQString szErrorMsg;" CRLF
-	"\tint iErrorLine = -1;" CRLF
-	"\tint iErrorColumn = -1;" CRLF
-	"\tQDomDocument doc;" CRLF CRLF
-	"\tif(doc.setContent(bytes, &szErrorMsg, &iErrorLine, &iErrorColumn)) {" CRLF
-		"\t\tQDomElement root=doc.elementsByTagName(\"SOAP-ENV:Body\").at(0).firstChildElement();" CRLF
-		"\t\t%5.deserialize(root);" CRLF
-		"\t\treturn true;" CRLF
-	"\t} else {" CRLF
-		"\t\tqWarning(\"[%0::%1] Error during parsing response : %s (%d:%d)\", qPrintable(szErrorMsg), iErrorLine, iErrorColumn);" CRLF
-		"\t\treturn false;" CRLF
-	"\t}" CRLF
-	"}" CRLF;
+	QString szDefinition;
+	szDefinition += "bool " + szClassname + "::" + m_szName + "(const " + m_pInputMessage->getParameter()->getNameWithNamespace() +
+			"& " + m_pInputMessage->getParameter()->getLocalName() + ", " + m_pOutputMessage->getParameter()->getNameWithNamespace() +
+			"& " + m_pOutputMessage->getParameter()->getLocalName();
 
-	return szDefinition.arg(szClassname)
-			.arg(m_szName)
-			.arg(m_pInputMessage->getParameter()->getNameWithNamespace())
-			.arg(m_pInputMessage->getParameter()->getLocalName())
-			.arg(m_pOutputMessage->getParameter()->getNameWithNamespace())
-			.arg(m_pOutputMessage->getParameter()->getLocalName())
-			.arg(m_szSoapAction);
+	if(m_pSoapEnvFaultType){
+		szDefinition += ", " + m_pSoapEnvFaultType->getNameWithNamespace() + "& " + m_pSoapEnvFaultType->getLocalName() + ")" CRLF;
+	}else{
+		szDefinition += ")" CRLF;
+	}
+	szDefinition += "{" CRLF;
+	szDefinition += "\tbool bGoOn = true;" CRLF;
+	szDefinition += CRLF;
+	szDefinition += "\tQNetworkRequest request = buildNetworkRequest();" CRLF;
+	szDefinition += "\trequest.setRawHeader(QString(\"Content-Type\").toLatin1(), QString(\"application/soap+xml; charset=utf-8; action=\\\"" + m_szSoapAction + "\\\"\").toLatin1());" CRLF;
+	szDefinition += "\trequest.setRawHeader(QString(\"Accept-Encoding\").toLatin1(), QString(\"gzip, deflate\").toLatin1());" CRLF;
+	szDefinition += "\trequest.setRawHeader(QString(\"SoapAction\").toLatin1(), QString(\"" + m_szSoapAction + "\").toLatin1());" CRLF;
+	szDefinition += CRLF;
+	szDefinition += "\tQByteArray soapMessage = buildSoapMessage(" + m_pInputMessage->getParameter()->getLocalName() + ".serialize());" CRLF;
+	szDefinition += CRLF;
+	szDefinition += "\tIQueryExecutorResponse response = m_pQueryExecutor->execQuery(request, soapMessage);" CRLF;
+	szDefinition += "\tQString szErrorMsg;" CRLF;
+	szDefinition += "\tint iErrorLine = -1;" CRLF;
+	szDefinition += "\tint iErrorColumn = -1;" CRLF;
+	szDefinition += "\tQDomDocument doc;" CRLF;
+	szDefinition += "\tQMap<QString, QString> namespaceRoutingMap;" CRLF;
+	szDefinition += CRLF;
+	szDefinition += "\tif(doc.setContent(response.getResponse(), &szErrorMsg, &iErrorLine, &iErrorColumn)){" CRLF;
+	if(m_pSoapEnvFaultType){
+		szDefinition += "\t\tnamespaceRoutingMap = buildNamespaceRoutingMap(doc);" CRLF;
+		szDefinition += CRLF;
+		szDefinition += "\t\tQString szNamespace = namespaceRoutingMap.value(" + szNamespace + "::" + m_pSoapEnvFaultType->getNameWithNamespace() +
+				"TargetNamespaceURI, " + szNamespace + "::" + m_pSoapEnvFaultType->getNameWithNamespace() + "TargetNamespace);" CRLF;
+		szDefinition += "\t\tQString szFaultTagName = szNamespace + \":Fault\";" CRLF;
+		szDefinition += "\t\tif(doc.elementsByTagName(szFaultTagName).size() > 0){" CRLF;
+		szDefinition += "\t\t\tQDomElement root = doc.elementsByTagName(szFaultTagName).at(0).toElement();" CRLF;
+		szDefinition += "\t\t\tFault.deserialize(root);" CRLF;
+		szDefinition += "\t\t\tbGoOn = false;" CRLF;
+		szDefinition += "\t\t}else{" CRLF;
+	}
+	szDefinition += "\t\t" + QString(m_pSoapEnvFaultType ? "\t" : "") + "QDomElement root = doc.elementsByTagName(\"SOAP-ENV:Body\").at(0).firstChildElement();" CRLF;
+	szDefinition += "\t\t" + QString(m_pSoapEnvFaultType ? "\t" : "") + m_pOutputMessage->getParameter()->getLocalName() + ".deserialize(root);" CRLF;
+	if(m_pSoapEnvFaultType){
+		szDefinition += "\t\t}" CRLF;
+	}
+	szDefinition += "\t}else{" CRLF;
+	szDefinition += "\t\tbGoOn = false;" CRLF;
+	szDefinition += "\t\tqWarning(\"[DeviceMgmt::" + m_szName + "] Error during parsing response : %s (%d:%d)\", qPrintable(szErrorMsg), iErrorLine, iErrorColumn);" CRLF;
+	szDefinition += "\t}" CRLF;
+	szDefinition += CRLF;
+	szDefinition += "\tif(response.getHttpStatusCode() != 200){" CRLF;
+	szDefinition += "\t\tbGoOn = false;" CRLF;
+	szDefinition += "\t\tqWarning(\"[DeviceMgmt::" + m_szName + "] Error with HTTP status code: %d\", response.getHttpStatusCode());" CRLF;
+	szDefinition += "\t}" CRLF;
+	szDefinition += CRLF;
+	szDefinition += "\treturn bGoOn;" CRLF;
+	szDefinition += "}" CRLF;
+
+	return szDefinition;
 }
 
 OperationList::OperationList()

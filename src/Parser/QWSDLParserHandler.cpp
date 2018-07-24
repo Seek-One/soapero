@@ -26,6 +26,8 @@ QWSDLParserHandler::QWSDLParserHandler(QMap<QString, QStringList>* pNamespaceRou
 		m_bOwnNamespaceRoutingMap = false;
 	}
 
+	m_bWaitForSoapEnvelopeFault = false;
+
 	m_pService = Service::create();
 	m_pListTypes = TypeList::create();
 	m_pListRequestResponseElements = RequestResponseElementList::create();
@@ -72,6 +74,8 @@ bool QWSDLParserHandler::endDocument()
 
 	AttributeList::iterator attr;
 	AttributeSharedPtr pAttribute;
+
+	OperationList::iterator operation;
 
 	// TODO: resolve ref for attributes
 
@@ -200,6 +204,13 @@ bool QWSDLParserHandler::endDocument()
 		if((*type)->getClassType() == Type::TypeComplex) {
 			ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(*type);
 
+			// Add soap envelope default fault type if exists
+			if(pComplexType->isSoapEnvelopeFault()){
+				for(operation = m_pListOperations->begin(); operation != m_pListOperations->end(); ++operation){
+					(*operation)->setSoapEnvelopeFaultType(pComplexType);
+				}
+			}
+
 			if(pComplexType->getElementList() && pComplexType->getElementList()->count() > 0){
 				for(element = pComplexType->getElementList()->begin(); element != pComplexType->getElementList()->end(); ++element){
 					if((*element)->hasRef()){
@@ -275,6 +286,12 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 
 		if(attributes.index(ATTR_TARGET_NAMESPACE) != -1) {
 			szTargetNamespace = attributes.value(ATTR_TARGET_NAMESPACE);
+
+			// This is a special case used to find the SOAP standard fault type
+			if(szTargetNamespace == "http://www.w3.org/2003/05/soap-envelope"){
+				m_bWaitForSoapEnvelopeFault = true;
+			}
+
 			m_pService->setTargetNamespace(szTargetNamespace);
 		}
 
@@ -364,6 +381,13 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 					pCurrentType->setLocalName(szName);
 					pCurrentType->setNamespace(m_szTargetNamespacePrefix);
 				}
+
+				ComplexTypeSharedPtr pComplexCurrentType = qSharedPointerCast<ComplexType>(pCurrentType);
+				if((szName == "Fault") && m_bWaitForSoapEnvelopeFault){
+					pComplexCurrentType->setIsSoapEnvelopeFault(true);
+				}
+				pComplexCurrentType->setTargetNamespaceURI(m_pService->getTargetNamespace());
+
 				addCurrentType(pCurrentType);
 			}
 		}

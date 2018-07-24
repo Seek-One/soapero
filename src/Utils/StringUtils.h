@@ -10,6 +10,7 @@
 
 #include <QRegExp>
 #include <QString>
+#include <QStringList>
 
 class StringUtils {
 public:
@@ -26,6 +27,15 @@ public:
 		QString szRet = replaceNonConformCharacters(szString);
 		szRet = replaceCppKeyWords(szRet);
 		return szRet;
+	}
+
+	static inline QString getLocalNameIfPossible(const QString& szName)
+	{
+		QStringList splitted = szName.split(":");
+		if(splitted.size() == 2){
+			return splitted[1];
+		}
+		return szName;
 	}
 
 private:

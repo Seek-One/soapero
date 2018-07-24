@@ -460,14 +460,14 @@ QString SimpleType::getDeserializerDefinition(const QString& szClassname) const
 		"{" CRLF
 		"\tQDomElement child = element.firstChild().toElement();" CRLF
 		"\twhile(!child.isNull()) {" CRLF
-		"\t\tif(child.tagName() == \"%1\") {" CRLF
-		"\t\t%2.deserialize(child);" CRLF
+		"\t\tif((child.tagName() == \"%1\") || child.tagName().endsWith(\"%2\")) {" CRLF
+		"\t\t%3.deserialize(child);" CRLF
 		"\t\t}" CRLF
 		"\tchild = child.nextSibling().toElement();" CRLF
 		"\t}" CRLF
 		"}" CRLF;
 
-		return szDefinition.arg(szClassname).arg(getTagQualifiedName()).arg(getVariableName());
+		return szDefinition.arg(szClassname).arg(getTagQualifiedName()).arg(getLocalName()).arg(getVariableName());
 	}
 }
 
@@ -479,13 +479,13 @@ QString SimpleType::getEnumConvertDefinition(const QString& szClassname) const
 		szDefinition += ""
 		"void %0::set%1FromString(const QString& szValue)" CRLF
 		"{" CRLF
-		"\tif(szValue == \"" + getEnumerationValues()[0] + "\") {" CRLF
+		"\tif((szValue == \"" + getEnumerationValues()[0] + "\") || szValue.endsWith(\":" + StringUtils::getLocalNameIfPossible(getEnumerationValues()[0]) + "\")) {" CRLF
 		"\t\t %2 = %0::" + StringUtils::removeNonAlphaNum(getEnumerationValues()[0]) + ";" CRLF
 		"\t}";
 
 		for(int i=1; i < getEnumerationValues().count(); ++i) {
 			szDefinition += ""
-			"else if(\"" + getEnumerationValues()[i] + "\" == szValue) {" CRLF
+			"else if((szValue == \"" + getEnumerationValues()[i] + "\") || szValue.endsWith(\":" + StringUtils::getLocalNameIfPossible(getEnumerationValues()[i]) + "\")) {" CRLF
 			"\t\t%2 = %0::" + StringUtils::removeNonAlphaNum(getEnumerationValues()[i]) + ";" CRLF
 			"\t}";
 		}

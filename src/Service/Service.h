@@ -14,7 +14,24 @@
 
 #include <QNetworkRequest>
 
-namespace Onvif {
+namespace ONVIF {
+
+class IQueryExecutorResponse
+{
+public:
+	IQueryExecutorResponse();
+	virtual ~IQueryExecutorResponse();
+
+	void setResponse(const QByteArray& response);
+	const QByteArray& getResponse() const;
+
+	void setHttpStatusCode(int iHttpStatusCode);
+	int getHttpStatusCode() const;
+
+private:
+	QByteArray m_response;
+	int m_iHttpStatusCode;
+};
 
 class IQueryExecutor
 {
@@ -22,7 +39,7 @@ public:
 	IQueryExecutor();
 	virtual ~IQueryExecutor();
 
-	virtual QByteArray execQuery(const QNetworkRequest& request, const QByteArray& bytes) = 0;
+	virtual IQueryExecutorResponse execQuery(const QNetworkRequest& request, const QByteArray& bytes) = 0;
 };
 
 class Service
