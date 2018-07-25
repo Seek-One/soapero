@@ -416,6 +416,9 @@ void TypeListBuilder::buildCppFile(const ServiceSharedPtr& pService)
 		os << CRLF;
 		os << "#define TIMEOUT_MSEC 10*1000" << CRLF;
 		os << CRLF;
+		os << "#define SOAP_ENV_URI \"http://www.w3.org/2003/05/soap-envelope\"" << CRLF;
+		os << "#define DEFAULT_SOAP_ENV_NAMESPACE \"SOAP-ENV\"" << CRLF;
+		os << CRLF;
 
 		if(!m_szNamespace.isEmpty()) {
 			os << "namespace " << m_szNamespace << " {" << CRLF;
@@ -463,7 +466,6 @@ void TypeListBuilder::buildHeaderClassType(QTextStream& os, const TypeSharedPtr&
 	} else if(pType->getClassType() == Type::TypeComplex) {
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pType);
 
-		os << "const QString " << pComplexType->getLocalName(true) << "TargetNamespaceURI = \"" << pComplexType->getTargetNamespaceURI() << "\";" CRLF;
 		os << "const QString " << pComplexType->getLocalName(true) << "TargetNamespace = \"" << pComplexType->getNamespace() << "\";" CRLF;
 		os << CRLF;
 
@@ -1128,8 +1130,20 @@ void TypeListBuilder::buildCppClassService(QTextStream& os, const ServiceSharedP
 	os << "QMap<QString, QString> " << szClassname << "::buildNamespaceRoutingMap(const QDomDocument& doc) const" CRLF;
 	os << "{" CRLF;
 	os << "\tQMap<QString, QString> map;" CRLF;
-	os << "\tif(doc.elementsByTagName(\"SOAP-ENV:Envelope\").size() > 0){" << CRLF;
-	os << "\t\tQDomElement root = doc.elementsByTagName(\"SOAP-ENV:Envelope\").at(0).toElement();" << CRLF;
+	os << "\tQString szSoapEnvNamespace = DEFAULT_SOAP_ENV_NAMESPACE;" CRLF;
+	os << CRLF;
+	os << "\t// Try to find the real soap envelope namespace" CRLF;
+	os << "\tQDomNode node = doc.documentElement();" CRLF;
+	os << "\twhile(!node.isNull()){" CRLF;
+	os << "\t\tQDomElement elem = node.toElement();" CRLF;
+	os << "\t\tif(!elem.isNull() && elem.tagName().endsWith(\":Envelope\")){" CRLF;
+	os << "\t\t\tszSoapEnvNamespace = elem.tagName().split(\":\")[0];" CRLF;
+	os << "\t\t}" CRLF;
+	os << "\t\tnode = node.nextSibling();" CRLF;
+	os << "\t}" CRLF;
+	os << CRLF;
+	os << "\tif(doc.elementsByTagName(szSoapEnvNamespace + \":Envelope\").size() > 0){" << CRLF;
+	os << "\t\tQDomElement root = doc.elementsByTagName(szSoapEnvNamespace + \":Envelope\").at(0).toElement();" << CRLF;
 	os << "\t\tint iNbAttributes = root.attributes().size();" << CRLF;
 	os << "\t\tfor(int i = 0; i < iNbAttributes; ++i){" << CRLF;
 	os << "\t\t\tQDomAttr attr = root.attributes().item(i).toAttr();" << CRLF;

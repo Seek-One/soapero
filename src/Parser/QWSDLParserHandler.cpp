@@ -386,7 +386,6 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 				if((szName == "Fault") && m_bWaitForSoapEnvelopeFault){
 					pComplexCurrentType->setIsSoapEnvelopeFault(true);
 				}
-				pComplexCurrentType->setTargetNamespaceURI(m_pService->getTargetNamespace());
 
 				addCurrentType(pCurrentType);
 			}

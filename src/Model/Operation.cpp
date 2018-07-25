@@ -134,8 +134,7 @@ QString Operation::getOperationDefinition(const QString& szClassname, const QStr
 	if(m_pSoapEnvFaultType){
 		szDefinition += "\t\tnamespaceRoutingMap = buildNamespaceRoutingMap(doc);" CRLF;
 		szDefinition += CRLF;
-		szDefinition += "\t\tQString szNamespace = namespaceRoutingMap.value(" + szNamespace + "::" + m_pSoapEnvFaultType->getNameWithNamespace() +
-				"TargetNamespaceURI, " + szNamespace + "::" + m_pSoapEnvFaultType->getNameWithNamespace() + "TargetNamespace);" CRLF;
+		szDefinition += "\t\tQString szNamespace = namespaceRoutingMap.value(SOAP_ENV_URI, " + szNamespace + "::" + m_pSoapEnvFaultType->getNameWithNamespace() + "TargetNamespace);" CRLF;
 		szDefinition += "\t\tQString szFaultTagName = szNamespace + \":Fault\";" CRLF;
 		szDefinition += "\t\tif(doc.elementsByTagName(szFaultTagName).size() > 0){" CRLF;
 		szDefinition += "\t\t\tQDomElement root = doc.elementsByTagName(szFaultTagName).at(0).toElement();" CRLF;
@@ -143,7 +142,7 @@ QString Operation::getOperationDefinition(const QString& szClassname, const QStr
 		szDefinition += "\t\t\tbGoOn = false;" CRLF;
 		szDefinition += "\t\t}else{" CRLF;
 	}
-	szDefinition += "\t\t" + QString(m_pSoapEnvFaultType ? "\t" : "") + "QDomElement root = doc.elementsByTagName(\"SOAP-ENV:Body\").at(0).firstChildElement();" CRLF;
+	szDefinition += "\t\t" + QString(m_pSoapEnvFaultType ? "\t" : "") + "QDomElement root = doc.elementsByTagName(namespaceRoutingMap.value(SOAP_ENV_URI, DEFAULT_SOAP_ENV_NAMESPACE) + \":Body\").at(0).firstChildElement();" CRLF;
 	szDefinition += "\t\t" + QString(m_pSoapEnvFaultType ? "\t" : "") + m_pOutputMessage->getParameter()->getLocalName() + ".deserialize(root);" CRLF;
 	if(m_pSoapEnvFaultType){
 		szDefinition += "\t\t}" CRLF;

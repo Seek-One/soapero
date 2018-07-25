@@ -905,16 +905,6 @@ ComplexTypeSharedPtr ComplexType::create()
 	return ComplexTypeSharedPtr(new ComplexType());
 }
 
-void ComplexType::setTargetNamespaceURI(const QString& szTargetNamespaceURI)
-{
-	m_szTargetNamespaceURI = szTargetNamespaceURI;
-}
-
-const QString& ComplexType::getTargetNamespaceURI() const
-{
-	return m_szTargetNamespaceURI;
-}
-
 void ComplexType::setExtensionType(TypeSharedPtr pType, bool bIsList)
 {
 	m_pExtensionType = pType;

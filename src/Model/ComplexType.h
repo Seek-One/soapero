@@ -154,9 +154,6 @@ public:
 
 	static ComplexTypeSharedPtr create();
 
-	void setTargetNamespaceURI(const QString& szTargetNamespaceURI);
-	const QString& getTargetNamespaceURI() const;
-
 	void setExtensionType(TypeSharedPtr pType, bool bIsList = false);
 	TypeSharedPtr getExtensionType() const;
 	bool isExtensionTypeList() const;
@@ -188,8 +185,6 @@ public:
 private:
 	AttributeListSharedPtr m_pListAttribute;
 	ElementListSharedPtr m_pListElement;
-
-	QString m_szTargetNamespaceURI;
 
 	TypeSharedPtr m_pExtensionType;
 	bool m_bIsListExtension;
