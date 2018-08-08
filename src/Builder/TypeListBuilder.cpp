@@ -411,6 +411,7 @@ void TypeListBuilder::buildCppFile(const ServiceSharedPtr& pService)
 		os << "#include <QNetworkAccessManager>" << CRLF;
 		os << "#include <QNetworkRequest>" << CRLF;
 		os << "#include <QNetworkReply>" << CRLF;
+		os << "#include <QStringList>" << CRLF;
 		os << CRLF;
 		os << "#include \"" << szHeaderFilename << "\"" << CRLF;
 		os << CRLF;
