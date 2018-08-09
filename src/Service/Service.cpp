@@ -138,16 +138,16 @@ QByteArray Service::buildSoapMessage(const QString& szSerializedObject) const
 	QByteArray bytes;
 	bytes += "<s:Envelope xmlns:s=\"http://www.w3.org/2003/05/soap-envelope\">";
 	bytes +=     "<s:Header>";
-	if(!m_url.userName().isEmpty() && !m_url.password().isEmpty()){
-		bytes +=         "<Security s:mustUnderstand=\"1\" xmlns=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd\">";
-		bytes +=             "<UsernameToken>";
-		bytes +=                 "<Username>" + m_url.userName() + "</Username>";
-		bytes +=                 "<Password Type=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordDigest\">" + szDigestPassword +  "</Password>";
-		bytes +=                 "<Nonce EncodingType=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary\">" + szNonce64 +  "</Nonce>";
-		bytes +=                 "<Created xmlns=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd\">" + szDatetime +  "</Created>";
-		bytes +=             "</UsernameToken>";
-		bytes +=         "</Security>";
-	}
+//	if(!m_url.userName().isEmpty() && !m_url.password().isEmpty()){
+//		bytes +=         "<Security s:mustUnderstand=\"1\" xmlns=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd\">";
+//		bytes +=             "<UsernameToken>";
+//		bytes +=                 "<Username>" + m_url.userName() + "</Username>";
+//		bytes +=                 "<Password Type=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordDigest\">" + szDigestPassword +  "</Password>";
+//		bytes +=                 "<Nonce EncodingType=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary\">" + szNonce64 +  "</Nonce>";
+//		bytes +=                 "<Created xmlns=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd\">" + szDatetime +  "</Created>";
+//		bytes +=             "</UsernameToken>";
+//		bytes +=         "</Security>";
+//	}
 	bytes +=     "</s:Header>";
 	bytes +=     "<s:Body xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">";
 	bytes +=		szSerializedObject;
