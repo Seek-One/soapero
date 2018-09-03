@@ -22,6 +22,7 @@
 #include "Builder/TypeListBuilder.h"
 #include "Parser/QWSDLParserHandler.h"
 
+QStringList getWSDLFileNames(const char* szPathSrc);
 void copyPath(QString src, QString dst);
 bool removeDir(const QString & dirName);
 
@@ -34,77 +35,83 @@ int main(int argc, char **argv)
 
 	QCoreApplication a(argc, argv);
 
-//	QFile file("./wsdl/ONVIF/doorcontrol.wsdl");			// WORKS!
-//	QFile file("./wsdl/t-1.xsd");							// WORKS!
-//	QFile file("./wsdl/ws-addr.xsd");						// WORKS!
-//	QFile file("./wsdl/bf-2.xsd");							// WORKS!
-//	QFile file("./wsdl/b-2.xsd");							// WORKS!
-//	QFile file("./wsdl/xmlmime.xml");						// WORKS!
-//	QFile file("./wsdl/soap-envelope.xml");					// WORKS!
-//	QFile file("./wsdl/ONVIF/common.xsd");					// WORKS!
-//	QFile file("./wsdl/include.xml");						// WORKS!
-//	QFile file("./wsdl/ONVIF/onvif.xsd");					// WORKS!
-	QFile file("./wsdl/ONVIF/devicemgmt.wsdl");
-
-	if(file.open(QFile::ReadOnly)) {
-
-		QByteArray bytes = file.readAll();
-		QBuffer buffer;
-		buffer.setData(bytes);
-
-		QXmlInputSource source(&buffer);
-		QXmlSimpleReader reader;
-		QWSDLParserHandler handler;
-		reader.setContentHandler(&handler);
-		reader.setErrorHandler(&handler);
-		reader.setFeature("http://xml.org/sax/features/namespace-prefixes", true);
-		reader.setFeature("http://xml.org/sax/features/namespaces", true);
-		if(!reader.parse(source)){
-			qWarning("[ServerController::getDevicesList] Error to parse data (error: %s)", qPrintable(reader.errorHandler()->errorString()));
-		}else{
-
-			//removeDir("./generated");
-
-			if(!QDir("./generated").exists()) {
-				qWarning("[main] Generated directory does not exists, we create it");
-				QDir().mkdir("generated");
-			}
-			if(!QDir("./generated/types").exists()) {
-				qWarning("[main] types directory does not exists, we create it");
-				QDir().mkdir("generated/types");
-			}
-
-
-			TypeListBuilder builder(handler.getService(), handler.getTypeList(), handler.getRequestResponseElementList());
-			builder.setNamespace("ONVIF");
-			builder.setFilename("actionservice");
-			builder.setDirname("./generated");
-			builder.buildHeaderFiles();
-			builder.buildCppFiles();
-			builder.buildResumeFile();
-
-			QDir dir("./src/Base");
-		    foreach (QString f, dir.entryList(QDir::Files)) {
-		    	QString srcPath = QString("./src/Base") + QDir::separator() + f;
-		    	QString dstPath = QString("./generated/types") + QDir::separator() + f;
-		    	QFile::remove(dstPath);
-		        QFile::copy(srcPath, dstPath);
-		    }
-			dir = QDir("./src/Service");
-		    foreach (QString f, dir.entryList(QDir::Files)) {
-		    	QString srcPath = QString("./src/Service") + QDir::separator() + f;
-		    	QString dstPath = QString("./generated") + QDir::separator() + f;
-		    	QFile::remove(dstPath);
-		        QFile::copy(srcPath, dstPath);
-		    }
-
-		}
-	}else{
-		qWarning("Error for opening file (%s)", qPrintable(file.errorString()));
+	if(argc != 3){
+		printf("Usage: ./jet1oeil-soapero [path_src] [path_dst]");
+		return -1;
 	}
 
+	QStringList listWSDLFileNames = getWSDLFileNames(argv[1]);
+	QStringList::const_iterator iter;
+	for(iter = listWSDLFileNames.constBegin(); iter != listWSDLFileNames.constEnd(); ++iter){
+		QFile file(QString(argv[1]) + "/" + *iter);
+		if(file.open(QFile::ReadOnly)) {
+			QByteArray bytes = file.readAll();
+			QBuffer buffer;
+			buffer.setData(bytes);
+
+			QXmlInputSource source(&buffer);
+			QXmlSimpleReader reader;
+			QWSDLParserHandler handler;
+			reader.setContentHandler(&handler);
+			reader.setErrorHandler(&handler);
+			reader.setFeature("http://xml.org/sax/features/namespace-prefixes", true);
+			reader.setFeature("http://xml.org/sax/features/namespaces", true);
+			if(!reader.parse(source)){
+				qWarning("[ServerController::getDevicesList] Error to parse data (error: %s)", qPrintable(reader.errorHandler()->errorString()));
+			}else{
+
+				//removeDir("./generated");
+
+				if(!QDir("./generated").exists()) {
+					qWarning("[main] Generated directory does not exists, we create it");
+					QDir().mkdir("generated");
+				}
+				if(!QDir("./generated/types").exists()) {
+					qWarning("[main] types directory does not exists, we create it");
+					QDir().mkdir("generated/types");
+				}
+
+
+				TypeListBuilder builder(handler.getService(), handler.getTypeList(), handler.getRequestResponseElementList());
+				builder.setNamespace("ONVIF");
+				builder.setFilename("actionservice");
+				builder.setDirname("./generated");
+				builder.buildHeaderFiles();
+				builder.buildCppFiles();
+				builder.buildResumeFile();
+
+				QDir dir("./src/Base");
+				foreach (QString f, dir.entryList(QDir::Files)) {
+					QString srcPath = QString("./src/Base") + QDir::separator() + f;
+					QString dstPath = QString("./generated/types") + QDir::separator() + f;
+					QFile::remove(dstPath);
+					QFile::copy(srcPath, dstPath);
+				}
+				dir = QDir("./src/Service");
+				foreach (QString f, dir.entryList(QDir::Files)) {
+					QString srcPath = QString("./src/Service") + QDir::separator() + f;
+					QString dstPath = QString("./generated") + QDir::separator() + f;
+					QFile::remove(dstPath);
+					QFile::copy(srcPath, dstPath);
+				}
+
+			}
+		}else{
+			qWarning("Error for opening file (%s)", qPrintable(file.errorString()));
+		}
+	}
 
 	return iRes;
+}
+
+QStringList getWSDLFileNames(const char* szPathSrc)
+{
+	QStringList listFileNames;
+	QDir directory(szPathSrc);
+	if(directory.exists()){
+		listFileNames = directory.entryList(QStringList() << "*.wsdl" << "*.WSDL", QDir::Files);
+	}
+	return listFileNames;
 }
 
 void copyPath(QString src, QString dst)
