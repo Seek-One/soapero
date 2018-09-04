@@ -17,10 +17,12 @@
 #include "Model/Type.h"
 #include "Model/Service.h"
 
+#include "Utils/UniqueStringList.h"
+
 class TypeListBuilder
 {
 public:
-	TypeListBuilder(const ServiceSharedPtr& pService, const TypeListSharedPtr& pListType, const RequestResponseElementListSharedPtr& pListElement);
+	TypeListBuilder(const ServiceSharedPtr& pService, const TypeListSharedPtr& pListType, const RequestResponseElementListSharedPtr& pListElement, const QSharedPointer<UniqueStringList>& pListGeneratedFiles);
 	virtual ~TypeListBuilder();
 
 	void setPrefix(const QString& szPrefix);
@@ -35,7 +37,6 @@ public:
 	void setDirname(const QString& szDirname);
 	QString getDirname() const;
 
-	void buildResumeFile();
 	void buildHeaderFiles();
 	void buildCppFiles();
 
@@ -66,6 +67,8 @@ private:
 	TypeListSharedPtr m_pListType;
 	RequestResponseElementListSharedPtr m_pListElement;
 	ServiceSharedPtr m_pService;
+
+	QSharedPointer<UniqueStringList> m_pListGeneratedFiles;
 
 	QString m_szPrefix;
 	QString m_szNamespace;

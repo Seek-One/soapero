@@ -17,11 +17,14 @@
 #define CRLF "\r\n"
 #endif
 
-TypeListBuilder::TypeListBuilder(const ServiceSharedPtr& pService, const TypeListSharedPtr& pListType, const RequestResponseElementListSharedPtr& pListElement)
+TypeListBuilder::TypeListBuilder(const ServiceSharedPtr& pService, const TypeListSharedPtr& pListType, const RequestResponseElementListSharedPtr& pListElement, const QSharedPointer<UniqueStringList>& pListGeneratedFiles)
 {
 	m_pListType = pListType;
 	m_pListElement = pListElement;
 	m_pService = pService;
+
+	m_pListGeneratedFiles = pListGeneratedFiles;
+
 	m_szPrefix = "";
 }
 
@@ -68,46 +71,6 @@ void TypeListBuilder::setDirname(const QString& szDirname)
 QString TypeListBuilder::getDirname() const
 {
 	return m_szDirname;
-}
-
-void TypeListBuilder::buildResumeFile()
-{
-	TypeList::const_iterator type;
-	RequestResponseElementList::const_iterator element;
-
-	QDir dir(m_szDirname);
-	QFile file(m_szDirname + QDir::separator() + "resume.txt");
-	if(file.open(QFile::WriteOnly)) {
-
-		QTextStream os(&file);
-
-		os << "Generated file list:" << CRLF;
-		for(type = m_pListType->constBegin(); type != m_pListType->constEnd(); ++type) {
-			if(!(*type)->getLocalName().isEmpty()) {
-				QString szHeaderFilename = (*type)->getQualifiedName() + ".h";
-				QString szCppFilename = (*type)->getQualifiedName() + ".cpp";
-				os << "generated" << QDir::separator() << "types" << QDir::separator() << szHeaderFilename << CRLF;
-				os << "generated" << QDir::separator() << "types" << QDir::separator() << szCppFilename << CRLF;
-
-			}
-		}
-
-		for(element = m_pListElement->constBegin(); element != m_pListElement->constEnd(); ++element) {
-			if(!(*element)->getLocalName().isEmpty()) {
-				QString szHeaderFilename = (*element)->getQualifiedName() + ".h";
-				QString szCppFilename = (*element)->getQualifiedName() + ".cpp";
-				os << "generated" << QDir::separator() << "messages" << QDir::separator() << szHeaderFilename << CRLF;
-				os << "generated" << QDir::separator() << "messages" << QDir::separator() << szCppFilename << CRLF;
-
-			}
-		}
-
-		os << "generated" << QDir::separator() << m_pService->getName() << ".h" << CRLF;
-		os << "generated" << QDir::separator() << m_pService->getName() << ".cpp" << CRLF ;
-
-	}else{
-		qWarning("[TYpeListBuilder::buildResumeFile] Cannot open file ./generated/resume.txt (error: %s)", qPrintable(file.errorString()));
-	}
 }
 
 void TypeListBuilder::buildHeaderFiles()
@@ -197,6 +160,7 @@ void TypeListBuilder::buildHeaderFile(const TypeSharedPtr& pType)
 
 		os << "#endif" << CRLF;
 
+		m_pListGeneratedFiles->append(QString("types") + QDir::separator() + szHeaderFilename);
 	}else{
 		qWarning("[TypeListBuilder] Cannot open file %s (error: %s)", qPrintable(szHeaderFilename), qPrintable(file.errorString()));
 	}
@@ -241,6 +205,7 @@ void TypeListBuilder::buildHeaderFile(const RequestResponseElementSharedPtr& pEl
 
 		os << "#endif" << CRLF;
 
+		m_pListGeneratedFiles->append(QString("messages") + QDir::separator() + szHeaderFilename);
 	}else{
 		qWarning("[TypeListBuilder] Cannot open file %s (error: %s)", qPrintable(szHeaderFilename), qPrintable(file.errorString()));
 	}
@@ -282,6 +247,8 @@ void TypeListBuilder::buildHeaderFile(const ServiceSharedPtr& pService)
 		}
 
 		os << "#endif" << CRLF;
+
+		m_pListGeneratedFiles->append(szHeaderFilename);
 	}else{
 		qWarning("[TypeListBuilder] Cannot open file %s (error: %s)", qPrintable(szHeaderFilename), qPrintable(file.errorString()));
 	}
@@ -344,6 +311,7 @@ void TypeListBuilder::buildCppFile(const TypeSharedPtr& pType)
 			os << "}" << CRLF;
 		}
 
+		m_pListGeneratedFiles->append(QString("types") + QDir::separator() + szCppFilename);
 	}else{
 		qWarning("[TypeListBuilder] Cannot open file %s (error: %s)", qPrintable(szCppFilename), qPrintable(file.errorString()));
 	}
@@ -381,6 +349,7 @@ void TypeListBuilder::buildCppFile(const RequestResponseElementSharedPtr& pEleme
 			os << "}" << CRLF;
 		}
 
+		m_pListGeneratedFiles->append(QString("messages") + QDir::separator() + szCppFilename);
 	}else{
 		qWarning("[TypeListBuilder] Cannot open file %s (error: %s)", qPrintable(szCppFilename), qPrintable(file.errorString()));
 	}
@@ -431,6 +400,7 @@ void TypeListBuilder::buildCppFile(const ServiceSharedPtr& pService)
 			os << "}" << CRLF;
 		}
 
+		m_pListGeneratedFiles->append(szCppFilename);
 	}else{
 		qWarning("[TypeListBuilder] Cannot open file %s (error: %s)", qPrintable(szCppFilename), qPrintable(file.errorString()));
 	}

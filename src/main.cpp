@@ -19,8 +19,10 @@
 #include <QXmlSimpleReader>
 #include <QCoreApplication>
 
+#include "Builder/FileBuilder.h"
 #include "Builder/TypeListBuilder.h"
 #include "Parser/QWSDLParserHandler.h"
+#include "Utils/UniqueStringList.h"
 
 QStringList getWSDLFileNames(const char* szPathSrc);
 void copyPath(QString src, QString dst);
@@ -35,15 +37,17 @@ int main(int argc, char **argv)
 
 	QCoreApplication a(argc, argv);
 
-	if(argc != 3){
-		printf("Usage: ./jet1oeil-soapero [path_src] [path_dst]");
+	if((argc < 3) || (argc > 4)){
+		printf("Usage: ./jet1oeil-soapero SRC_DIR DST_DIR [FILE_TYPE] (where FILE_TYPE is \"Default\" or \"CMakeLists\")");
 		return -1;
 	}
 
+	bool bFileGenerated = false;
+	QSharedPointer<UniqueStringList> pListGeneratedFiles(new UniqueStringList());
 	QStringList listWSDLFileNames = getWSDLFileNames(argv[1]);
 	QStringList::const_iterator iter;
 	for(iter = listWSDLFileNames.constBegin(); iter != listWSDLFileNames.constEnd(); ++iter){
-		QFile file(QString(argv[1]) + "/" + *iter);
+		QFile file(QString(argv[1]) + QDir::separator() + *iter);
 		if(file.open(QFile::ReadOnly)) {
 			QByteArray bytes = file.readAll();
 			QBuffer buffer;
@@ -59,45 +63,54 @@ int main(int argc, char **argv)
 			if(!reader.parse(source)){
 				qWarning("[ServerController::getDevicesList] Error to parse data (error: %s)", qPrintable(reader.errorHandler()->errorString()));
 			}else{
-
-				//removeDir("./generated");
-
-				if(!QDir("./generated").exists()) {
+				if(!QDir(argv[2]).exists()) {
 					qWarning("[main] Generated directory does not exists, we create it");
-					QDir().mkdir("generated");
-				}
-				if(!QDir("./generated/types").exists()) {
-					qWarning("[main] types directory does not exists, we create it");
-					QDir().mkdir("generated/types");
+					QDir().mkdir(argv[2]);
 				}
 
-
-				TypeListBuilder builder(handler.getService(), handler.getTypeList(), handler.getRequestResponseElementList());
+				TypeListBuilder builder(handler.getService(), handler.getTypeList(), handler.getRequestResponseElementList(), pListGeneratedFiles);
 				builder.setNamespace("ONVIF");
 				builder.setFilename("actionservice");
-				builder.setDirname("./generated");
+				builder.setDirname(argv[2]);
 				builder.buildHeaderFiles();
 				builder.buildCppFiles();
-				builder.buildResumeFile();
+
+				bFileGenerated = true;
 
 				QDir dir("./src/Base");
 				foreach (QString f, dir.entryList(QDir::Files)) {
 					QString srcPath = QString("./src/Base") + QDir::separator() + f;
-					QString dstPath = QString("./generated/types") + QDir::separator() + f;
+					QString dstPath = QString(argv[2]) + QDir::separator() + "types" + QDir::separator() + f;
 					QFile::remove(dstPath);
 					QFile::copy(srcPath, dstPath);
+
+					pListGeneratedFiles->append(QString("types") + QDir::separator() + f);
 				}
 				dir = QDir("./src/Service");
 				foreach (QString f, dir.entryList(QDir::Files)) {
 					QString srcPath = QString("./src/Service") + QDir::separator() + f;
-					QString dstPath = QString("./generated") + QDir::separator() + f;
+					QString dstPath = QString(argv[2]) + QDir::separator() + f;
 					QFile::remove(dstPath);
 					QFile::copy(srcPath, dstPath);
-				}
 
+					pListGeneratedFiles->append(f);
+				}
 			}
 		}else{
 			qWarning("Error for opening file (%s)", qPrintable(file.errorString()));
+		}
+	}
+
+	if(bFileGenerated){
+		FileBuilder::FileType fileType = FileBuilder::Default;
+		if(argc == 4){
+			if(strcmp(argv[3], "CMakeLists") == 0){
+				fileType = FileBuilder::CMakeLists;
+			}
+		}
+		FileBuilder* pFileBuilder = FileBuilder::createFileBuilderFromType(fileType, argv[2], pListGeneratedFiles);
+		if(pFileBuilder){
+			pFileBuilder->generateFile();
 		}
 	}
 

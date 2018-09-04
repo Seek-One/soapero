@@ -217,6 +217,8 @@ set (APP_SOURCES
     src/Base/XSUnsignedLong.cpp
     src/Base/XSUnsignedLong.h
 
+    src/Builder/FileBuilder.cpp
+    src/Builder/FileBuilder.h
     src/Builder/TypeListBuilder.cpp
     src/Builder/TypeListBuilder.h
 
@@ -246,6 +248,8 @@ set (APP_SOURCES
     src/Service/Service.cpp
     
     src/Utils/StringUtils.h
+    src/Utils/UniqueStringList.cpp
+    src/Utils/UniqueStringList.h
 )
 
 # Creating MOC file for sources file using "slots" or Q_OBJECT macro
