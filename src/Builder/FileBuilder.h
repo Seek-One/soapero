@@ -20,16 +20,17 @@ public:
 	};
 
 protected:
-	FileBuilder(const QString& szDirName, const QSharedPointer<QList<QString> >& pFileList);
+	FileBuilder(const QString& szName, const QString& szDirName, const QSharedPointer<QList<QString> >& pFileList);
 
 public:
-	static FileBuilder* createFileBuilderFromType(FileType fileType, const QString& szDirName, const QSharedPointer<QList<QString> >& pFileList);
+	static FileBuilder* createFileBuilderFromType(FileType fileType, const QString& szName, const QString& szDirName, const QSharedPointer<QList<QString> >& pFileList);
 
 	virtual ~FileBuilder();
 
 	virtual void generateFile() const = 0;
 
 protected:
+	QString m_szName;
 	QString m_szDirName;
 	QSharedPointer<QList<QString> > m_pFileList;
 };

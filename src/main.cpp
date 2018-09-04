@@ -108,7 +108,7 @@ int main(int argc, char **argv)
 				fileType = FileBuilder::CMakeLists;
 			}
 		}
-		FileBuilder* pFileBuilder = FileBuilder::createFileBuilderFromType(fileType, argv[2], pListGeneratedFiles);
+		FileBuilder* pFileBuilder = FileBuilder::createFileBuilderFromType(fileType, "onvif", argv[2], pListGeneratedFiles);
 		if(pFileBuilder){
 			pFileBuilder->generateFile();
 		}
