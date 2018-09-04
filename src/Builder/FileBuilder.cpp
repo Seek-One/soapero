@@ -112,15 +112,10 @@ public:
 	}
 };
 
-bool stringLessThan(const QString& sz1, const QString& sz2)
-{
-	return sz2 < sz2;
-}
-
 FileBuilder::FileBuilder(const QString& szName, const QString& szDirName, const QSharedPointer<QList<QString> >& pFileList)
 	: m_szName(szName), m_szDirName(szDirName), m_pFileList(pFileList)
 {
-	m_pFileList->sort();
+	qSort(*m_pFileList);
 }
 
 FileBuilder::~FileBuilder()
