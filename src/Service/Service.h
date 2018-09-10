@@ -49,6 +49,7 @@ public:
 	virtual ~Service();
 
 	void setUrl(const QUrl& url);
+	void setUseWSUsernameToken(bool bUseWSUsernameToken);
 	void setQueryExecutor(IQueryExecutor* pExecutor);
 
     int lastErrorCode() const;
@@ -59,6 +60,7 @@ protected:
 	QByteArray buildSoapMessage(const QString& szSerializedObject) const;
 
 	QUrl m_url;
+	bool m_bUseWSUsernameToken;
 
 	int m_iLastErrorCode;
 	QString m_szLastError;
