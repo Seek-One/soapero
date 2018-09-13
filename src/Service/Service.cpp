@@ -84,6 +84,7 @@ Service::Service()
 	m_iLastErrorCode = -1;
 	m_pQueryExecutor = new CustomQueryExecutor();
 	m_bUseWSUsernameToken = false;
+	m_bUseCustomDateTime = false;
 }
 
 Service::~Service()
@@ -103,6 +104,12 @@ void Service::setUrl(const QUrl& url)
 void Service::setUseWSUsernameToken(bool bUseWSUsernameToken)
 {
 	m_bUseWSUsernameToken = bUseWSUsernameToken;
+}
+
+void Service::setCustomDateTime(const QDateTime& customDateTime)
+{
+	m_customDateTime = customDateTime;
+	m_bUseCustomDateTime = true;
 }
 
 void Service::setQueryExecutor(IQueryExecutor* pExecutor)
@@ -133,7 +140,12 @@ QNetworkRequest Service::buildNetworkRequest() const
 
 QByteArray Service::buildSoapMessage(const QString& szSerializedObject) const
 {
-	QString szDatetime = QDateTime::currentDateTime().toString(Qt::ISODate);
+	QString szDatetime;
+	if(m_bUseCustomDateTime){
+		szDatetime = m_customDateTime.toString(Qt::ISODate);
+	}else{
+		szDatetime = QDateTime::currentDateTime().toString(Qt::ISODate);
+	}
 	QString szNonce = buildNonce();
 	QByteArray szNonce64 = szNonce.toLatin1().toBase64();
 	QByteArray digestbytes = szNonce.toLatin1();

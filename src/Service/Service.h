@@ -50,6 +50,7 @@ public:
 
 	void setUrl(const QUrl& url);
 	void setUseWSUsernameToken(bool bUseWSUsernameToken);
+	void setCustomDateTime(const QDateTime& customDateTime);
 	void setQueryExecutor(IQueryExecutor* pExecutor);
 
     int lastErrorCode() const;
@@ -61,6 +62,8 @@ protected:
 
 	QUrl m_url;
 	bool m_bUseWSUsernameToken;
+	bool m_bUseCustomDateTime;
+	QDateTime m_customDateTime;
 
 	int m_iLastErrorCode;
 	QString m_szLastError;
