@@ -8,6 +8,7 @@
 #ifndef SERVICE_H_
 #define SERVICE_H_
 
+#include <QDateTime>
 #include <QString>
 #include <QByteArray>
 #include <QUrl>

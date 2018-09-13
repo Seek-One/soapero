@@ -5,7 +5,6 @@
  *      Author: lgruber
  */
 
-#include <QDateTime>
 #include <QCryptographicHash>
 #include <QEventLoop>
 #include <QNetworkAccessManager>
