@@ -1179,14 +1179,16 @@ QString ComplexType::getSerializerDefinition(const QString& szClassname, const Q
 					szDefinition += QString("\tQList<%0>::const_iterator %1;" CRLF).arg( pComplexType->getNameWithNamespace()).arg(szIterator);
 					szDefinition += QString("\tfor(%0 = %1List.constBegin(); %0 != %1List.constEnd(); ++%0) {" CRLF).arg(szIterator).arg(pElement->getVariableName());
 					szDefinition += QString("\t\tif(!%0->isNull()) {" CRLF).arg(szIterator);
-					szDefinition += QString("\t\t\tszValue += %0->serialize();" CRLF).arg(szIterator);
+					szDefinition += QString("\t\t\tszValue += \"<%0\";" CRLF).arg(pElement->getName());
+					szDefinition += QString("\t\t\tszValue += %0->serialize(true);" CRLF).arg(szIterator);
+					szDefinition += QString("\t\t\tszValue += \"</%0>\";" CRLF).arg(pElement->getName());
 					szDefinition += QString("\t\t}" CRLF);
 					szDefinition += "\t}" CRLF;
 				}
 			} else{
 				szDefinition += "\tif(" + ((pElement->isNested() || pElement->isPointer()) ? pElement->getVariableName() + " && " : "") +
 						"!" + pElement->getVariableName() + ((pElement->isNested() || pElement->isPointer()) ? "->" : ".") + "isNull()) {" CRLF;
-				szDefinition += "\t\tszValue += " + pElement->getVariableName() + ((pElement->isNested() || pElement->isPointer()) ? "->" : ".") + "serialize();" CRLF;
+				szDefinition += "\t\tszValue += \"<" + pElement->getName() + "\" + " + pElement->getVariableName() + ((pElement->isNested() || pElement->isPointer()) ? "->" : ".") + "serialize(true) + \"</" + pElement->getName() + ">\";" CRLF;
 				szDefinition += "\t}" CRLF;
 			}
 		}
