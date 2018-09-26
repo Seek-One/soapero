@@ -137,7 +137,7 @@ QNetworkRequest Service::buildNetworkRequest() const
 	return request;
 }
 
-QByteArray Service::buildSoapMessage(const QString& szSerializedObject) const
+QByteArray Service::buildSoapMessage(const QString& szSerializedObject, const QList<QString>& listNamespaceDeclaration) const
 {
 	QString szDatetime;
 	if(m_bUseCustomDateTime){
@@ -152,8 +152,17 @@ QByteArray Service::buildSoapMessage(const QString& szSerializedObject) const
 	digestbytes.append(m_url.password());
 	QString szDigestPassword = QString(QCryptographicHash::hash(digestbytes, QCryptographicHash::Sha1).toBase64());
 
+	QString szNamespaceTmp;
+	QList<QString> listNamespaceDeclarationCopy = listNamespaceDeclaration;
+	QString szNamespaceDeclaration = " xmlns:s=\"http://www.w3.org/2003/05/soap-envelope\"";
+	while(!listNamespaceDeclarationCopy.empty()){
+		szNamespaceTmp = listNamespaceDeclarationCopy.first();
+		szNamespaceDeclaration += " " + szNamespaceTmp;
+		listNamespaceDeclarationCopy.removeAll(szNamespaceTmp);
+	}
+
 	QByteArray bytes;
-	bytes += "<s:Envelope xmlns:s=\"http://www.w3.org/2003/05/soap-envelope\">";
+	bytes += "<s:Envelope" + szNamespaceDeclaration + ">";
 	bytes +=     "<s:Header>";
 	if(m_bUseWSUsernameToken){
 		if(!m_url.userName().isEmpty() && !m_url.password().isEmpty()){

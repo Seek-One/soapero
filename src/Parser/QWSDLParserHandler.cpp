@@ -282,17 +282,15 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 	{
 		m_szCurrentNamespacePrefix = qName.split(":")[0];
 
-		QString szTargetNamespace;
-
 		if(attributes.index(ATTR_TARGET_NAMESPACE) != -1) {
-			szTargetNamespace = attributes.value(ATTR_TARGET_NAMESPACE);
+			m_szTargetNamespaceUri = attributes.value(ATTR_TARGET_NAMESPACE);
 
 			// This is a special case used to find the SOAP standard fault type
-			if(szTargetNamespace == "http://www.w3.org/2003/05/soap-envelope"){
+			if(m_szTargetNamespaceUri == "http://www.w3.org/2003/05/soap-envelope"){
 				m_bWaitForSoapEnvelopeFault = true;
 			}
 
-			m_pService->setTargetNamespace(szTargetNamespace);
+			m_pService->setTargetNamespace(m_szTargetNamespaceUri);
 		}
 
 		for(int i=0; i < attributes.length(); ++i) {
@@ -300,7 +298,7 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 				m_pNamespaceDeclarationMap.insert(attributes.localName(i), attributes.value(i));
 			}
 
-			if(attributes.value(i) == szTargetNamespace && attributes.qName(i) != ATTR_TARGET_NAMESPACE){
+			if(attributes.value(i) == m_szTargetNamespaceUri && attributes.qName(i) != ATTR_TARGET_NAMESPACE){
 				m_szTargetNamespacePrefix = attributes.localName(i);
 
 				if(!m_szOutNamespace.isEmpty()){
@@ -362,6 +360,7 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 			if(m_pCurrentElement){
 				pComplexType->setLocalName(m_pCurrentElement->getName());
 				pComplexType->setNamespace(m_szTargetNamespacePrefix);
+				pComplexType->setNamespaceUri(m_szTargetNamespaceUri);
 				m_pCurrentElement->setType(pComplexType);
 			}
 			addCurrentType(pComplexType);
@@ -375,11 +374,13 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 						pCurrentType = ComplexType::create();
 						pCurrentType->setLocalName(szName);
 						pCurrentType->setNamespace(m_szTargetNamespacePrefix);
+						pCurrentType->setNamespaceUri(m_szTargetNamespaceUri);
 					}
 				}else{
 					pCurrentType = ComplexType::create();
 					pCurrentType->setLocalName(szName);
 					pCurrentType->setNamespace(m_szTargetNamespacePrefix);
+					pCurrentType->setNamespaceUri(m_szTargetNamespaceUri);
 				}
 
 				ComplexTypeSharedPtr pComplexCurrentType = qSharedPointerCast<ComplexType>(pCurrentType);
@@ -416,6 +417,7 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 					pCurrentType = SimpleType::create();
 					pCurrentType->setLocalName(szName);
 					pCurrentType->setNamespace(m_szTargetNamespacePrefix);
+					pCurrentType->setNamespaceUri(m_szTargetNamespaceUri);
 				}
 			}else{
 				pCurrentType = SimpleType::create();
@@ -642,6 +644,7 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 				m_pCurrentRequestResponseElement = RequestResponseElement::create();
 				m_pCurrentRequestResponseElement->setLocalName(attributes.value(ATTR_NAME));
 				m_pCurrentRequestResponseElement->setNamespace(m_szTargetNamespacePrefix);
+				m_pCurrentRequestResponseElement->setNamespaceUri(m_szTargetNamespaceUri);
 			}
 
 			m_pCurrentElement = ElementSharedPtr::create();
@@ -739,6 +742,7 @@ bool QWSDLParserHandler::startElement(const QString &namespaceURI,
 		if(attributes.index(ATTR_NAME) != -1) {
 			m_pCurrentMessage->setLocalName(attributes.value(ATTR_NAME));
 			m_pCurrentMessage->setNamespace(m_szTargetNamespacePrefix);
+			m_pCurrentMessage->setNamespaceUri(m_szTargetNamespaceUri);
 		}
 	}
 	break;

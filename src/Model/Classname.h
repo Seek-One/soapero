@@ -18,19 +18,21 @@ public:
 
 	void setQualifedName(const QString& szNamespace, const QString& szName);
 	void setNamespace(const QString& szNamespace);
+	void setNamespaceUri(const QString& szNamespaceUri);
 	void setLocalName(const QString& szLocalName);
 	void setName(const QString& szName);
 	QString getTagQualifiedName() const;
 	QString getNameWithNamespace() const;
 	QString getQualifiedName() const;
-	QString getNamespace() const;
+	const QString& getNamespace() const;
+	const QString& getNamespaceUri() const;
 	QString getLocalName(bool bSafe = false) const;
 	QString getName() const;
 
 private:
 	QString m_szLocalName;
 	QString m_szNamespace;
-
+	QString m_szNamespaceUri;
 };
 
 

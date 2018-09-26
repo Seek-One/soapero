@@ -121,7 +121,7 @@ QString Operation::getOperationDefinition(const QString& szClassname, const QStr
 	szDefinition += "\trequest.setRawHeader(QString(\"Accept-Encoding\").toLatin1(), QString(\"gzip, deflate\").toLatin1());" CRLF;
 	szDefinition += "\trequest.setRawHeader(QString(\"SoapAction\").toLatin1(), QString(\"" + m_szSoapAction + "\").toLatin1());" CRLF;
 	szDefinition += CRLF;
-	szDefinition += "\tQByteArray soapMessage = buildSoapMessage(" + m_pInputMessage->getParameter()->getLocalName() + ".serialize());" CRLF;
+	szDefinition += "\tQByteArray soapMessage = buildSoapMessage(" + m_pInputMessage->getParameter()->getLocalName() + ".serialize(), " + m_pInputMessage->getParameter()->getNameWithNamespace() + "::getNamespaceDeclaration());" CRLF;
 	szDefinition += CRLF;
 	szDefinition += "\tIQueryExecutorResponse response = m_pQueryExecutor->execQuery(request, soapMessage);" CRLF;
 	szDefinition += "\tQString szErrorMsg;" CRLF;

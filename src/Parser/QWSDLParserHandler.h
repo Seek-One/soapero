@@ -70,6 +70,7 @@ private:
 
     QString m_szCurrentNamespacePrefix;
     QString m_szTargetNamespacePrefix;
+    QString m_szTargetNamespaceUri;
 
     QMap<QString, QStringList>* m_pNamespaceRoutingMap;
     QMap<QString, QString> m_pNamespaceDeclarationMap;

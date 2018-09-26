@@ -1043,13 +1043,9 @@ QString ComplexType::getSerializerDefinition(const QString& szClassname, const Q
 	"QString %0::serialize(bool bOnlyContent) const" CRLF
 	"{" CRLF
 	"\tQString szValue;" CRLF
-	"\tif(!bOnlyContent) {" CRLF;
-	if(szNamespace.isNull()) {
-		szDefinition += "\t\tszValue += \"<%1\";" CRLF;
-	}else{
-		szDefinition += "\t\tszValue += \"<%1 xmlns=\\\"" + szNamespace + "\\\"\";" CRLF;
-	}
-	szDefinition += "\t}" CRLF;
+	"\tif(!bOnlyContent) {" CRLF
+	"\t\tszValue += \"<%1:%2\";" CRLF
+	"\t}" CRLF;
 
 	//Not found other cases so we supposed attribute is only a simpleType
 	for(attr = m_pListAttribute->constBegin(); attr != m_pListAttribute->constEnd(); ++attr) {
@@ -1159,7 +1155,7 @@ QString ComplexType::getSerializerDefinition(const QString& szClassname, const Q
 			} else{
 
 				szDefinition += "\tif(!" + pElement->getVariableName() + ".isNull()) {" CRLF;
-				szDefinition += "\t\tszValue += \"<" + pElement->getName() + ">\" + " + pElement->getVariableName() + ".serialize() + \"</" + pElement->getName() + ">\";" CRLF;
+				szDefinition += "\t\tszValue += \"<" + szNamespace + ":" + pElement->getName() + ">\" + " + pElement->getVariableName() + ".serialize() + \"</" + szNamespace + ":" + pElement->getName() + ">\";" CRLF;
 				szDefinition += "\t}" CRLF;
 			}
 
@@ -1179,27 +1175,27 @@ QString ComplexType::getSerializerDefinition(const QString& szClassname, const Q
 					szDefinition += QString("\tQList<%0>::const_iterator %1;" CRLF).arg( pComplexType->getNameWithNamespace()).arg(szIterator);
 					szDefinition += QString("\tfor(%0 = %1List.constBegin(); %0 != %1List.constEnd(); ++%0) {" CRLF).arg(szIterator).arg(pElement->getVariableName());
 					szDefinition += QString("\t\tif(!%0->isNull()) {" CRLF).arg(szIterator);
-					szDefinition += QString("\t\t\tszValue += \"<%0\";" CRLF).arg(pElement->getName());
+					szDefinition += QString("\t\t\tszValue += \"<%0:%1\";" CRLF).arg(szNamespace).arg(pElement->getName());
 					szDefinition += QString("\t\t\tszValue += %0->serialize(true);" CRLF).arg(szIterator);
-					szDefinition += QString("\t\t\tszValue += \"</%0>\";" CRLF).arg(pElement->getName());
+					szDefinition += QString("\t\t\tszValue += \"</%0:%1>\";" CRLF).arg(szNamespace).arg(pElement->getName());
 					szDefinition += QString("\t\t}" CRLF);
 					szDefinition += "\t}" CRLF;
 				}
 			} else{
 				szDefinition += "\tif(" + ((pElement->isNested() || pElement->isPointer()) ? pElement->getVariableName() + " && " : "") +
 						"!" + pElement->getVariableName() + ((pElement->isNested() || pElement->isPointer()) ? "->" : ".") + "isNull()) {" CRLF;
-				szDefinition += "\t\tszValue += \"<" + pElement->getName() + "\" + " + pElement->getVariableName() + ((pElement->isNested() || pElement->isPointer()) ? "->" : ".") + "serialize(true) + \"</" + pElement->getName() + ">\";" CRLF;
+				szDefinition += "\t\tszValue += \"<" + szNamespace + ":" + pElement->getName() + "\" + " + pElement->getVariableName() + ((pElement->isNested() || pElement->isPointer()) ? "->" : ".") + "serialize(true) + \"</" + szNamespace + ":" + pElement->getName() + ">\";" CRLF;
 				szDefinition += "\t}" CRLF;
 			}
 		}
 	}
 	szDefinition += "\tif(!bOnlyContent) {" CRLF;
-	szDefinition += "\t\tszValue += \"</%1>\";" CRLF;
+	szDefinition += "\t\tszValue += \"</%1:%2>\";" CRLF;
 	szDefinition += "\t}" CRLF;
 	szDefinition += "\treturn szValue;" CRLF;
 	szDefinition += "}" CRLF;
 
-	return szDefinition.arg(szClassname).arg(getLocalName());
+	return szDefinition.arg(szClassname).arg(szNamespace).arg(getLocalName());
 }
 
 QString ComplexType::getDeserializerDefinition(const QString& szClassname) const
@@ -1438,6 +1434,49 @@ QString ComplexType::getIsNullDefinition(const QString& szClassname) const
 	return szDefinition.arg(szClassname);
 }
 
+QString ComplexType::getGetNamespaceDeclarationDefinition(const QString& szClassname) const
+{
+	AttributeList::const_iterator attr;
+	ElementList::const_iterator elem;
+	AttributeSharedPtr pAttribute;
+	ElementSharedPtr pElement;
+
+	QString szDefinition = ""
+	"QList<QString> %0::getNamespaceDeclaration()" CRLF
+	"{" CRLF;
+	szDefinition += "\tQList<QString> listNamespaceDeclaration;" CRLF;
+
+	if(!getExtensionType().isNull()){
+		QString szExtensionName;
+		if(getExtensionType()->getClassType() == Type::TypeComplex){
+			szDefinition += "\tlistNamespaceDeclaration.append(" + getExtensionType()->getNameWithNamespace() + "::getNamespaceDeclaration());" CRLF;
+		}
+	}
+
+	for(elem = m_pListElement->constBegin(); elem != m_pListElement->constEnd(); ++elem){
+		if((*elem)->hasRef()){
+			pElement = (*elem)->getRef();
+		}else{
+			pElement = *elem;
+		}
+
+		if(!pElement->getType()) {
+			continue;
+		}
+
+		if(pElement->getType()->getClassType() == Type::TypeComplex){
+			ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pElement->getType());
+			szDefinition += "\tlistNamespaceDeclaration.append(" + pComplexType->getNameWithNamespace() + "::getNamespaceDeclaration());" CRLF;
+		}
+	}
+
+	szDefinition += "\tlistNamespaceDeclaration.append(\"xmlns:" + getNamespace() + "=\\\"" + getNamespaceUri() + "\\\"\");" CRLF;
+	szDefinition += "\treturn listNamespaceDeclaration;" CRLF;
+	szDefinition += "}" CRLF;
+
+	return szDefinition.arg(szClassname);
+}
+
 QString ComplexType::getVariableDeclaration(const QString& szName) const
 {
 	QString szVarName;
@@ -1458,6 +1497,11 @@ QString ComplexType::getVariableDeclaration(const QString& szName) const
 QString ComplexType::getIsNullDeclaration() const
 {
 	return "bool isNull() const;";
+}
+
+QString ComplexType::getGetNamespaceDeclarationDeclaration() const
+{
+	return "static QList<QString> getNamespaceDeclaration();";
 }
 
 QString ComplexType::getVariableName() const

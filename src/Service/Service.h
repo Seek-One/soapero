@@ -59,7 +59,7 @@ public:
 
 protected:
 	QNetworkRequest buildNetworkRequest() const;
-	QByteArray buildSoapMessage(const QString& szSerializedObject) const;
+	QByteArray buildSoapMessage(const QString& szSerializedObject, const QList<QString>& listNamespaceDeclaration) const;
 
 	QUrl m_url;
 	bool m_bUseWSUsernameToken;

@@ -173,12 +173,14 @@ public:
 	QString getDeserializerDeclaration() const;
 	QString getVariableDeclaration(const QString& szName = QString()) const;
 	QString getIsNullDeclaration() const;
+	QString getGetNamespaceDeclarationDeclaration() const;
 
 	QString getSetterDefinition(const QString& szClassname, const QString& szName = QString()) const;
 	QString getGetterDefinition(const QString& szClassname, const QString& szName = QString()) const;
 	QString getSerializerDefinition(const QString& szClassname, const QString& szNamespace = QString()) const;
 	QString getDeserializerDefinition(const QString& szClassname) const;
 	QString getIsNullDefinition(const QString& szClassname) const;
+	QString getGetNamespaceDeclarationDefinition(const QString& szClassname) const;
 
 	QString getVariableName() const;
 

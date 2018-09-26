@@ -438,6 +438,7 @@ void TypeListBuilder::buildHeaderClassType(QTextStream& os, const TypeSharedPtr&
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pType);
 
 		os << "const QString " << pComplexType->getLocalName(true) << "TargetNamespace = \"" << pComplexType->getNamespace() << "\";" CRLF;
+		os << "const QString " << pComplexType->getLocalName(true) << "TargetNamespaceUri = \"" << pComplexType->getNamespaceUri() << "\";" CRLF;
 		os << CRLF;
 
 		if(pComplexType->getElementList()){
@@ -550,6 +551,9 @@ void TypeListBuilder::buildHeaderClassComplexType(QTextStream& os, const Complex
 	os << "\t" << pComplexType->getDeserializerDeclaration() << CRLF;
 	os << CRLF;
 	os << "\t" << pComplexType->getIsNullDeclaration() << CRLF;
+	os << CRLF;
+	os << "\t" << pComplexType->getGetNamespaceDeclarationDeclaration() << CRLF;
+	os << CRLF;
 
 	if(pListAttributes->count() > 0 || pListElements->count() > 0) {
 		os << "private:" << CRLF;
@@ -634,9 +638,8 @@ void TypeListBuilder::buildHeaderClassService(QTextStream& os, const ServiceShar
 
 void TypeListBuilder::buildHeaderIncludeType(QTextStream& os, const TypeSharedPtr& pType) const
 {
-	bool bIncludeQList = false;
-
 	os << "#include <QDomElement>" << CRLF;
+	os << "#include <QList>" << CRLF;
 	os << "#include <QString>" << CRLF;
 
 	if(pType->getClassType() == Type::TypeSimple) {
@@ -667,10 +670,6 @@ void TypeListBuilder::buildHeaderIncludeType(QTextStream& os, const TypeSharedPt
 			}
 
 			os << "#include \"" << szExtensionName << ".h\"" << CRLF;
-			if(!bIncludeQList && pComplexType->isExtensionTypeList()){
-				os << "#include <QList>" << CRLF;
-				bIncludeQList = true;
-			}
 		}
 
 		if(pListAttributes->count() > 0 || pListElements->count() > 0) {
@@ -686,11 +685,6 @@ void TypeListBuilder::buildHeaderIncludeType(QTextStream& os, const TypeSharedPt
 
 				if(!pAttribute->getType()) {
 					continue;
-				}
-
-				if(!bIncludeQList && pAttribute->isList()){
-					os << "#include <QList>" << CRLF;
-					bIncludeQList = true;
 				}
 
 				if( pAttribute->getType()->getClassType() == Type::TypeSimple) {
@@ -721,11 +715,6 @@ void TypeListBuilder::buildHeaderIncludeType(QTextStream& os, const TypeSharedPt
 
 				if(!pElement->getType() || pElement->isNested()){
 					continue;
-				}
-
-				if(!bIncludeQList && (pElement->getMaxOccurs() > 1 || pElement->getMaxOccurs() == -1)) {
-					os << "#include <QList>" << CRLF;
-					bIncludeQList = true;
 				}
 
 				if(pElement->isPointer()){
@@ -766,6 +755,7 @@ void TypeListBuilder::buildHeaderIncludeElement(QTextStream& os, const RequestRe
 	ComplexTypeSharedPtr pComplexType = pRequestResponseElement->getComplexType();
 
 	os << "#include <QDomElement>" << CRLF;
+	os << "#include <QList>" << CRLF;
 	os << "#include <QString>" << CRLF;
 
 	AttributeListSharedPtr pListAttributes = pComplexType->getAttributeList();
@@ -830,13 +820,6 @@ void TypeListBuilder::buildHeaderIncludeElement(QTextStream& os, const RequestRe
 
 			if(!pElement->getType()) {
 				continue;
-			}
-
-			if(pElement->getMaxOccurs() > 1 || pElement->getMaxOccurs() == -1) {
-				if(!list.contains("QList")){
-					os << "#include <QList>" << CRLF;
-					list.append("QList");
-				}
 			}
 
 			if(pElement->getType()->getClassType() == Type::TypeSimple) {
@@ -979,7 +962,7 @@ void TypeListBuilder::buildCppClassType(QTextStream& os, const TypeSharedPtr& pT
 		}
 		os << CRLF;
 
-		buildCppClassComplexType(os, pComplexType);
+		buildCppClassComplexType(os, pComplexType, pComplexType->getNamespace());
 
 		os << CRLF;
 	}
@@ -1055,6 +1038,7 @@ void TypeListBuilder::buildCppClassComplexType(QTextStream& os, const ComplexTyp
 	os << pComplexType->getDeserializerDefinition(szClassname) << CRLF;
 	os << CRLF;
 	os << pComplexType->getIsNullDefinition(szClassname) << CRLF;
+	os << pComplexType->getGetNamespaceDeclarationDefinition(szClassname) << CRLF;
 }
 
 void TypeListBuilder::buildCppClassElement(QTextStream& os, const RequestResponseElementSharedPtr& pElement) const
@@ -1072,7 +1056,7 @@ void TypeListBuilder::buildCppClassElement(QTextStream& os, const RequestRespons
 		os << szClassname << "::~" << szClassname << "() {}" << CRLF;
 		os << CRLF;
 
-		buildCppClassComplexType(os, pComplexType, m_pService->getTargetNamespace());
+		buildCppClassComplexType(os, pComplexType, pComplexType->getNamespace());
 
 		os << CRLF;
 	}

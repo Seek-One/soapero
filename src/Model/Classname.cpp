@@ -31,6 +31,11 @@ void Classname::setNamespace(const QString& szNamespace)
 	m_szNamespace = szNamespace;
 }
 
+void Classname::setNamespaceUri(const QString& szNamespaceUri)
+{
+	m_szNamespaceUri = szNamespaceUri;
+}
+
 void Classname::setLocalName(const QString& szLocalName)
 {
 	m_szLocalName = szLocalName;
@@ -77,9 +82,14 @@ QString Classname::getQualifiedName() const
 	}
 }
 
-QString Classname::getNamespace() const
+const QString& Classname::getNamespace() const
 {
 	return m_szNamespace;
+}
+
+const QString& Classname::getNamespaceUri() const
+{
+	return m_szNamespaceUri;
 }
 
 QString Classname::getLocalName(bool bSafe) const
