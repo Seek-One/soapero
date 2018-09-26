@@ -63,37 +63,42 @@ int main(int argc, char **argv)
 			if(!reader.parse(source)){
 				qWarning("[ServerController::getDevicesList] Error to parse data (error: %s)", qPrintable(reader.errorHandler()->errorString()));
 			}else{
+				bool bRes = true;
 				if(!QDir(argv[2]).exists()) {
 					qWarning("[main] Generated directory does not exists, we create it");
-					QDir().mkdir(argv[2]);
+					bRes = QDir().mkdir(argv[2]);
 				}
 
-				TypeListBuilder builder(handler.getService(), handler.getTypeList(), handler.getRequestResponseElementList(), pListGeneratedFiles);
-				builder.setNamespace("ONVIF");
-				builder.setFilename("actionservice");
-				builder.setDirname(argv[2]);
-				builder.buildHeaderFiles();
-				builder.buildCppFiles();
+				if(bRes){
+					TypeListBuilder builder(handler.getService(), handler.getTypeList(), handler.getRequestResponseElementList(), pListGeneratedFiles);
+					builder.setNamespace("ONVIF");
+					builder.setFilename("actionservice");
+					builder.setDirname(argv[2]);
+					builder.buildHeaderFiles();
+					builder.buildCppFiles();
 
-				bFileGenerated = true;
+					bFileGenerated = true;
 
-				QDir dir("./src/Base");
-				foreach (QString f, dir.entryList(QDir::Files)) {
-					QString srcPath = QString("./src/Base") + QDir::separator() + f;
-					QString dstPath = QString(argv[2]) + QDir::separator() + "types" + QDir::separator() + f;
-					QFile::remove(dstPath);
-					QFile::copy(srcPath, dstPath);
+					QDir dir("./src/Base");
+					foreach (QString f, dir.entryList(QDir::Files)) {
+						QString srcPath = QString("./src/Base") + QDir::separator() + f;
+						QString dstPath = QString(argv[2]) + QDir::separator() + "types" + QDir::separator() + f;
+						QFile::remove(dstPath);
+						QFile::copy(srcPath, dstPath);
 
-					pListGeneratedFiles->append(QString("types") + QDir::separator() + f);
-				}
-				dir = QDir("./src/Service");
-				foreach (QString f, dir.entryList(QDir::Files)) {
-					QString srcPath = QString("./src/Service") + QDir::separator() + f;
-					QString dstPath = QString(argv[2]) + QDir::separator() + f;
-					QFile::remove(dstPath);
-					QFile::copy(srcPath, dstPath);
+						pListGeneratedFiles->append(QString("types") + QDir::separator() + f);
+					}
+					dir = QDir("./src/Service");
+					foreach (QString f, dir.entryList(QDir::Files)) {
+						QString srcPath = QString("./src/Service") + QDir::separator() + f;
+						QString dstPath = QString(argv[2]) + QDir::separator() + f;
+						QFile::remove(dstPath);
+						QFile::copy(srcPath, dstPath);
 
-					pListGeneratedFiles->append(f);
+						pListGeneratedFiles->append(f);
+					}
+				}else{
+					qWarning("Failed to create directory \"%s\"", argv[2]);
 				}
 			}
 		}else{
