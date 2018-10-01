@@ -1149,11 +1149,10 @@ QString ComplexType::getSerializerDefinition(const QString& szClassname, const Q
 				}
 				szDefinition += QString("\tfor(%0 = %1List.constBegin(); %0 != %1List.constEnd(); ++%0) {" CRLF).arg(szIterator).arg(pElement->getVariableName());
 				szDefinition += QString("\t\tif(!%0->isNull()) {" CRLF).arg(szIterator);
-				szDefinition += QString("\t\t\tszValue += %0->serialize();" CRLF).arg(szIterator);
+				szDefinition += QString("\t\t\tszValue += \"<" + szNamespace + ":" + pElement->getName() + ">\" + %0->serialize() + \"</" + szNamespace + ":" + pElement->getName() + ">\";" CRLF).arg(szIterator);
 				szDefinition += QString("\t\t}" CRLF);
 				szDefinition += "\t}" CRLF;
 			} else{
-
 				szDefinition += "\tif(!" + pElement->getVariableName() + ".isNull()) {" CRLF;
 				szDefinition += "\t\tszValue += \"<" + szNamespace + ":" + pElement->getName() + ">\" + " + pElement->getVariableName() + ".serialize() + \"</" + szNamespace + ":" + pElement->getName() + ">\";" CRLF;
 				szDefinition += "\t}" CRLF;
