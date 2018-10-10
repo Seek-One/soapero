@@ -1463,7 +1463,8 @@ QString ComplexType::getGetNamespaceDeclarationDefinition(const QString& szClass
 			continue;
 		}
 
-		if(pElement->getType()->getClassType() == Type::TypeComplex){
+		if((pElement->getType()->getClassType() == Type::TypeComplex) &&
+				(getLocalName(true) != pElement->getType()->getLocalName(true))){
 			ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pElement->getType());
 			szDefinition += "\tlistNamespaceDeclaration.append(" + pComplexType->getNameWithNamespace() + "::getNamespaceDeclaration());" CRLF;
 		}
