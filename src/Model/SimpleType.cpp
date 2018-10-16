@@ -416,12 +416,12 @@ QString SimpleType::getSerializerDefinition(const QString& szClassname) const
 		"QString %0::serialize() const" CRLF
 		"{" CRLF
 		"\tif(!isNull()) {" CRLF
-		"\t\treturn \"<%1>\" + get%2ToString() + \"</%1>\";" CRLF
+		"\t\treturn get%1ToString();" CRLF
 		"\t}" CRLF
 		"\t return \"\";" CRLF
 		"}" CRLF;
 
-		return szDefinition.arg(szClassname).arg(getLocalName(true)).arg(getLocalName());
+		return szDefinition.arg(szClassname).arg(getLocalName());
 
 	} else {
 		QString szDefinition = ""
