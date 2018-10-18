@@ -49,7 +49,8 @@ public:
 	Service();
 	virtual ~Service();
 
-	void setUrl(const QUrl& url);
+	void setBaseUrl(const QUrl& url);
+    void setCompleteUrl(const QUrl& url);
 	void setUseWSUsernameToken(bool bUseWSUsernameToken);
 	void setCustomDateTime(const QDateTime& customDateTime);
 	void setQueryExecutor(IQueryExecutor* pExecutor);

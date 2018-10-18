@@ -94,10 +94,15 @@ Service::~Service()
 	}
 }
 
-void Service::setUrl(const QUrl& url)
+void Service::setBaseUrl(const QUrl& url)
 {
 	m_url = url;
 	m_url.setPath("/onvif/device_service");
+}
+
+void Service::setCompleteUrl(const QUrl& url)
+{
+	m_url = url;
 }
 
 void Service::setUseWSUsernameToken(bool bUseWSUsernameToken)
