@@ -318,9 +318,19 @@ target_link_libraries (
 )
 install(TARGETS ${APPLICATION_EXE_NAME} DESTINATION ${INSTALL_PATH_BIN})
 
+############################
+# Common files installation
+############################
+
+# Documentation file
+set(DOCFILES_EXT "")
+if(WIN32)
+    set(DOCFILES_EXT ".txt")
+endif(WIN32)
+
 # README file
 configure_file (
-  "${PROJECT_SOURCE_DIR}/README.in"
+  "${PROJECT_SOURCE_DIR}/README.md"
   "${PROJECT_BINARY_DIR}/README${DOCFILES_EXT}"
   NEWLINE_STYLE ${AUTO_NEWLINE_STYLE}
 )
@@ -328,12 +338,10 @@ install(FILES "${PROJECT_BINARY_DIR}/README${DOCFILES_EXT}" DESTINATION ${INSTAL
 
 # COPYING file
 configure_file (
-  "${PROJECT_SOURCE_DIR}/COPYING.in"
+  "${PROJECT_SOURCE_DIR}/COPYING"
   "${PROJECT_BINARY_DIR}/COPYING${DOCFILES_EXT}"
   NEWLINE_STYLE ${AUTO_NEWLINE_STYLE}
 )
 # ChangeLog file
 set(CHANGELOG "ChangeLog")
 install(FILES "${PROJECT_SOURCE_DIR}/${CHANGELOG}" DESTINATION ${INSTALL_PATH_DOC} RENAME ChangeLog${DOCFILES_EXT})
-
-
