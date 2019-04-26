@@ -11,7 +11,7 @@ ts.qrc
 .settings
 config.h
 version.h
-soapero
+jet1oeil-soapero
 moc_*.c*
 *.sqlite
 README
