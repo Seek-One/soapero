@@ -52,6 +52,4 @@ Compile:
 
 Run:
 
-    ./soapero WSDL_DIR OUTPUT_DIR [filetype]
-
-    filetype must have value of default or cmakelist
+    ./soapero SRC_DIR DST_DIR [FILE_TYPE] (where FILE_TYPE is "Default" or "CMakeLists")
