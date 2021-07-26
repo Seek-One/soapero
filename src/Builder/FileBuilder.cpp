@@ -5,6 +5,8 @@
  *      Author: alavier
  */
 
+#include <algorithm>
+
 #include <QDir>
 #include <QTextStream>
 
