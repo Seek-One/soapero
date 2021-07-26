@@ -14,6 +14,13 @@
 #define CRLF "\r\n"
 #endif
 
+// Added in Qt 5.14.0
+#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
+# define QtCompatSort std::sort
+#else
+# define QtCompatSort qSort
+#endif
+
 class DefaultFileBuilder : public FileBuilder
 {
 public:
