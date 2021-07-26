@@ -6,6 +6,7 @@
  */
 
 #include <algorithm>
+#include <functional>
 
 #include <QDir>
 #include <QTextStream>
@@ -20,7 +21,7 @@
 #if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
 # define QtCompatSort std::sort
 #else
-# define QtCompatSort qSort
+# define QtCompatSort std::sort
 #endif
 
 class DefaultFileBuilder : public FileBuilder
@@ -124,7 +125,7 @@ public:
 FileBuilder::FileBuilder(const QString& szName, const QString& szDirName, const QSharedPointer<QList<QString> >& pFileList)
 	: m_szName(szName), m_szDirName(szDirName), m_pFileList(pFileList)
 {
-	QtCompatSort(*m_pFileList);
+	QtCompatSort(m_pFileList->begin(), m_pFileList->end());
 }
 
 FileBuilder::~FileBuilder()
