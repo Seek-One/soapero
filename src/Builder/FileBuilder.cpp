@@ -122,7 +122,7 @@ public:
 FileBuilder::FileBuilder(const QString& szName, const QString& szDirName, const QSharedPointer<QList<QString> >& pFileList)
 	: m_szName(szName), m_szDirName(szDirName), m_pFileList(pFileList)
 {
-	qSort(*m_pFileList);
+	QtCompatSort(*m_pFileList);
 }
 
 FileBuilder::~FileBuilder()
