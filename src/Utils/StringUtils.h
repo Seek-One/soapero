@@ -17,8 +17,8 @@ public:
 	static inline QString removeNonAlphaNum(const QString& szString)
 	{
 		QString szRet = szString;
-		QString szChars = "-`~!@#$%^&*()_—+=|:;<>«»,.?/{}\'\"\\\[\\\]\\\\";
-		szRet.remove(QRegExp(QString::fromUtf8("[" + szChars + "]")));
+		//QString szChars = "-`~!@#$%^&*()_—+=|:;<>«»,.?/{}\'\"\\\[\\\]\\\\";
+		szRet.remove(QRegExp("[^a-zA-Z\\d\\s]"));
 		szRet.replace(" ", "");
 		return szRet;
 	}
