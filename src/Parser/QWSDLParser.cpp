@@ -317,7 +317,7 @@ bool QWSDLParser::readDefinitions(QXmlStreamReader& xmlReader)
 		szTargetNamespace = xmlAttrs.value(ATTR_TARGET_NAMESPACE).toString();
 		m_pService->setTargetNamespace(szTargetNamespace);
 	}
-	for(int i=0; i < xmlAttrs.length(); ++i)
+	for(int i=0; i < xmlAttrs.size(); ++i)
 	{
 		const QXmlStreamAttribute& xmlAttr = xmlAttrs.at(i);
 		QString szAttrQualifiedName = xmlAttr.qualifiedName().toString();
@@ -389,7 +389,7 @@ bool QWSDLParser::readSchema(QXmlStreamReader& xmlReader)
 		m_pService->setTargetNamespace(m_szTargetNamespaceUri);
 	}
 
-	for(int i=0; i < xmlAttrs.length(); ++i)
+	for(int i=0; i < xmlAttrs.size(); ++i)
 	{
 		const QXmlStreamAttribute& xmlAttr = xmlAttrs.at(i);
 		QString szAttrQualifiedName = xmlAttr.qualifiedName().toString();
@@ -649,7 +649,8 @@ bool QWSDLParser::readElement(QXmlStreamReader& xmlReader, Section::Name iParent
 		//			}
 
 		if(xmlAttrs.hasAttribute(ATTR_MIN_OCCURS)) {
-			pElement->setMinOccurs(xmlAttrs.value(ATTR_MIN_OCCURS).toUInt());
+			QString szValue = xmlAttrs.value(ATTR_MIN_OCCURS).toString();
+			pElement->setMinOccurs(szValue.toUInt());
 		}
 
 		if(xmlAttrs.hasAttribute(ATTR_MAX_OCCURS)) {
@@ -1359,7 +1360,8 @@ bool QWSDLParser::readMaxLength(QXmlStreamReader& xmlReader)
 	if(pCurrentType){
 		if(xmlAttrs.hasAttribute(ATTR_VALUE)) {
 			SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pCurrentType);
-			pSimpleType->setMaxLength(xmlAttrs.value(ATTR_VALUE).toUInt());
+			QString szValue = xmlAttrs.value(ATTR_VALUE).toString();
+			pSimpleType->setMaxLength(szValue.toUInt());
 		}
 	}
 
@@ -1378,7 +1380,8 @@ bool QWSDLParser::readMinLength(QXmlStreamReader& xmlReader)
 	if(pCurrentType){
 		if(xmlAttrs.hasAttribute(ATTR_VALUE)) {
 			SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pCurrentType);
-			pSimpleType->setMinLength(xmlAttrs.value(ATTR_VALUE).toUInt());
+			QString szValue = xmlAttrs.value(ATTR_VALUE).toString();
+			pSimpleType->setMinLength(szValue.toUInt());
 		}
 	}
 
