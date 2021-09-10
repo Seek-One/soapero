@@ -153,8 +153,8 @@ QByteArray Service::buildSoapMessage(const QString& szSerializedObject, const QL
 	QString szNonce = buildNonce();
 	QByteArray szNonce64 = szNonce.toLatin1().toBase64();
 	QByteArray digestbytes = szNonce.toLatin1();
-	digestbytes.append(szDatetime);
-	digestbytes.append(m_url.password());
+	digestbytes.append(szDatetime.toLatin1());
+	digestbytes.append(m_url.password().toLatin1());
 	QString szDigestPassword = QString(QCryptographicHash::hash(digestbytes, QCryptographicHash::Sha1).toBase64());
 
 	QString szNamespaceTmp;

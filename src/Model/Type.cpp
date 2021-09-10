@@ -53,15 +53,28 @@ TypeListSharedPtr TypeList::create()
 
 TypeSharedPtr TypeList::getByName(const QString& szLocalName, const QString& szNamespace, const TypeListSharedPtr& pListIgnoredTypes)
 {
-	TypeList::const_iterator type;
-	for(type = constBegin(); type != constEnd(); ++type) {
-		if((*type)->getLocalName() == szLocalName &&
-				(*type)->getNamespace() == szNamespace &&
-				!pListIgnoredTypes->contains(*type)) {
-			return *type;
+	TypeSharedPtr pCurrentType;
+	TypeSharedPtr pBestType;
+
+	TypeList::const_iterator iter_type;
+	for(iter_type = constBegin(); iter_type != constEnd(); ++iter_type)
+	{
+		pCurrentType = (*iter_type);
+		if(pCurrentType->getLocalName() != szLocalName){
+			continue;
+		}
+		if(pListIgnoredTypes->contains(pCurrentType)){
+			continue;
+		}
+		if(!pBestType){
+			pBestType = pCurrentType;
+		}else{
+			if(pCurrentType->getNamespace() == szNamespace){
+				pBestType = pCurrentType;
+			}
 		}
 	}
-	return TypeSharedPtr();
+	return pBestType;
 }
 
 void TypeList::add(const TypeListSharedPtr& pList)

@@ -21,7 +21,7 @@
 
 #include "Builder/FileBuilder.h"
 #include "Builder/TypeListBuilder.h"
-#include "Parser/QWSDLParserHandler.h"
+#include "Parser/QWSDLParser.h"
 #include "Utils/UniqueStringList.h"
 
 QStringList getWSDLFileNames(const char* szPathSrc);
@@ -80,17 +80,15 @@ int main(int argc, char **argv)
 			}
 
 			// Parse WSDL file in XML format
-			QWSDLParserHandler handler;
+			QWSDLParser parser;
 			if(bGoOn){
-				QXmlInputSource source(&buffer);
-				QXmlSimpleReader reader;
-				reader.setContentHandler(&handler);
-				reader.setErrorHandler(&handler);
-				reader.setFeature("http://xml.org/sax/features/namespace-prefixes", true);
-				reader.setFeature("http://xml.org/sax/features/namespaces", true);
-				bGoOn = reader.parse(source);
+				QXmlStreamReader xmlReader;
+				xmlReader.addData(bytes);
+				//reader.setFeature("http://xml.org/sax/features/namespace-prefixes", true);
+				//reader.setFeature("http://xml.org/sax/features/namespaces", true);
+				bGoOn = parser.parse(xmlReader);
 				if(!bGoOn){
-					qWarning("[Main] Error to parse data (error: %s)", qPrintable(reader.errorHandler()->errorString()));
+					qWarning("[Main] Error to parse data (error: %s)", qPrintable(xmlReader.errorString()));
 				}
 			}
 			
@@ -104,7 +102,7 @@ int main(int argc, char **argv)
 
 			// Build file for service
 			if(bGoOn){
-				TypeListBuilder builder(handler.getService(), handler.getTypeList(), handler.getRequestResponseElementList(), pListGeneratedFiles);
+				TypeListBuilder builder(parser.getService(), parser.getTypeList(), parser.getRequestResponseElementList(), pListGeneratedFiles);
 				builder.setNamespace("ONVIF");
 				builder.setFilename("actionservice");
 				builder.setDirname(szOutputDirectory);

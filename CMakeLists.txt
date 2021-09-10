@@ -39,7 +39,7 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
 endif()
 set (APPLICATION_VERSION ${APPLICATION_VERSION_MAJOR}.${APPLICATION_VERSION_MINOR}.${APPLICATION_VERSION_PATCH}${APPLICATION_VERSION_BUILD})
 
-project (com.jet1oeil.monitor CXX C)
+project (com.jet1oeil.soapero CXX C)
 
 set (CMAKE_VERBOSE_MAKEFILE OFF)
 
@@ -239,8 +239,8 @@ set (APP_SOURCES
     src/Model/Type.h
     src/Model/Type.cpp
 
-    src/Parser/QWSDLParserHandler.h
-    src/Parser/QWSDLParserHandler.cpp
+    src/Parser/QWSDLParser.h
+    src/Parser/QWSDLParser.cpp
     src/Parser/WSDLAttributes.h
     src/Parser/WSDLSections.h
 

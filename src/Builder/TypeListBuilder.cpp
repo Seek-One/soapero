@@ -738,7 +738,7 @@ void TypeListBuilder::buildHeaderIncludeType(QTextStream& os, const TypeSharedPt
 					}
 
 				}else{
-					qWarning("[TypeListBuilder::buildHeaderIncludeType] Element %s has an unknown type : %s", qPrintable(pElement->getName()), qPrintable(pElement->getType()->getLocalName()));
+					qWarning("[TypeListBuilder::buildHeaderIncludeType] Element %s has an unknown type: %s", qPrintable(pElement->getName()), qPrintable(pElement->getType()->getLocalName()));
 					if(!list.contains(pElement->getType()->getQualifiedName())) {
 						os << "#include \"" << pElement->getType()->getQualifiedName() << ".h\"" << CRLF;
 						list.append(pElement->getType()->getQualifiedName());
