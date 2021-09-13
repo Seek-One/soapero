@@ -207,7 +207,7 @@ QString Service::buildNonce() const
 	for(int i=0; i<randomStringLength; ++i) {
 #ifdef USE_QRANDOMGENERATOR
 		QRandomGenerator rand;
-		int iRand = (int)rand.generate();
+		int index = (int)rand.generate();
 #else
 		int index = qrand() % possibleCharacters.length();
 #endif
