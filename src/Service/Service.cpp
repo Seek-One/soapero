@@ -10,6 +10,15 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 
+// Added in Qt 5.15.0
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
+#define USE_QRANDOMGENERATOR
+#endif
+
+#ifdef USE_QRANDOMGENERATOR
+#include <QRandomGenerator>
+#endif
+
 #include "Service.h"
 
 namespace ONVIF {
@@ -196,7 +205,12 @@ QString Service::buildNonce() const
 
 	QString randomString;
 	for(int i=0; i<randomStringLength; ++i) {
+#ifdef USE_QRANDOMGENERATOR
+		QRandomGenerator rand;
+		int iRand = (int)rand.generate();
+#else
 		int index = qrand() % possibleCharacters.length();
+#endif
 		QChar nextChar = possibleCharacters.at(index);
 		randomString.append(nextChar);
 	}
