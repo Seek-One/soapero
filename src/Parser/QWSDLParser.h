@@ -19,14 +19,19 @@
 #include "Model/Type.h"
 #include "WSDLSections.h"
 
+typedef QMap<QString, QString> QWSDLNamespaceDeclarations;
+
 class QWSDLParser
 {
 public:
-	QWSDLParser(QMap<QString, QStringList>* pNamespaceRoutingMap = NULL, const QString& szOutNamespace = QString());
+	QWSDLParser();
 	virtual ~QWSDLParser();
 
 	void initXMLAttributes();		// https://www.w3.org/2001/xml.xsd
 	void setLogIndent(int iIdent);
+
+	void setInitialNamespaceDeclarationList(const QWSDLNamespaceDeclarations& listNamespaceDeclarations);
+	void setInitialNamespaceUri(const QString& szNamespaceUri);
 
 	bool parse(QXmlStreamReader& xmlReader);
 
@@ -39,12 +44,20 @@ public:
 private:
 	bool endDocument();
 
+	bool readXMLNamespaces(QXmlStreamReader& xmlReader);
+
 	///////////////////////////////////////////////////////////////
 	// WSDL
 	// http://schemas.xmlsoap.org/wsdl/
 	///////////////////////////////////////////////////////////////
 	bool readDefinitions(QXmlStreamReader& xmlReader);
 	bool readTypes(QXmlStreamReader& xmlReader);
+	bool readMessage(QXmlStreamReader& xmlReader);
+	bool readPortType(QXmlStreamReader& xmlReader);
+	bool readPart(QXmlStreamReader& xmlReader);
+	bool readOperation(QXmlStreamReader& xmlReader);
+	bool readInput(QXmlStreamReader& xmlReader);
+	bool readOutput(QXmlStreamReader& xmlReader);
 
 	///////////////////////////////////////////////////////////////
 	// XML Schema Part 1: Structures
@@ -68,9 +81,9 @@ private:
 
 	// Composition
 	bool isComposition(const QString& szTagName) const;
-	bool readComposition(QXmlStreamReader& xmlReader, const QString& szTagName, const QString& szSchemaTargetNamespace);
-	bool readInclude(QXmlStreamReader& xmlReader, const QString& szSchemaTargetNamespace);
-	bool readImport(QXmlStreamReader& xmlReader, const QString& szSchemaTargetNamespace);
+	bool readComposition(QXmlStreamReader& xmlReader, const QString& szTagName);
+	bool readInclude(QXmlStreamReader& xmlReader);
+	bool readImport(QXmlStreamReader& xmlReader);
 
 	// Mgs
 	bool isMgs(const QString& szTagName) const;
@@ -113,7 +126,12 @@ private:
 	void popCurrentType();
 	const TypeSharedPtr getCurrentType() const;
 
-	// Logger fucntions
+	// Current target namespace
+	bool pushCurrentTargetNamespace(const QString& szTargetNamespaceURI);
+	void popCurrentTargetNamespace();
+	void updateTargetNamespacePrefix(const QString& szTargetNamespaceURI);
+
+	// Logger functions
 	void logParser(const QString& szMsg);
 	void incrLogIndent();
 	void decrLogIndent();
@@ -123,14 +141,11 @@ private:
     QString m_szCurrentText;
     QString m_szCurrentOperationName;
 
-    QString m_szCurrentNamespacePrefix;
-    QString m_szTargetNamespacePrefix;
-    QString m_szTargetNamespaceUri;
-
-    QMap<QString, QStringList>* m_pNamespaceRoutingMap;
-    QMap<QString, QString> m_pNamespaceDeclarationMap;
-    QString m_szOutNamespace;
-    bool m_bOwnNamespaceRoutingMap;
+    // Current namespace
+    QWSDLNamespaceDeclarations m_listNamespaceDeclarations;
+    QString m_szCurrentTargetNamespacePrefix;
+    QString m_szCurrentTargetNamespaceUri;
+    QString m_szCurrentElementNamespacePrefix;
 
     bool m_bWaitForSoapEnvelopeFault;
 
@@ -145,6 +160,7 @@ private:
 
     QStack<Section::Name> m_stackSection;
     QStack<TypeSharedPtr> m_stackCurrentTypes;
+    QStack<QString> m_stackTargetNamespace;
     RequestResponseElementSharedPtr m_pCurrentRequestResponseElement;
     MessageSharedPtr m_pCurrentMessage;
     OperationSharedPtr m_pCurrentOperation;

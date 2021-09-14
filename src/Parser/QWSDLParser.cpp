@@ -19,16 +19,8 @@
 
 #include "QWSDLParser.h"
 
-QWSDLParser::QWSDLParser(QMap<QString, QStringList>* pNamespaceRoutingMap, const QString& szOutNamespace)
-	: m_pNamespaceRoutingMap(pNamespaceRoutingMap), m_szOutNamespace(szOutNamespace)
+QWSDLParser::QWSDLParser()
 {
-	if(!m_pNamespaceRoutingMap){
-		m_pNamespaceRoutingMap = new QMap<QString, QStringList>();
-		m_bOwnNamespaceRoutingMap = true;
-	}else{
-		m_bOwnNamespaceRoutingMap = false;
-	}
-
 	m_bWaitForSoapEnvelopeFault = false;
 
 	m_pService = Service::create();
@@ -46,10 +38,7 @@ QWSDLParser::QWSDLParser(QMap<QString, QStringList>* pNamespaceRoutingMap, const
 
 QWSDLParser::~QWSDLParser()
 {
-	if(m_bOwnNamespaceRoutingMap && m_pNamespaceRoutingMap){
-		delete m_pNamespaceRoutingMap;
-		m_pNamespaceRoutingMap = NULL;
-	}
+
 }
 
 void QWSDLParser::initXMLAttributes()		// https://www.w3.org/2001/xml.xsd
@@ -69,6 +58,16 @@ void QWSDLParser::initXMLAttributes()		// https://www.w3.org/2001/xml.xsd
 void QWSDLParser::setLogIndent(int iIdent)
 {
 	m_iLogIndent = iIdent;
+}
+
+void QWSDLParser::setInitialNamespaceDeclarationList(const QWSDLNamespaceDeclarations& listNamespaceDeclarations)
+{
+	m_listNamespaceDeclarations = listNamespaceDeclarations;
+}
+
+void QWSDLParser::setInitialNamespaceUri(const QString& szNamespaceUri)
+{
+	pushCurrentTargetNamespace(szNamespaceUri);
 }
 
 bool QWSDLParser::parse(QXmlStreamReader& xmlReader)
@@ -171,9 +170,9 @@ bool QWSDLParser::endDocument()
 					}
 
 					// Resolve element type
-					if(pElement->getType()->getClassType() == Type::TypeUnknown) {
+					if(pElement->getType() && pElement->getType()->getClassType() == Type::TypeUnknown) {
 						pType = getTypeByName(pElement->getType()->getLocalName(), pElement->getType()->getNamespace(), pListTypesToRemove);
-						while(pType->getClassType() == Type::TypeUnknown) {
+						while(pType && pType->getClassType() == Type::TypeUnknown) {
 							pListTypesToRemove->append(pType);
 							pType = getTypeByName(pElement->getType()->getLocalName(), pElement->getType()->getNamespace(), pListTypesToRemove);
 						}
@@ -193,7 +192,7 @@ bool QWSDLParser::endDocument()
 						pAttribute = *attr;
 					}
 
-					if(pAttribute->getType()->getClassType() == Type::TypeUnknown){
+					if(pAttribute->getType() && pAttribute->getType()->getClassType() == Type::TypeUnknown){
 						pType = getTypeByName(pAttribute->getType()->getLocalName(), pAttribute->getType()->getNamespace());
 						pAttribute->setType(pType);
 					}
@@ -223,7 +222,8 @@ bool QWSDLParser::endDocument()
 			//Parcours elment list
 
 			for(element = pComplexType->getElementList()->begin();
-			element != pComplexType->getElementList()->end(); ++element) {
+				element != pComplexType->getElementList()->end(); ++element)
+			{
 
 				if((*element)->hasRef()){
 					pElement = (*element)->getRef();
@@ -231,7 +231,7 @@ bool QWSDLParser::endDocument()
 					pElement = *element;
 				}
 
-				if(pElement->getType()->getClassType() == Type::TypeUnknown) {
+				if(pElement->getType() && pElement->getType()->getClassType() == Type::TypeUnknown) {
 					pType = getTypeByName(pElement->getType()->getLocalName(),
 										  pElement->getType()->getNamespace());
 					pElement->setType(pType);
@@ -301,34 +301,55 @@ bool QWSDLParser::endDocument()
 	return true;
 }
 
+
+bool QWSDLParser::readXMLNamespaces(QXmlStreamReader& xmlReader)
+{
+	bool bRes = true;
+
+	QXmlStreamNamespaceDeclarations decls = xmlReader.namespaceDeclarations();
+	QXmlStreamNamespaceDeclarations::const_iterator iter;
+
+	QString szAttrLocalName;
+	QString szAttrValue;
+
+	for(iter = decls.constBegin(); iter != decls.constEnd(); ++iter)
+	{
+		const QXmlStreamNamespaceDeclaration& decl = (*iter);
+
+		szAttrLocalName = decl.prefix().toString();
+		szAttrValue = decl.namespaceUri().toString();
+
+		m_listNamespaceDeclarations.insert(szAttrLocalName, szAttrValue);
+	}
+
+	return bRes;
+}
+
 bool QWSDLParser::readDefinitions(QXmlStreamReader& xmlReader)
 {
 	bool bRes = true;
 
+	// Read XML namespaces
+	bRes = readXMLNamespaces(xmlReader);
+
 	// Parse attributes
 	QXmlStreamAttributes xmlAttrs = xmlReader.attributes();
 	QString szTargetNamespace;
-	if(xmlAttrs.hasAttribute(ATTR_NAME))
-	{
-		m_pService->setName(xmlAttrs.value(ATTR_NAME).toString());
-	}
-	if(xmlAttrs.hasAttribute(ATTR_TARGET_NAMESPACE))
-	{
-		szTargetNamespace = xmlAttrs.value(ATTR_TARGET_NAMESPACE).toString();
-		m_pService->setTargetNamespace(szTargetNamespace);
-	}
-	for(int i=0; i < xmlAttrs.size(); ++i)
-	{
-		const QXmlStreamAttribute& xmlAttr = xmlAttrs.at(i);
-		QString szAttrQualifiedName = xmlAttr.qualifiedName().toString();
-		QString szAttrLocalName = xmlAttr.name().toString();
-		QString szAttrValue = xmlAttr.value().toString();
-
-		if(szAttrValue == szTargetNamespace && szAttrQualifiedName != ATTR_TARGET_NAMESPACE)
+	if(bRes){
+		if(xmlAttrs.hasAttribute(ATTR_NAME))
 		{
-			m_szTargetNamespacePrefix = szAttrLocalName;
-			qDebug("[QWSDLParser] Target namespace prefix found in definitions: %s", qPrintable(m_szTargetNamespacePrefix));
+			m_pService->setName(xmlAttrs.value(ATTR_NAME).toString());
 		}
+		if(xmlAttrs.hasAttribute(ATTR_TARGET_NAMESPACE))
+		{
+			szTargetNamespace = xmlAttrs.value(ATTR_TARGET_NAMESPACE).toString();
+			m_pService->setTargetNamespace(szTargetNamespace);
+		}
+	}
+
+	// Enter target namespace if any
+	if(!szTargetNamespace.isEmpty()){
+		bRes = pushCurrentTargetNamespace(szTargetNamespace);
 	}
 
 	// Read sub elements
@@ -339,11 +360,20 @@ bool QWSDLParser::readDefinitions(QXmlStreamReader& xmlReader)
 
 		if (xmlReader.name() == TAG_TYPES) {
 			bRes = readTypes(xmlReader);
+		}else if (xmlReader.name() == TAG_MESSAGE) {
+			bRes = readMessage(xmlReader);
+		}else if (xmlReader.name() == TAG_PORTTYPE) {
+			bRes = readPortType(xmlReader);
 		}else{
 			xmlReader.skipCurrentElement();
 		}
 	}
 	decrLogIndent();
+
+	// Exit target namespace if any
+	if(!szTargetNamespace.isEmpty()){
+		popCurrentTargetNamespace();
+	}
 
 	return bRes;
 }
@@ -369,53 +399,214 @@ bool QWSDLParser::readTypes(QXmlStreamReader& xmlReader)
 	return bRes;
 }
 
+bool QWSDLParser::readMessage(QXmlStreamReader& xmlReader)
+{
+	bool bRes = true;
+
+	QXmlStreamAttributes xmlAttrs = xmlReader.attributes();
+
+	m_pCurrentMessage = Message::create();
+	if(xmlAttrs.hasAttribute(ATTR_NAME)) {
+		m_pCurrentMessage->setLocalName(xmlAttrs.value(ATTR_NAME).toString());
+		m_pCurrentMessage->setNamespace(m_szCurrentTargetNamespacePrefix);
+		m_pCurrentMessage->setNamespaceUri(m_szCurrentTargetNamespaceUri);
+	}
+
+	// Read sub elements
+	incrLogIndent();
+	while (bRes && xmlReader.readNextStartElement())
+	{
+		logParser("processing: " + xmlReader.name().toString());
+
+		if (xmlReader.name() == TAG_PART) {
+			bRes = readPart(xmlReader);
+		}else{
+			xmlReader.skipCurrentElement();
+		}
+	}
+	decrLogIndent();
+
+	// End element
+	m_pListMessages->append(m_pCurrentMessage);
+	m_pCurrentMessage.clear();
+
+	return bRes;
+}
+
+bool QWSDLParser::readPortType(QXmlStreamReader& xmlReader)
+{
+	bool bRes = true;
+
+	// Read sub elements
+	incrLogIndent();
+	while (bRes && xmlReader.readNextStartElement())
+	{
+		logParser("processing: " + xmlReader.name().toString());
+
+		if (xmlReader.name() == TAG_OPERATION) {
+			bRes = readOperation(xmlReader);
+		}else{
+			xmlReader.skipCurrentElement();
+		}
+	}
+	decrLogIndent();
+
+	return bRes;
+}
+
+bool QWSDLParser::readPart(QXmlStreamReader& xmlReader)
+{
+	bool bRes = true;
+
+	QXmlStreamAttributes xmlAttrs = xmlReader.attributes();
+
+	if(m_pCurrentMessage){
+		if(xmlAttrs.hasAttribute(ATTR_NAME) && xmlAttrs.hasAttribute(ATTR_ELEMENT)) {
+			if(xmlAttrs.value(ATTR_NAME).toString() == "parameters") {
+				QString qualifiedName = xmlAttrs.value(ATTR_ELEMENT).toString();
+				if(qualifiedName.contains(":")) {
+					RequestResponseElementSharedPtr pElement;
+					pElement = m_pListRequestResponseElements->getByName(qualifiedName.split(":")[1], qualifiedName.split(":")[0]);
+					m_pCurrentMessage->setParameter(pElement);
+				}
+			}
+		}
+	}
+
+	// Skip sub elements
+	xmlReader.skipCurrentElement();
+
+	return bRes;
+}
+
+bool QWSDLParser::readOperation(QXmlStreamReader& xmlReader)
+{
+	bool bRes = true;
+
+	QString qName = xmlReader.qualifiedName().toString();
+
+	QXmlStreamAttributes xmlAttrs = xmlReader.attributes();
+
+	if(qName.startsWith("wsdl:")){
+		if(xmlAttrs.hasAttribute(ATTR_NAME)) {
+			m_szCurrentOperationName = xmlAttrs.value(ATTR_NAME).toString();
+			OperationSharedPtr pOperation = m_pListOperations->getByName(m_szCurrentOperationName);
+			if(pOperation.isNull()) {
+				m_pCurrentOperation = Operation::create();
+				m_pCurrentOperation->setName(m_szCurrentOperationName);
+			}
+		}
+	}else if(qName.startsWith("soap:")){
+		OperationSharedPtr pOperation = m_pListOperations->getByName(m_szCurrentOperationName);
+		if(pOperation) {
+			m_pListOperations->removeAll(pOperation);
+			pOperation->setSoapAction(xmlAttrs.value("soapAction").toString());
+			m_pListOperations->append(pOperation);
+			m_szCurrentOperationName = "";
+		}
+	}
+
+	// Read sub elements
+	incrLogIndent();
+	while (bRes && xmlReader.readNextStartElement())
+	{
+		logParser("processing: " + xmlReader.name().toString());
+
+		if (xmlReader.name() == TAG_INPUT) {
+			bRes = readInput(xmlReader);
+		}else if (xmlReader.name() == TAG_OUTPUT) {
+			bRes = readOutput(xmlReader);
+		}else{
+			xmlReader.skipCurrentElement();
+		}
+	}
+	decrLogIndent();
+
+	// End element
+	if(qName.startsWith("wsdl:")){
+		if(m_pCurrentOperation) {
+			m_pListOperations->append(m_pCurrentOperation);
+			m_pService->addOperation(m_pCurrentOperation);
+			m_pCurrentOperation.clear();
+		}
+	}
+
+	return bRes;
+}
+
+bool QWSDLParser::readInput(QXmlStreamReader& xmlReader)
+{
+	bool bRes = true;
+
+	QXmlStreamAttributes xmlAttrs = xmlReader.attributes();
+
+	if(m_pCurrentOperation){
+		if(xmlAttrs.hasAttribute(ATTR_MESSAGE)) {
+			QString qualifiedName = xmlAttrs.value(ATTR_MESSAGE).toString();
+			if(qualifiedName.contains(":")) {
+				MessageSharedPtr pMessage;
+				pMessage = m_pListMessages->getByName(qualifiedName.split(":")[1], qualifiedName.split(":")[0]);
+				m_pCurrentOperation->setInputMessage(pMessage);
+			}
+		}
+	}
+
+	// Skip sub elements
+	xmlReader.skipCurrentElement();
+
+	return bRes;
+}
+
+bool QWSDLParser::readOutput(QXmlStreamReader& xmlReader)
+{
+	bool bRes = true;
+
+	QXmlStreamAttributes xmlAttrs = xmlReader.attributes();
+
+	if(m_pCurrentOperation){
+		if(xmlAttrs.hasAttribute(ATTR_MESSAGE)) {
+			QString qualifiedName = xmlAttrs.value(ATTR_MESSAGE).toString();
+			if(qualifiedName.contains(":")) {
+				MessageSharedPtr pMessage;
+				pMessage = m_pListMessages->getByName(qualifiedName.split(":")[1], qualifiedName.split(":")[0]);
+				m_pCurrentOperation->setOutputMessage(pMessage);
+			}
+		}
+	}
+
+	// Skip sub elements
+	xmlReader.skipCurrentElement();
+
+	return bRes;
+}
+
 bool QWSDLParser::readSchema(QXmlStreamReader& xmlReader)
 {
 	bool bRes = true;
 
 	QString szQualifiedName = xmlReader.qualifiedName().toString();
-	m_szCurrentNamespacePrefix = szQualifiedName.split(":")[0];
+	m_szCurrentTargetNamespacePrefix = szQualifiedName.split(":")[0];
 
+	// Read XMLS namespaces
+	bRes = readXMLNamespaces(xmlReader);
+
+	// Parse attributes
 	QXmlStreamAttributes xmlAttrs = xmlReader.attributes();
-
+	QString szTargetNamespaceUri;
 	if(xmlAttrs.hasAttribute(ATTR_TARGET_NAMESPACE)) {
-		m_szTargetNamespaceUri = xmlAttrs.value(ATTR_TARGET_NAMESPACE).toString();
+		szTargetNamespaceUri = xmlAttrs.value(ATTR_TARGET_NAMESPACE).toString();
 
 		// This is a special case used to find the SOAP standard fault type
-		if(m_szTargetNamespaceUri == "http://www.w3.org/2003/05/soap-envelope"){
+		if(szTargetNamespaceUri == "http://www.w3.org/2003/05/soap-envelope"){
 			m_bWaitForSoapEnvelopeFault = true;
 		}
 
-		m_pService->setTargetNamespace(m_szTargetNamespaceUri);
+		m_pService->setTargetNamespace(szTargetNamespaceUri);
 	}
 
-	for(int i=0; i < xmlAttrs.size(); ++i)
-	{
-		const QXmlStreamAttribute& xmlAttr = xmlAttrs.at(i);
-		QString szAttrQualifiedName = xmlAttr.qualifiedName().toString();
-		QString szAttrLocalName = xmlAttr.name().toString();
-		QString szAttrValue = xmlAttr.value().toString();
-
-		if(szAttrQualifiedName.startsWith("xmlns:")){
-			m_pNamespaceDeclarationMap.insert(szAttrLocalName, szAttrValue);
-		}
-
-		if(szAttrValue == m_szTargetNamespaceUri && szAttrQualifiedName != ATTR_TARGET_NAMESPACE)
-		{
-			m_szTargetNamespacePrefix = szAttrLocalName;
-
-			if(!m_szOutNamespace.isEmpty())
-			{
-				QStringList namespaceList = m_pNamespaceRoutingMap->value(m_szOutNamespace);
-				if(!namespaceList.contains(m_szTargetNamespacePrefix))
-				{
-					namespaceList.append(m_szTargetNamespacePrefix);
-					m_pNamespaceRoutingMap->insert(m_szOutNamespace, namespaceList);
-				}
-			}
-
-			qDebug("[QWSDLParser] Target namespace prefix found in schema: %s", qPrintable(m_szTargetNamespacePrefix));
-		}
+	// Enter target namespace if any
+	if(!szTargetNamespaceUri.isEmpty()){
+		bRes = pushCurrentTargetNamespace(szTargetNamespaceUri);
 	}
 
 	// Read sub elements
@@ -426,7 +617,7 @@ bool QWSDLParser::readSchema(QXmlStreamReader& xmlReader)
 		logParser("processing: " + szTagName);
 
 		if(isComposition(szTagName)){
-			bRes = readComposition(xmlReader, szTagName, m_szTargetNamespaceUri);
+			bRes = readComposition(xmlReader, szTagName);
 		}else if (xmlReader.name() == TAG_SIMPLE_TYPE) {
 			bRes = readSimpleType(xmlReader, Section::Schema);
 		}else if (xmlReader.name() == TAG_COMPLEX_TYPE) {
@@ -440,6 +631,11 @@ bool QWSDLParser::readSchema(QXmlStreamReader& xmlReader)
 		}
 	}
 	decrLogIndent();
+
+	// Exit target namespace if any
+	if(!szTargetNamespaceUri.isEmpty()){
+		popCurrentTargetNamespace();
+	}
 
 	return bRes;
 }
@@ -457,8 +653,8 @@ bool QWSDLParser::readComplexType(QXmlStreamReader& xmlReader, Section::Name iPa
 		pComplexType = ComplexType::create();
 		if(m_pCurrentElement){
 			pComplexType->setLocalName(m_pCurrentElement->getName());
-			pComplexType->setNamespace(m_szTargetNamespacePrefix);
-			pComplexType->setNamespaceUri(m_szTargetNamespaceUri);
+			pComplexType->setNamespace(m_szCurrentTargetNamespacePrefix);
+			pComplexType->setNamespaceUri(m_szCurrentTargetNamespaceUri);
 			m_pCurrentElement->setType(pComplexType);
 		}
 	}else{
@@ -467,21 +663,21 @@ bool QWSDLParser::readComplexType(QXmlStreamReader& xmlReader, Section::Name iPa
 			TypeSharedPtr pFoundType;
 			QString szName = xmlAttrs.value(ATTR_NAME).toString();
 
-			pFoundType = getTypeByName(szName, m_szTargetNamespacePrefix);
+			pFoundType = getTypeByName(szName, m_szCurrentTargetNamespacePrefix);
 			if(!pFoundType.isNull()) {
 				if(pFoundType->getClassType() == Type::TypeUnknown) {
 					pComplexType = ComplexType::create();
 					pComplexType->setLocalName(szName);
-					pComplexType->setNamespace(m_szTargetNamespacePrefix);
-					pComplexType->setNamespaceUri(m_szTargetNamespaceUri);
+					pComplexType->setNamespace(m_szCurrentTargetNamespacePrefix);
+					pComplexType->setNamespaceUri(m_szCurrentTargetNamespaceUri);
 				}else{
 					pComplexType = qSharedPointerCast<ComplexType>(pFoundType);;
 				}
 			}else{
 				pComplexType = ComplexType::create();
 				pComplexType->setLocalName(szName);
-				pComplexType->setNamespace(m_szTargetNamespacePrefix);
-				pComplexType->setNamespaceUri(m_szTargetNamespaceUri);
+				pComplexType->setNamespace(m_szCurrentTargetNamespacePrefix);
+				pComplexType->setNamespaceUri(m_szCurrentTargetNamespaceUri);
 			}
 
 			if((szName == "Fault") && m_bWaitForSoapEnvelopeFault){
@@ -548,9 +744,9 @@ bool QWSDLParser::readExtension(QXmlStreamReader& xmlReader)
 		if(!pType.isNull()){
 			qSharedPointerCast<ComplexType>(pCurrentType)->setExtensionType(pType);
 		}else{
-			if(szName.startsWith(m_szCurrentNamespacePrefix + ":")) {
+			if(szName.startsWith(m_szCurrentElementNamespacePrefix + ":")) {
 				SimpleTypeSharedPtr pType = SimpleType::create();
-				pType->setVariableTypeFromString(m_szCurrentNamespacePrefix, szName);
+				pType->setVariableTypeFromString(m_szCurrentElementNamespacePrefix, szName);
 				qSharedPointerCast<ComplexType>(pCurrentType)->setExtensionType(pType);
 			}else{
 				TypeSharedPtr pType = Type::create();
@@ -601,9 +797,9 @@ bool QWSDLParser::readElement(QXmlStreamReader& xmlReader, Section::Name iParent
 				}else{
 					qWarning("[QWSDLParser] Type %s is not found at this moment, we create it", qPrintable(szValue));
 
-					if(szValue.startsWith(m_szCurrentNamespacePrefix + ":")) {
+					if(szValue.startsWith(m_szCurrentElementNamespacePrefix + ":")) {
 						SimpleTypeSharedPtr pType = SimpleType::create();
-						pType->setVariableTypeFromString(m_szCurrentNamespacePrefix, szValue);
+						pType->setVariableTypeFromString(m_szCurrentElementNamespacePrefix, szValue);
 						pType->setName(pElement->getName());
 						pElement->setType(pType);
 					}else{
@@ -632,9 +828,9 @@ bool QWSDLParser::readElement(QXmlStreamReader& xmlReader, Section::Name iParent
 		//					}else{
 		//						qWarning("[QWSDLParser] Type %s is not found at this moment, we create it", qPrintable(szValue));
 		//
-		//						if(szValue.startsWith(m_szCurrentNamespacePrefix + ":")) {
+		//						if(szValue.startsWith(m_szCurrentElementNamespacePrefix + ":")) {
 		//							SimpleTypeSharedPtr pType = SimpleType::create();
-		//							pType->setVariableTypeFromString(m_szCurrentNamespacePrefix, szValue);
+		//							pType->setVariableTypeFromString(m_szCurrentElementNamespacePrefix, szValue);
 		//							pType->setName(element->getName());
 		//							element->setType(pType);
 		//						}else{
@@ -665,12 +861,12 @@ bool QWSDLParser::readElement(QXmlStreamReader& xmlReader, Section::Name iParent
 			//We are in Message Request/Response elements list section
 			m_pCurrentRequestResponseElement = RequestResponseElement::create();
 			m_pCurrentRequestResponseElement->setLocalName(xmlAttrs.value(ATTR_NAME).toString());
-			m_pCurrentRequestResponseElement->setNamespace(m_szTargetNamespacePrefix);
-			m_pCurrentRequestResponseElement->setNamespaceUri(m_szTargetNamespaceUri);
+			m_pCurrentRequestResponseElement->setNamespace(m_szCurrentTargetNamespacePrefix);
+			m_pCurrentRequestResponseElement->setNamespaceUri(m_szCurrentTargetNamespaceUri);
 		}
 
 		m_pCurrentElement = ElementSharedPtr::create();
-		m_pCurrentElement->setNamespace(m_szTargetNamespacePrefix);
+		m_pCurrentElement->setNamespace(m_szCurrentTargetNamespacePrefix);
 		if(xmlAttrs.hasAttribute(ATTR_NAME)){
 			m_pCurrentElement->setName(xmlAttrs.value(ATTR_NAME).toString());
 		}
@@ -686,9 +882,9 @@ bool QWSDLParser::readElement(QXmlStreamReader& xmlReader, Section::Name iParent
 			}else{
 				qWarning("[QWSDLParser] Type %s is not found at this moment, we create it", qPrintable(szValue));
 
-				if(szValue.startsWith(m_szCurrentNamespacePrefix + ":")) {
+				if(szValue.startsWith(m_szCurrentElementNamespacePrefix + ":")) {
 					SimpleTypeSharedPtr pType = SimpleType::create();
-					pType->setVariableTypeFromString(m_szCurrentNamespacePrefix, szValue);
+					pType->setVariableTypeFromString(m_szCurrentElementNamespacePrefix, szValue);
 					pType->setName(m_pCurrentElement->getName());
 					m_pCurrentElement->setType(pType);
 				}else{
@@ -718,6 +914,16 @@ bool QWSDLParser::readElement(QXmlStreamReader& xmlReader, Section::Name iParent
 		}
 	}
 	decrLogIndent();
+
+	if(m_pCurrentElement){
+		m_pListElements->append(m_pCurrentElement);
+		m_pCurrentElement.clear();
+	}
+
+	if(m_pCurrentRequestResponseElement && !getCurrentType()){
+		m_pListRequestResponseElements->append(m_pCurrentRequestResponseElement);
+		m_pCurrentRequestResponseElement.clear();
+	}
 
 	return bRes;
 }
@@ -823,10 +1029,10 @@ bool QWSDLParser::readAttribute(QXmlStreamReader& xmlReader, Section::Name iPare
 				}else{
 					qWarning("[QWSDLParser] Type %s is not found at this moment, we create it", qPrintable(szValue));
 
-					if(szValue.startsWith(m_szCurrentNamespacePrefix + ":")) {
+					if(szValue.startsWith(m_szCurrentElementNamespacePrefix + ":")) {
 						SimpleTypeSharedPtr pType = SimpleType::create();
-						pType->setVariableTypeFromString(m_szCurrentNamespacePrefix, szValue);
 						pType->setName(attr->getName());
+						pType->setVariableTypeFromString(m_szCurrentElementNamespacePrefix, szValue);
 						attr->setType(pType);
 					}else{
 						TypeSharedPtr pType = Type::create();
@@ -838,7 +1044,7 @@ bool QWSDLParser::readAttribute(QXmlStreamReader& xmlReader, Section::Name iPare
 				}
 			}else{
 				m_pCurrentAttribute = attr;
-				m_pCurrentAttribute->setNamespace(m_szTargetNamespacePrefix);
+				m_pCurrentAttribute->setNamespace(m_szCurrentTargetNamespacePrefix);
 			}
 		}
 
@@ -853,7 +1059,7 @@ bool QWSDLParser::readAttribute(QXmlStreamReader& xmlReader, Section::Name iPare
 		pComplexType->addAttribute(attr);
 	}else{
 		m_pCurrentAttribute = AttributeSharedPtr::create();
-		m_pCurrentAttribute->setNamespace(m_szTargetNamespacePrefix);
+		m_pCurrentAttribute->setNamespace(m_szCurrentTargetNamespacePrefix);
 		if(xmlAttrs.hasAttribute(ATTR_NAME)){
 			m_pCurrentAttribute->setName(xmlAttrs.value(ATTR_NAME).toString());
 		}
@@ -868,9 +1074,9 @@ bool QWSDLParser::readAttribute(QXmlStreamReader& xmlReader, Section::Name iPare
 			}else{
 				qWarning("[QWSDLParser] Type %s is not found at this moment, we create it", qPrintable(szValue));
 
-				if(szValue.startsWith(m_szCurrentNamespacePrefix + ":")) {
+				if(szValue.startsWith(m_szCurrentElementNamespacePrefix + ":")) {
 					SimpleTypeSharedPtr pType = SimpleType::create();
-					pType->setVariableTypeFromString(m_szCurrentNamespacePrefix, szValue);
+					pType->setVariableTypeFromString(m_szCurrentElementNamespacePrefix, szValue);
 					pType->setName(m_pCurrentAttribute->getName());
 					m_pCurrentAttribute->setType(pType);
 				}else{
@@ -898,6 +1104,11 @@ bool QWSDLParser::readAttribute(QXmlStreamReader& xmlReader, Section::Name iPare
 		}
 	}
 	decrLogIndent();
+
+	if(m_pCurrentAttribute){
+		m_pListAttributes->append(m_pCurrentAttribute);
+		m_pCurrentAttribute.clear();
+	}
 
 	return bRes;
 }
@@ -951,73 +1162,74 @@ bool QWSDLParser::isComposition(const QString& szTagName) const
 	return false;
 }
 
-bool QWSDLParser::readComposition(QXmlStreamReader& xmlReader, const QString& szTagName, const QString& szSchemaTargetNamespace)
+bool QWSDLParser::readComposition(QXmlStreamReader& xmlReader, const QString& szTagName)
 {
 	if(szTagName == TAG_INCLUDE){
-		return readInclude(xmlReader, szSchemaTargetNamespace);
+		return readInclude(xmlReader);
 	}else if(szTagName == TAG_IMPORT){
-		return readImport(xmlReader, szSchemaTargetNamespace);
+		return readImport(xmlReader);
 	}else{
 		xmlReader.skipCurrentElement();
 	}
 	return true;
 }
 
-bool QWSDLParser::readInclude(QXmlStreamReader& xmlReader, const QString& szSchemaTargetNamespace)
+bool QWSDLParser::readInclude(QXmlStreamReader& xmlReader)
 {
 	bool bRes = true;
 
 	QXmlStreamAttributes xmlAttrs = xmlReader.attributes();
 
-	if(xmlAttrs.hasAttribute(ATTR_SCHEMA_LOCATION)) {
-		QString szLocation = xmlAttrs.value(ATTR_SCHEMA_LOCATION).toString();
-		QString szNamespace = xmlAttrs.value(ATTR_NAMESPACE).toString();
+	QString szLocation;
+	QString szNamespaceUri;
+	if(xmlAttrs.hasAttribute(ATTR_SCHEMA_LOCATION))
+	{
+		szLocation = xmlAttrs.value(ATTR_SCHEMA_LOCATION).toString();
+	}
+	if(xmlAttrs.hasAttribute(ATTR_NAMESPACE))
+	{
+		szNamespaceUri = xmlAttrs.value(ATTR_NAMESPACE).toString();
+	}
 
-		QString szRoutedNamespace;
-		QMapIterator<QString, QString> iter(m_pNamespaceDeclarationMap);
-		while(iter.hasNext()){
-			iter.next();
-			if(iter.value() == szNamespace){
-				szRoutedNamespace = iter.key();
-				break;
-			}
-		}
-
-		if(!szRoutedNamespace.isEmpty() && !m_pNamespaceRoutingMap->contains(szRoutedNamespace)){
-			m_pNamespaceRoutingMap->insert(szRoutedNamespace, QStringList());
-		}
-
+	if(!szLocation.isEmpty()){
 		logParser("starting import: " + szLocation);
 		incrLogIndent();
 
 		QString szRemoteLocation;
-
 		if(szLocation.startsWith("http://") || szLocation.startsWith("https://")) {
+			// Use URL
 			szRemoteLocation = szLocation;
-		}else if(!szSchemaTargetNamespace.isEmpty() && (szSchemaTargetNamespace.startsWith("http://") || szSchemaTargetNamespace.startsWith("https://"))){
-			szRemoteLocation = szSchemaTargetNamespace + (szSchemaTargetNamespace.endsWith("/") ? szLocation : ("/" + szLocation));
+		}else if(!m_szCurrentTargetNamespaceUri.isEmpty()){
+			// Build URL from current namespace URI
+			if(m_szCurrentTargetNamespaceUri.startsWith("http://") || m_szCurrentTargetNamespaceUri.startsWith("https://"))
+			{
+				szRemoteLocation = m_szCurrentTargetNamespaceUri + (m_szCurrentTargetNamespaceUri.endsWith("/") ? szLocation : ("/" + szLocation));
+			}
 		}
 
 		if(!szRemoteLocation.isEmpty()){
-			bRes = loadFromHttp(szRemoteLocation, szRoutedNamespace);
+			bRes = loadFromHttp(szRemoteLocation, szNamespaceUri);
 		}else{
 			bRes = false;
 		}
 		if(!bRes){
-			bRes = loadFromFile(szLocation, szRoutedNamespace);
+			bRes = loadFromFile(szLocation, szNamespaceUri);
 		}
 
 		decrLogIndent();
 		logParser("end of import");
 	}
 
+	// Skip sub elements
+	xmlReader.skipCurrentElement();
+
 	return bRes;
 }
 
-bool QWSDLParser::readImport(QXmlStreamReader& xmlReader, const QString& szSchemaTargetNamespace)
+bool QWSDLParser::readImport(QXmlStreamReader& xmlReader)
 {
 	// Do the same as include
-	return readInclude(xmlReader, szSchemaTargetNamespace);
+	return readInclude(xmlReader);
 }
 
 
@@ -1119,19 +1331,21 @@ bool QWSDLParser::readSimpleType(QXmlStreamReader& xmlReader, Section::Name iPar
 	}
 
 	if(!szName.isEmpty()){
-		TypeSharedPtr pFoundType = getTypeByName(szName, m_szTargetNamespacePrefix);
+		TypeSharedPtr pFoundType = getTypeByName(szName, m_szCurrentTargetNamespacePrefix);
 		if(!pFoundType.isNull()) {
 			if(pFoundType->getClassType() == Type::TypeUnknown) {
 				pSimpleType = SimpleType::create();
 				pSimpleType->setLocalName(szName);
-				pSimpleType->setNamespace(m_szTargetNamespacePrefix);
-				pSimpleType->setNamespaceUri(m_szTargetNamespaceUri);
+				pSimpleType->setNamespace(m_szCurrentTargetNamespacePrefix);
+				pSimpleType->setNamespaceUri(m_szCurrentTargetNamespaceUri);
 			}
 		}else{
 			pSimpleType = SimpleType::create();
 			pSimpleType->setLocalName(szName);
-			pSimpleType->setNamespace(m_szTargetNamespacePrefix);
+			pSimpleType->setNamespace(m_szCurrentTargetNamespacePrefix);
 		}
+	}
+	if(pSimpleType){
 		pushCurrentType(pSimpleType);
 	}
 
@@ -1196,8 +1410,8 @@ bool QWSDLParser::readRestriction(QXmlStreamReader& xmlReader, Section::Name iPa
 			if(xmlAttrs.hasAttribute(ATTR_BASE)) {
 				QString szValue = xmlAttrs.value(ATTR_BASE).toString();
 
-				if(szValue.startsWith(m_szCurrentNamespacePrefix + ":")) {
-					pSimpleType->setVariableTypeFromString(m_szCurrentNamespacePrefix, szValue);
+				if(szValue.startsWith(m_szCurrentElementNamespacePrefix + ":")) {
+					pSimpleType->setVariableTypeFromString(m_szCurrentElementNamespacePrefix, szValue);
 				}else{
 					pSimpleType->setVariableType(SimpleType::Custom);
 					pSimpleType->setCustomNamespace(szValue.split(":")[0].toUpper());
@@ -1242,7 +1456,7 @@ bool QWSDLParser::readList(QXmlStreamReader& xmlReader, Section::Name iParentSec
 			QString szValue = xmlAttrs.value(ATTR_ITEM_TYPE).toString();
 			if(iParentSection == Section::SimpleType){
 				SimpleTypeSharedPtr pType = SimpleType::create();
-				pType->setVariableTypeFromString(m_szCurrentNamespacePrefix, szValue);
+				pType->setVariableTypeFromString(m_szCurrentElementNamespacePrefix, szValue);
 				m_pCurrentAttribute->setType(pType);
 				m_pCurrentAttribute->setIsList(true);
 			}
@@ -1264,7 +1478,6 @@ bool QWSDLParser::readList(QXmlStreamReader& xmlReader, Section::Name iParentSec
 			QString szValue = xmlAttrs.value(ATTR_ITEM_TYPE).toString();
 			QString szLocalName = pCurrentType->getLocalName();
 			QString szNamespace = pCurrentType->getNamespace();
-			popCurrentType();
 
 			ComplexTypeSharedPtr pComplexType = ComplexType::create();
 			pComplexType->setLocalName(szLocalName);
@@ -1274,9 +1487,9 @@ bool QWSDLParser::readList(QXmlStreamReader& xmlReader, Section::Name iParentSec
 			if(!pType.isNull()){
 				pComplexType->setExtensionType(pType, true);
 			}else{
-				if(szValue.startsWith(m_szCurrentNamespacePrefix + ":")) {
+				if(szValue.startsWith(m_szCurrentElementNamespacePrefix + ":")) {
 					SimpleTypeSharedPtr pType = SimpleType::create();
-					pType->setVariableTypeFromString(m_szCurrentNamespacePrefix, szValue);
+					pType->setVariableTypeFromString(m_szCurrentElementNamespacePrefix, szValue);
 					pComplexType->setExtensionType(pType, true);
 				}else{
 					TypeSharedPtr pType = Type::create();
@@ -1325,9 +1538,9 @@ bool QWSDLParser::readUnion(QXmlStreamReader& xmlReader, Section::Name iParentSe
 			QString szMemberTypes = xmlAttrs.value(ATTR_MEMBER_TYPES).toString();
 			QStringList szTypes = szMemberTypes.split(" ");
 			for(int i = 0; i < szTypes.size(); ++i){
-				if(szTypes[i].startsWith(m_szCurrentNamespacePrefix + ":")){
+				if(szTypes[i].startsWith(m_szCurrentElementNamespacePrefix + ":")){
 					SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pCurrentType);
-					pSimpleType->setVariableTypeFromString(m_szCurrentNamespacePrefix, szTypes[i]);
+					pSimpleType->setVariableTypeFromString(m_szCurrentElementNamespacePrefix, szTypes[i]);
 				}
 			}
 		}
@@ -1558,15 +1771,9 @@ ElementSharedPtr QWSDLParser::getElementByRef(const QString& szRef)
 	if(!pElement){
 		QString szNamespace = szRef.split(":")[0];
 		QString szName = szRef.split(":")[1];
-		if(m_pNamespaceRoutingMap->contains(szNamespace)){
-			QStringList namespaceList = m_pNamespaceRoutingMap->value(szNamespace);
-			for(int i = 0; i < namespaceList.size(); ++i){
-				QString szNamespaceTmp = namespaceList[i];
-				pElement = m_pListElements->getByRef(szNamespaceTmp + ":" + szName);
-				if(pElement){
-					break;
-				}
-			}
+		if(m_listNamespaceDeclarations.contains(szNamespace)){
+			QString szNamespaceTmp = m_listNamespaceDeclarations.value(szNamespace);
+			pElement = m_pListElements->getByRef(szNamespaceTmp + ":" + szName);
 		}
 	}
 	return pElement;
@@ -1575,20 +1782,14 @@ ElementSharedPtr QWSDLParser::getElementByRef(const QString& szRef)
 TypeSharedPtr QWSDLParser::getTypeByName(const QString& szLocalName, const QString& szNamespace, const TypeListSharedPtr& pListIgnoredTypes)
 {
 	TypeSharedPtr pType = m_pListTypes->getByName(szLocalName, szNamespace, pListIgnoredTypes);
-	if(!pType && m_pNamespaceRoutingMap->contains(szNamespace)){
-		QStringList namespaceList = m_pNamespaceRoutingMap->value(szNamespace);
-		for(int i = 0; i < namespaceList.size(); ++i){
-			QString szNamespaceTmp = namespaceList[i];
-			pType = m_pListTypes->getByName(szLocalName, szNamespaceTmp, pListIgnoredTypes);
-			if(pType){
-				break;
-			}
-		}
+	if(!pType && m_listNamespaceDeclarations.contains(szNamespace)){
+		QString szNamespaceTmp = m_listNamespaceDeclarations.value(szNamespace);
+		pType = m_pListTypes->getByName(szLocalName, szNamespaceTmp, pListIgnoredTypes);
 	}
 	return pType;
 }
 
-bool QWSDLParser::loadFromHttp(const QString& szURL, const QString& szNamespace)
+bool QWSDLParser::loadFromHttp(const QString& szURL, const QString& szNamespaceUri)
 {
 	bool bRes = false;
 
@@ -1617,7 +1818,9 @@ bool QWSDLParser::loadFromHttp(const QString& szURL, const QString& szNamespace)
 	QByteArray bytes(reply->readAll());
 
 	// Parse WSDL
-	QWSDLParser parser(m_pNamespaceRoutingMap, szNamespace);
+	QWSDLParser parser;
+	parser.setInitialNamespaceDeclarationList(m_listNamespaceDeclarations);
+	parser.setInitialNamespaceUri(szNamespaceUri);
 	parser.setLogIndent(m_iLogIndent);
 	QXmlStreamReader xmlReader;
 	xmlReader.addData(bytes);
@@ -1651,7 +1854,7 @@ bool QWSDLParser::loadFromHttp(const QString& szURL, const QString& szNamespace)
 	return bRes;
 }
 
-bool QWSDLParser::loadFromFile(const QString& szFileName, const QString& szNamespace)
+bool QWSDLParser::loadFromFile(const QString& szFileName, const QString& szNamespaceUri)
 {
 	bool bRes = true;
 
@@ -1665,12 +1868,15 @@ bool QWSDLParser::loadFromFile(const QString& szFileName, const QString& szNames
 		QByteArray bytes(file.readAll());
 
 		// Parse WSDL
-		QWSDLParser parser(m_pNamespaceRoutingMap, szNamespace);
+		QWSDLParser parser;
+		parser.setInitialNamespaceDeclarationList(m_listNamespaceDeclarations);
+		parser.setInitialNamespaceUri(szNamespaceUri);
 		parser.setLogIndent(m_iLogIndent);
 		QXmlStreamReader xmlReader;
 		xmlReader.addData(bytes);
 		//reader.setFeature("http://xml.org/sax/features/namespace-prefixes", true);
 		//reader.setFeature("http://xml.org/sax/features/namespaces", true);
+		xmlReader.setNamespaceProcessing(true);
 		bRes = parser.parse(xmlReader);
 		if(bRes)
 		{
@@ -1711,12 +1917,55 @@ void QWSDLParser::pushCurrentType(const TypeSharedPtr& pCurrentType)
 
 void QWSDLParser::popCurrentType()
 {
+	logParser(" pop type:" + QString::number(m_stackCurrentTypes.count()));
 	m_stackCurrentTypes.pop();
 }
 
 const TypeSharedPtr QWSDLParser::getCurrentType() const
 {
 	return !m_stackCurrentTypes.empty() ? m_stackCurrentTypes.top() : TypeSharedPtr(NULL);
+}
+
+bool QWSDLParser::pushCurrentTargetNamespace(const QString& szTargetNamespaceURI)
+{
+	bool bRes = true;
+
+	m_stackTargetNamespace.push(szTargetNamespaceURI);
+
+	updateTargetNamespacePrefix(szTargetNamespaceURI);
+
+	return bRes;
+}
+
+void QWSDLParser::popCurrentTargetNamespace()
+{
+	QString szTargetNamespace;
+
+	m_stackTargetNamespace.pop();
+
+	if(!m_stackTargetNamespace.isEmpty()){
+		szTargetNamespace = m_stackTargetNamespace.top();
+	}
+
+	updateTargetNamespacePrefix(szTargetNamespace);
+}
+
+void QWSDLParser::updateTargetNamespacePrefix(const QString& szTargetNamespaceURI)
+{
+	QMap<QString, QString>::const_iterator iter;
+	iter = m_listNamespaceDeclarations.constBegin();
+	while(iter != m_listNamespaceDeclarations.constEnd())
+	{
+		const QString& szPrefix = iter.key();
+		const QString& szNamespaceURI = iter.value();
+		if(szNamespaceURI == szTargetNamespaceURI)
+		{
+			m_szCurrentTargetNamespacePrefix = szPrefix;
+			qDebug("[QWSDLParser] Target namespace prefix found in definitions: %s", qPrintable(m_szCurrentTargetNamespacePrefix));
+			break;
+		}
+		iter++;
+	}
 }
 
 void QWSDLParser::logParser(const QString& szMsg)

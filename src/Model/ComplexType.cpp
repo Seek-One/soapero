@@ -1055,44 +1055,46 @@ QString ComplexType::getSerializerDefinition(const QString& szClassname, const Q
 			pAttribute = *attr;
 		}
 
-		if(pAttribute->getType()->getClassType() == Type::TypeSimple) {
-			SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pAttribute->getType());
-			if(pAttribute->isList()){
-				szIterator = "iter_" + QString::number(iIteratorCount++);
-				szDefinition += "\tif(_" + pAttribute->getName() + "List" + ".size() > 0) {" CRLF;
-				szDefinition += "\t\tszValue += \" " + pAttribute->getName() + "=\\\"\";" CRLF;
-				szDefinition += QString("\t\tQList<%0>::const_iterator %1;" CRLF).arg( pSimpleType->getVariableTypeString()).arg(szIterator);
-				szDefinition += QString("\t\tfor(%0 = _%1List.constBegin(); %0 != _%1List.constEnd(); ++%0) {" CRLF).arg(szIterator).arg(pAttribute->getName());
-				szDefinition += QString("\t\t\tif(!%0->isNull()) {" CRLF).arg(szIterator);
-				szDefinition += QString("\t\t\t\tszValue += %0->serialize() + \" \";" CRLF).arg(szIterator);
-				szDefinition += QString("\t\t\t}" CRLF);
-				szDefinition += "\t\t}" CRLF;
-				szDefinition += "\t\tszValue +=\"\\\"\";" CRLF;
-				szDefinition += "\t}" CRLF;
-			}else{
-				szDefinition += "\tif(!" + pSimpleType->getVariableName() + ".isNull()) {" CRLF;
-				szDefinition += "\t\tszValue += \" " + pAttribute->getName() + "=\\\"\" + " + pSimpleType->getVariableName() + ".serialize() + \"\\\"\";" CRLF;
-				szDefinition += "\t}" CRLF;
-			}
-		}else if(pAttribute->getType()->getClassType() == Type::TypeComplex){
-			ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pAttribute->getType());
-			if(pAttribute->isList()){
-				szIterator = "iter_" + QString::number(iIteratorCount++);
-				szDefinition += "\tif(" + pAttribute->getName() + "List" + ".size() > 0) {" CRLF;
-				szDefinition += "\t\tszValue += \" " + pAttribute->getName() + "=\\\"\"" CRLF;
-				szDefinition += QString("\t\tQList<%0>::const_iterator %1;" CRLF).arg( pComplexType->getNameWithNamespace()).arg(szIterator);
-				szDefinition += QString("\t\tfor(%0 = %1List.constBegin(); %0 != %1List.constEnd(); ++%0) {" CRLF).arg(szIterator).arg(pAttribute->getName());
-				szDefinition += QString("\t\t\tif(!(*%0)->isNull()) {" CRLF).arg(szIterator);
-				szDefinition += QString("\t\t\t\tszValue += (*%0)->serialize() + \" \";" CRLF).arg(szIterator);
-				szDefinition += QString("\t\t\t}" CRLF);
-				szDefinition += "\t\t}" CRLF;
-				szDefinition += "\t\tszValue +=\"\\\"\";" CRLF;
-				szDefinition += "\t}" CRLF;
-			}else{
-				QString szVariableName = "_" + pAttribute->getName().left(1).toLower() + pAttribute->getName().mid(1);
-				szDefinition += "\tif(!" + szVariableName + ".isNull()) {" CRLF;
-				szDefinition += "\t\tszValue += \" " + pAttribute->getName() + "=\\\"\" + " + szVariableName + ".serialize() + \"\\\"\";" CRLF;
-				szDefinition += "\t}" CRLF;
+		if(pAttribute->getType()){
+			if(pAttribute->getType()->getClassType() == Type::TypeSimple) {
+				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pAttribute->getType());
+				if(pAttribute->isList()){
+					szIterator = "iter_" + QString::number(iIteratorCount++);
+					szDefinition += "\tif(_" + pAttribute->getName() + "List" + ".size() > 0) {" CRLF;
+					szDefinition += "\t\tszValue += \" " + pAttribute->getName() + "=\\\"\";" CRLF;
+					szDefinition += QString("\t\tQList<%0>::const_iterator %1;" CRLF).arg( pSimpleType->getVariableTypeString()).arg(szIterator);
+					szDefinition += QString("\t\tfor(%0 = _%1List.constBegin(); %0 != _%1List.constEnd(); ++%0) {" CRLF).arg(szIterator).arg(pAttribute->getName());
+					szDefinition += QString("\t\t\tif(!%0->isNull()) {" CRLF).arg(szIterator);
+					szDefinition += QString("\t\t\t\tszValue += %0->serialize() + \" \";" CRLF).arg(szIterator);
+					szDefinition += QString("\t\t\t}" CRLF);
+					szDefinition += "\t\t}" CRLF;
+					szDefinition += "\t\tszValue +=\"\\\"\";" CRLF;
+					szDefinition += "\t}" CRLF;
+				}else{
+					szDefinition += "\tif(!" + pSimpleType->getVariableName() + ".isNull()) {" CRLF;
+					szDefinition += "\t\tszValue += \" " + pAttribute->getName() + "=\\\"\" + " + pSimpleType->getVariableName() + ".serialize() + \"\\\"\";" CRLF;
+					szDefinition += "\t}" CRLF;
+				}
+			}else if(pAttribute->getType()->getClassType() == Type::TypeComplex){
+				ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pAttribute->getType());
+				if(pAttribute->isList()){
+					szIterator = "iter_" + QString::number(iIteratorCount++);
+					szDefinition += "\tif(" + pAttribute->getName() + "List" + ".size() > 0) {" CRLF;
+					szDefinition += "\t\tszValue += \" " + pAttribute->getName() + "=\\\"\"" CRLF;
+					szDefinition += QString("\t\tQList<%0>::const_iterator %1;" CRLF).arg( pComplexType->getNameWithNamespace()).arg(szIterator);
+					szDefinition += QString("\t\tfor(%0 = %1List.constBegin(); %0 != %1List.constEnd(); ++%0) {" CRLF).arg(szIterator).arg(pAttribute->getName());
+					szDefinition += QString("\t\t\tif(!(*%0)->isNull()) {" CRLF).arg(szIterator);
+					szDefinition += QString("\t\t\t\tszValue += (*%0)->serialize() + \" \";" CRLF).arg(szIterator);
+					szDefinition += QString("\t\t\t}" CRLF);
+					szDefinition += "\t\t}" CRLF;
+					szDefinition += "\t\tszValue +=\"\\\"\";" CRLF;
+					szDefinition += "\t}" CRLF;
+				}else{
+					QString szVariableName = "_" + pAttribute->getName().left(1).toLower() + pAttribute->getName().mid(1);
+					szDefinition += "\tif(!" + szVariableName + ".isNull()) {" CRLF;
+					szDefinition += "\t\tszValue += \" " + pAttribute->getName() + "=\\\"\" + " + szVariableName + ".serialize() + \"\\\"\";" CRLF;
+					szDefinition += "\t}" CRLF;
+				}
 			}
 		}
 	}
@@ -1240,7 +1242,7 @@ QString ComplexType::getDeserializerDefinition(const QString& szClassname) const
 			pAttribute = *attr;
 		}
 
-		if( pAttribute->getType()->getClassType() == Type::TypeSimple) {
+		if( pAttribute->getType() && pAttribute->getType()->getClassType() == Type::TypeSimple) {
 			SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pAttribute->getType());
 			if(pAttribute->isList()){
 				szDefinition += "\tif(!element.attributeNode(\"" + pAttribute->getName() + "\").isNull()) {" CRLF;
@@ -1373,21 +1375,23 @@ QString ComplexType::getIsNullDefinition(const QString& szClassname) const
 			pAttribute = *attr;
 		}
 
-		if( pAttribute->getType()->getClassType() == Type::TypeSimple) {
-			SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pAttribute->getType());
-			if(pAttribute->isList()){
-				szCond += "(_" + pAttribute->getName() + "List.size() > 0) && ";
-			}else{
-				szCond += pSimpleType->getVariableName() + ".isNull() && ";
-			}
+		if(pAttribute->getType()){
+			if( pAttribute->getType()->getClassType() == Type::TypeSimple) {
+				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pAttribute->getType());
+				if(pAttribute->isList()){
+					szCond += "(_" + pAttribute->getName() + "List.size() > 0) && ";
+				}else{
+					szCond += pSimpleType->getVariableName() + ".isNull() && ";
+				}
 
-		}else if( pAttribute->getType()->getClassType() == Type::TypeComplex) {
-			ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pAttribute->getType());
-			if(pAttribute->isList()){
-				szCond += "(_" + pAttribute->getName() + "List.size() > 0) && ";
-			}else{
-				QString szVariableName = "_" + pAttribute->getName().left(1).toLower() + pAttribute->getName().mid(1);
-				szCond += szVariableName + ".isNull() && ";
+			}else if( pAttribute->getType()->getClassType() == Type::TypeComplex) {
+				ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pAttribute->getType());
+				if(pAttribute->isList()){
+					szCond += "(_" + pAttribute->getName() + "List.size() > 0) && ";
+				}else{
+					QString szVariableName = "_" + pAttribute->getName().left(1).toLower() + pAttribute->getName().mid(1);
+					szCond += szVariableName + ".isNull() && ";
+				}
 			}
 		}
 	}

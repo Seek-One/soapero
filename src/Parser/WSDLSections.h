@@ -10,12 +10,12 @@
 
 #define TAG_DEFINITIONS "definitions"
 #define TAG_TYPES "types"
-
+#define TAG_MESSAGE "message"
+#define TAG_PORTTYPE "portType"
 #define TAG_PART "part"
+#define TAG_OPERATION "operation"
 #define TAG_INPUT "input"
 #define TAG_OUTPUT "output"
-#define TAG_MESSAGE "message"
-#define TAG_OPERATION "operation"
 
 /////////////////////////////////
 // XML Schema Part 1: Structures
@@ -58,12 +58,11 @@ public:
 		// WSDL
 		Definitions,
 		Types,
-
+		Message,
 		Part,
+		Operation,
 		Input,
 		Output,
-		Message,
-		Operation,
 
 		// XMLSchema Part 1 : Structures
 		Schema,
