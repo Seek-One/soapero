@@ -41,13 +41,17 @@ public:
 	void buildCppFiles();
 
 private:
+	void buildFileDescription(QTextStream& os, const QString& szFilename);
+
 	void buildHeaderFile(const TypeSharedPtr& pType);
 	void buildHeaderFile(const RequestResponseElementSharedPtr& pElement);
 	void buildHeaderFile(const ServiceSharedPtr& pService);
+	void buildHeaderFileDescription(QTextStream& os, const QString& szFilename, const QString& szDefine);
 
 	void buildCppFile(const TypeSharedPtr& pType);
 	void buildCppFile(const RequestResponseElementSharedPtr& pElement);
 	void buildCppFile(const ServiceSharedPtr& pService);
+	void buildCppFileDescription(QTextStream& os, const QString& szFilename);
 
 	void buildHeaderClassType(QTextStream& os, const TypeSharedPtr& pType) const;
 	void buildHeaderClassSimpleType(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const;

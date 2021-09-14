@@ -121,6 +121,16 @@ void TypeListBuilder::buildCppFiles()
 	buildCppFile(m_pService);
 }
 
+void TypeListBuilder::buildFileDescription(QTextStream& os, const QString& szFilename)
+{
+	os << "/*" << CRLF;
+	os << " * " << szFilename << CRLF;
+	os << " * Created on: " << QDateTime::currentDateTime().toString("dd MMM yyyy") << CRLF;
+	//os << " * Created on: 16 oct. 2018" << CRLF;
+	os << " *     Author: " << QCoreApplication::applicationName() << " v" << QCoreApplication::applicationVersion() << CRLF;
+	os << " */" << CRLF;
+}
+
 void TypeListBuilder::buildHeaderFile(const TypeSharedPtr& pType)
 {
 	QString szHeaderFilename = pType->getQualifiedName() + ".h";
@@ -134,15 +144,7 @@ void TypeListBuilder::buildHeaderFile(const TypeSharedPtr& pType)
 		QTextStream os(&file);
 		QString szDefine = (!m_szPrefix.isEmpty() ? m_szPrefix.toUpper() + "_" : "") + pType->getQualifiedName().toUpper() + "_H_";
 
-		os << "/*" << CRLF;
-		os << " * " << szHeaderFilename << CRLF;
-		os << " * Created on: " << QDateTime::currentDateTime().toString("dd MMM yyyy") << CRLF;
-		os << " *     Author: " << QCoreApplication::applicationName() << " v" << QCoreApplication::applicationVersion() << CRLF;
-		os << " */" << CRLF;
-		os << CRLF;
-		os << "#ifndef " << szDefine << CRLF;
-		os << "#define " << szDefine << CRLF;
-		os << CRLF;
+		buildHeaderFileDescription(os, szHeaderFilename, szDefine);
 
 		buildHeaderIncludeType(os, pType);
 
@@ -179,15 +181,7 @@ void TypeListBuilder::buildHeaderFile(const RequestResponseElementSharedPtr& pEl
 		QTextStream os(&file);
 		QString szDefine = (!m_szPrefix.isEmpty() ? m_szPrefix.toUpper() + "_" : "") + pElement->getQualifiedName().toUpper() + "_H_";
 
-		os << "/*" << CRLF;
-		os << " * " << szHeaderFilename << CRLF;
-		os << " * Created on: " << QDateTime::currentDateTime().toString("dd MMM yyyy") << CRLF;
-		os << " *     Author: " << QCoreApplication::applicationName() << " v" << QCoreApplication::applicationVersion() << CRLF;
-		os << " */" << CRLF;
-		os << CRLF;
-		os << "#ifndef " << szDefine << CRLF;
-		os << "#define " << szDefine << CRLF;
-		os << CRLF;
+		buildHeaderFileDescription(os, szHeaderFilename, szDefine);
 
 		buildHeaderIncludeElement(os, pElement);
 
@@ -224,15 +218,7 @@ void TypeListBuilder::buildHeaderFile(const ServiceSharedPtr& pService)
 		QTextStream os(&file);
 		QString szDefine = (!m_szPrefix.isEmpty() ? m_szPrefix.toUpper() + "_" : "") + pService->getName().toUpper() + "_H_";
 
-		os << "/*" << CRLF;
-		os << " * " << szHeaderFilename << ".h" << CRLF;
-		os << " * Created on: " << QDateTime::currentDateTime().toString("dd MMM yyyy") << CRLF;
-		os << " *     Author: " << QCoreApplication::applicationName() << " v" << QCoreApplication::applicationVersion() << CRLF;
-		os << " */" << CRLF;
-		os << CRLF;
-		os << "#ifndef " << szDefine << CRLF;
-		os << "#define " << szDefine << CRLF;
-		os << CRLF;
+		buildHeaderFileDescription(os, szHeaderFilename, szDefine);
 
 		buildHeaderIncludeService(os, m_pService);
 
@@ -254,6 +240,15 @@ void TypeListBuilder::buildHeaderFile(const ServiceSharedPtr& pService)
 	}
 }
 
+void TypeListBuilder::buildHeaderFileDescription(QTextStream& os, const QString& szFilename, const QString& szDefine)
+{
+	buildFileDescription(os, szFilename);
+	os << CRLF;
+	os << "#ifndef " << szDefine << CRLF;
+	os << "#define " << szDefine << CRLF;
+	os << CRLF;
+}
+
 void TypeListBuilder::buildCppFile(const TypeSharedPtr& pType)
 {
 	bool bQStringListIncluded = false;
@@ -268,12 +263,8 @@ void TypeListBuilder::buildCppFile(const TypeSharedPtr& pType)
 
 		QTextStream os(&file);
 
-		os << "/*" << CRLF;
-		os << " * " << szCppFilename << CRLF;
-		os << " * Created on: " << QDateTime::currentDateTime().toString("dd MMM yyyy") << CRLF;
-		os << " *     Author: " << QCoreApplication::applicationName() << " v" << QCoreApplication::applicationVersion() << CRLF;
-		os << " */" << CRLF;
-		os << CRLF;
+		buildCppFileDescription(os, szCppFilename);
+
 		os << "#include \"" << szHeaderFilename << "\"" << CRLF;
 
 		if(pType->getClassType() == Type::TypeComplex){
@@ -404,6 +395,12 @@ void TypeListBuilder::buildCppFile(const ServiceSharedPtr& pService)
 	}else{
 		qWarning("[TypeListBuilder] Cannot open file %s (error: %s)", qPrintable(szCppFilename), qPrintable(file.errorString()));
 	}
+}
+
+void TypeListBuilder::buildCppFileDescription(QTextStream& os, const QString& szFilename)
+{
+	buildFileDescription(os, szFilename);
+	os << CRLF;
 }
 
 void TypeListBuilder::buildHeaderClassType(QTextStream& os, const TypeSharedPtr& pType) const
