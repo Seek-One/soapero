@@ -145,7 +145,7 @@ private:
     QWSDLNamespaceDeclarations m_listNamespaceDeclarations;
     QString m_szCurrentTargetNamespacePrefix;
     QString m_szCurrentTargetNamespaceUri;
-    QString m_szCurrentElementNamespacePrefix;
+    QString m_szCurrentSchemaNamespacePrefix;
 
     bool m_bWaitForSoapEnvelopeFault;
 

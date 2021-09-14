@@ -585,7 +585,7 @@ bool QWSDLParser::readSchema(QXmlStreamReader& xmlReader)
 	bool bRes = true;
 
 	QString szQualifiedName = xmlReader.qualifiedName().toString();
-	m_szCurrentTargetNamespacePrefix = szQualifiedName.split(":")[0];
+	m_szCurrentSchemaNamespacePrefix = szQualifiedName.split(":")[0];
 
 	// Read XMLS namespaces
 	bRes = readXMLNamespaces(xmlReader);
@@ -744,9 +744,9 @@ bool QWSDLParser::readExtension(QXmlStreamReader& xmlReader)
 		if(!pType.isNull()){
 			qSharedPointerCast<ComplexType>(pCurrentType)->setExtensionType(pType);
 		}else{
-			if(szName.startsWith(m_szCurrentElementNamespacePrefix + ":")) {
+			if(szName.startsWith(m_szCurrentSchemaNamespacePrefix + ":")) {
 				SimpleTypeSharedPtr pType = SimpleType::create();
-				pType->setVariableTypeFromString(m_szCurrentElementNamespacePrefix, szName);
+				pType->setVariableTypeFromString(m_szCurrentSchemaNamespacePrefix, szName);
 				qSharedPointerCast<ComplexType>(pCurrentType)->setExtensionType(pType);
 			}else{
 				TypeSharedPtr pType = Type::create();
@@ -797,9 +797,9 @@ bool QWSDLParser::readElement(QXmlStreamReader& xmlReader, Section::Name iParent
 				}else{
 					qWarning("[QWSDLParser] Type %s is not found at this moment, we create it", qPrintable(szValue));
 
-					if(szValue.startsWith(m_szCurrentElementNamespacePrefix + ":")) {
+					if(szValue.startsWith(m_szCurrentSchemaNamespacePrefix + ":")) {
 						SimpleTypeSharedPtr pType = SimpleType::create();
-						pType->setVariableTypeFromString(m_szCurrentElementNamespacePrefix, szValue);
+						pType->setVariableTypeFromString(m_szCurrentSchemaNamespacePrefix, szValue);
 						pType->setName(pElement->getName());
 						pElement->setType(pType);
 					}else{
@@ -882,9 +882,9 @@ bool QWSDLParser::readElement(QXmlStreamReader& xmlReader, Section::Name iParent
 			}else{
 				qWarning("[QWSDLParser] Type %s is not found at this moment, we create it", qPrintable(szValue));
 
-				if(szValue.startsWith(m_szCurrentElementNamespacePrefix + ":")) {
+				if(szValue.startsWith(m_szCurrentSchemaNamespacePrefix + ":")) {
 					SimpleTypeSharedPtr pType = SimpleType::create();
-					pType->setVariableTypeFromString(m_szCurrentElementNamespacePrefix, szValue);
+					pType->setVariableTypeFromString(m_szCurrentSchemaNamespacePrefix, szValue);
 					pType->setName(m_pCurrentElement->getName());
 					m_pCurrentElement->setType(pType);
 				}else{
@@ -1029,10 +1029,10 @@ bool QWSDLParser::readAttribute(QXmlStreamReader& xmlReader, Section::Name iPare
 				}else{
 					qWarning("[QWSDLParser] Type %s is not found at this moment, we create it", qPrintable(szValue));
 
-					if(szValue.startsWith(m_szCurrentElementNamespacePrefix + ":")) {
+					if(szValue.startsWith(m_szCurrentSchemaNamespacePrefix + ":")) {
 						SimpleTypeSharedPtr pType = SimpleType::create();
 						pType->setName(attr->getName());
-						pType->setVariableTypeFromString(m_szCurrentElementNamespacePrefix, szValue);
+						pType->setVariableTypeFromString(m_szCurrentSchemaNamespacePrefix, szValue);
 						attr->setType(pType);
 					}else{
 						TypeSharedPtr pType = Type::create();
@@ -1074,9 +1074,9 @@ bool QWSDLParser::readAttribute(QXmlStreamReader& xmlReader, Section::Name iPare
 			}else{
 				qWarning("[QWSDLParser] Type %s is not found at this moment, we create it", qPrintable(szValue));
 
-				if(szValue.startsWith(m_szCurrentElementNamespacePrefix + ":")) {
+				if(szValue.startsWith(m_szCurrentSchemaNamespacePrefix + ":")) {
 					SimpleTypeSharedPtr pType = SimpleType::create();
-					pType->setVariableTypeFromString(m_szCurrentElementNamespacePrefix, szValue);
+					pType->setVariableTypeFromString(m_szCurrentSchemaNamespacePrefix, szValue);
 					pType->setName(m_pCurrentAttribute->getName());
 					m_pCurrentAttribute->setType(pType);
 				}else{
@@ -1410,8 +1410,8 @@ bool QWSDLParser::readRestriction(QXmlStreamReader& xmlReader, Section::Name iPa
 			if(xmlAttrs.hasAttribute(ATTR_BASE)) {
 				QString szValue = xmlAttrs.value(ATTR_BASE).toString();
 
-				if(szValue.startsWith(m_szCurrentElementNamespacePrefix + ":")) {
-					pSimpleType->setVariableTypeFromString(m_szCurrentElementNamespacePrefix, szValue);
+				if(szValue.startsWith(m_szCurrentSchemaNamespacePrefix + ":")) {
+					pSimpleType->setVariableTypeFromString(m_szCurrentSchemaNamespacePrefix, szValue);
 				}else{
 					pSimpleType->setVariableType(SimpleType::Custom);
 					pSimpleType->setCustomNamespace(szValue.split(":")[0].toUpper());
@@ -1456,7 +1456,7 @@ bool QWSDLParser::readList(QXmlStreamReader& xmlReader, Section::Name iParentSec
 			QString szValue = xmlAttrs.value(ATTR_ITEM_TYPE).toString();
 			if(iParentSection == Section::SimpleType){
 				SimpleTypeSharedPtr pType = SimpleType::create();
-				pType->setVariableTypeFromString(m_szCurrentElementNamespacePrefix, szValue);
+				pType->setVariableTypeFromString(m_szCurrentSchemaNamespacePrefix, szValue);
 				m_pCurrentAttribute->setType(pType);
 				m_pCurrentAttribute->setIsList(true);
 			}
@@ -1487,9 +1487,9 @@ bool QWSDLParser::readList(QXmlStreamReader& xmlReader, Section::Name iParentSec
 			if(!pType.isNull()){
 				pComplexType->setExtensionType(pType, true);
 			}else{
-				if(szValue.startsWith(m_szCurrentElementNamespacePrefix + ":")) {
+				if(szValue.startsWith(m_szCurrentSchemaNamespacePrefix + ":")) {
 					SimpleTypeSharedPtr pType = SimpleType::create();
-					pType->setVariableTypeFromString(m_szCurrentElementNamespacePrefix, szValue);
+					pType->setVariableTypeFromString(m_szCurrentSchemaNamespacePrefix, szValue);
 					pComplexType->setExtensionType(pType, true);
 				}else{
 					TypeSharedPtr pType = Type::create();
@@ -1538,9 +1538,9 @@ bool QWSDLParser::readUnion(QXmlStreamReader& xmlReader, Section::Name iParentSe
 			QString szMemberTypes = xmlAttrs.value(ATTR_MEMBER_TYPES).toString();
 			QStringList szTypes = szMemberTypes.split(" ");
 			for(int i = 0; i < szTypes.size(); ++i){
-				if(szTypes[i].startsWith(m_szCurrentElementNamespacePrefix + ":")){
+				if(szTypes[i].startsWith(m_szCurrentSchemaNamespacePrefix + ":")){
 					SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pCurrentType);
-					pSimpleType->setVariableTypeFromString(m_szCurrentElementNamespacePrefix, szTypes[i]);
+					pSimpleType->setVariableTypeFromString(m_szCurrentSchemaNamespacePrefix, szTypes[i]);
 				}
 			}
 		}
@@ -1961,6 +1961,7 @@ void QWSDLParser::updateTargetNamespacePrefix(const QString& szTargetNamespaceUR
 		if(szNamespaceURI == szTargetNamespaceURI)
 		{
 			m_szCurrentTargetNamespacePrefix = szPrefix;
+			m_szCurrentTargetNamespaceUri = szNamespaceURI;
 			qDebug("[QWSDLParser] Target namespace prefix found in definitions: %s", qPrintable(m_szCurrentTargetNamespacePrefix));
 			break;
 		}
