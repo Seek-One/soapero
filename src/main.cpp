@@ -172,7 +172,7 @@ QStringList getWSDLFileNames(const char* szPathSrc)
 	QStringList listFileNames;
 	QDir directory(szPathSrc);
 	if(directory.exists()){
-		listFileNames = directory.entryList(QStringList() << "*.wsdl" << "*.WSDL", QDir::Files);
+		listFileNames = directory.entryList(QStringList() << "*.wsdl" << "*.WSDL" << "*.xsd" << "*.XSD", QDir::Files);
 	}
 	return listFileNames;
 }
