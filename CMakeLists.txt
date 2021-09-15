@@ -238,6 +238,8 @@ set (APP_SOURCES
     src/Model/SimpleType.cpp
     src/Model/Type.h
     src/Model/Type.cpp
+    src/Model/TypeRef.h
+    src/Model/TypeRef.cpp
 
     src/Parser/QWSDLData.h
     src/Parser/QWSDLData.cpp
