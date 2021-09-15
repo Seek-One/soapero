@@ -54,7 +54,6 @@ TypeListSharedPtr TypeList::create()
 TypeSharedPtr TypeList::getByName(const QString& szLocalName, const QString& szNamespace, const TypeListSharedPtr& pListIgnoredTypes)
 {
 	TypeSharedPtr pCurrentType;
-	TypeSharedPtr pBestType;
 
 	TypeList::const_iterator iter_type;
 	for(iter_type = constBegin(); iter_type != constEnd(); ++iter_type)
@@ -63,18 +62,15 @@ TypeSharedPtr TypeList::getByName(const QString& szLocalName, const QString& szN
 		if(pCurrentType->getLocalName() != szLocalName){
 			continue;
 		}
+		if(pCurrentType->getNamespace() != szNamespace){
+			continue;
+		}
 		if(pListIgnoredTypes->contains(pCurrentType)){
 			continue;
 		}
-		if(!pBestType){
-			pBestType = pCurrentType;
-		}else{
-			if(pCurrentType->getNamespace() == szNamespace){
-				pBestType = pCurrentType;
-			}
-		}
+		return pCurrentType;
 	}
-	return pBestType;
+	return TypeSharedPtr();
 }
 
 void TypeList::print()

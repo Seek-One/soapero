@@ -665,13 +665,6 @@ bool QWSDLParser::readComplexType(QXmlStreamReader& xmlReader, Section::Name iPa
 			TypeSharedPtr pFoundType;
 			QString szName = xmlAttrs.value(ATTR_NAME).toString();
 
-			if(szName == "NetworkCapabilities"){
-				qDebug("break");
-			}
-			if(szName == "DeviceServiceCapabilities"){
-				qDebug("break");
-			}
-
 			pFoundType = getTypeByName(szName, m_szCurrentTargetNamespacePrefix);
 			if(!pFoundType.isNull()) {
 				if(pFoundType->getClassType() == Type::TypeUnknown) {
@@ -864,10 +857,6 @@ bool QWSDLParser::readElement(QXmlStreamReader& xmlReader, Section::Name iParent
 				QString szValue = xmlAttrs.value(ATTR_TYPE).toString();
 				QString szNamespace = szValue.split(":")[0];
 				QString szLocalName = szValue.split(":")[1];
-
-				if(szLocalName == "NetworkCapabilities"){
-					qDebug("break");
-				}
 
 				TypeSharedPtr pType = getTypeByName(szLocalName, szNamespace);
 				if(!pType.isNull()){
@@ -1082,6 +1071,11 @@ bool QWSDLParser::readAttribute(QXmlStreamReader& xmlReader, Section::Name iPare
 
 	TypeSharedPtr pCurrentType = getCurrentType();
 
+	QString szName;
+	if(xmlAttrs.hasAttribute(ATTR_NAME)) {
+		szName = xmlAttrs.value(ATTR_NAME).toString();
+	}
+
 	if((iParentSection == Section::ComplexType) && pCurrentType){
 		QXmlStreamAttributes xmlAttrs = xmlReader.attributes();
 
@@ -1093,8 +1087,8 @@ bool QWSDLParser::readAttribute(QXmlStreamReader& xmlReader, Section::Name iPare
 				attr->setRef(pRefAttr);
 			}
 		}else{
-			if(xmlAttrs.hasAttribute(ATTR_NAME)) {
-				attr->setName(xmlAttrs.value(ATTR_NAME).toString());
+			if(!szName.isEmpty()) {
+				attr->setName(szName);
 			}
 
 			if(xmlAttrs.hasAttribute(ATTR_TYPE)) {
@@ -1138,8 +1132,8 @@ bool QWSDLParser::readAttribute(QXmlStreamReader& xmlReader, Section::Name iPare
 	}else{
 		m_pCurrentAttribute = AttributeSharedPtr::create();
 		m_pCurrentAttribute->setNamespace(m_szCurrentTargetNamespacePrefix);
-		if(xmlAttrs.hasAttribute(ATTR_NAME)){
-			m_pCurrentAttribute->setName(xmlAttrs.value(ATTR_NAME).toString());
+		if(!szName.isEmpty()){
+			m_pCurrentAttribute->setName(szName);
 		}
 
 		if(xmlAttrs.hasAttribute(ATTR_TYPE)) {
