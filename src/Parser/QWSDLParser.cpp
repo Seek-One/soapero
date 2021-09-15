@@ -1267,19 +1267,20 @@ bool QWSDLParser::readInclude(QXmlStreamReader& xmlReader)
 		logParser("starting import: " + szLocation);
 		incrLogIndent();
 
+		if(szNamespaceUri.isEmpty()){
+			szNamespaceUri = m_szCurrentTargetNamespaceUri;
+		}
+
 		QString szRemoteLocation;
 		if(szLocation.startsWith("http://") || szLocation.startsWith("https://")) {
 			// Use URL
 			szRemoteLocation = szLocation;
-		}else if(!m_szCurrentTargetNamespaceUri.isEmpty()){
+		}else if(!szNamespaceUri.isEmpty()){
 			// Build URL from current namespace URI
-			if(m_szCurrentTargetNamespaceUri.startsWith("http://") || m_szCurrentTargetNamespaceUri.startsWith("https://"))
+			if(szNamespaceUri.startsWith("http://") || szNamespaceUri.startsWith("https://"))
 			{
-				szRemoteLocation = m_szCurrentTargetNamespaceUri + (m_szCurrentTargetNamespaceUri.endsWith("/") ? szLocation : ("/" + szLocation));
+				szRemoteLocation = szNamespaceUri + (szNamespaceUri.endsWith("/") ? szLocation : ("/" + szLocation));
 			}
-		}
-		if(szNamespaceUri.isEmpty()){
-			szNamespaceUri = m_szCurrentTargetNamespaceUri;
 		}
 
 		if(!szRemoteLocation.isEmpty()){
