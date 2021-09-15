@@ -705,10 +705,10 @@ bool QWSDLParser::readComplexType(QXmlStreamReader& xmlReader, Section::Name iPa
 		QString szTagName = xmlReader.name().toString();
 		logParser("processing: " + szTagName);
 
-		if (xmlReader.name() == TAG_RESTRICTION) {
-			bRes = readRestriction(xmlReader, Section::ComplexType);
-		}else if (xmlReader.name() == TAG_EXTENSION) {
-			bRes = readExtension(xmlReader);
+		if (xmlReader.name() == TAG_COMPLEX_CONTENT) {
+			bRes = readComplexContent(xmlReader, Section::ComplexType);
+		}else if (xmlReader.name() == TAG_SIMPLE_CONTENT) {
+			bRes = readSimpleContent(xmlReader, Section::ComplexType);
 		}else if(isParticleAndAttrs(szTagName)){
 			bRes = readParticleAndAttrs(xmlReader, szTagName, Section::ComplexType);
 		}else{
@@ -740,8 +740,58 @@ bool QWSDLParser::readComplexType(QXmlStreamReader& xmlReader, Section::Name iPa
 	return bRes;
 }
 
-bool QWSDLParser::readExtension(QXmlStreamReader& xmlReader)
+bool QWSDLParser::readComplexContent(QXmlStreamReader& xmlReader, Section::Name iParentSection)
 {
+	bool bRes = true;
+
+	// Read sub elements
+	incrLogIndent();
+	while (bRes && xmlReader.readNextStartElement())
+	{
+		QString szTagName = xmlReader.name().toString();
+		logParser("processing: " + szTagName);
+
+		if (xmlReader.name() == TAG_RESTRICTION) {
+			bRes = readRestriction(xmlReader, iParentSection);
+		}else if (xmlReader.name() == TAG_EXTENSION) {
+			bRes = readExtension(xmlReader, iParentSection);
+		}else{
+			xmlReader.skipCurrentElement();
+		}
+	}
+	decrLogIndent();
+
+	return bRes;
+}
+
+bool QWSDLParser::readSimpleContent(QXmlStreamReader& xmlReader, Section::Name iParentSection)
+{
+	bool bRes = true;
+
+	// Read sub elements
+	incrLogIndent();
+	while (bRes && xmlReader.readNextStartElement())
+	{
+		QString szTagName = xmlReader.name().toString();
+		logParser("processing: " + szTagName);
+
+		if (xmlReader.name() == TAG_RESTRICTION) {
+			bRes = readRestriction(xmlReader, iParentSection);
+		}else if (xmlReader.name() == TAG_EXTENSION) {
+			bRes = readExtension(xmlReader, iParentSection);
+		}else{
+			xmlReader.skipCurrentElement();
+		}
+	}
+	decrLogIndent();
+
+	return bRes;
+}
+
+bool QWSDLParser::readExtension(QXmlStreamReader& xmlReader, Section::Name iParentSection)
+{
+	bool bRes = true;
+
 	QXmlStreamAttributes xmlAttrs = xmlReader.attributes();
 
 	TypeSharedPtr pCurrentType = getCurrentType();
@@ -768,7 +818,22 @@ bool QWSDLParser::readExtension(QXmlStreamReader& xmlReader)
 		}
 	}
 
-	return true;
+	// Read sub elements
+	incrLogIndent();
+	while (bRes && xmlReader.readNextStartElement())
+	{
+		QString szTagName = xmlReader.name().toString();
+		logParser("processing: " + szTagName);
+
+		if (isParticleAndAttrs(szTagName)) {
+			bRes = readParticleAndAttrs(xmlReader, szTagName, iParentSection);
+		}else{
+			xmlReader.skipCurrentElement();
+		}
+	}
+	decrLogIndent();
+
+	return bRes;
 }
 
 bool QWSDLParser::readElement(QXmlStreamReader& xmlReader, Section::Name iParentSection)
@@ -1803,6 +1868,11 @@ TypeSharedPtr QWSDLParser::getTypeByName(const QString& szLocalName, const QStri
 		pType = m_pListTypes->getByName(szLocalName, szNamespaceTmp, pListIgnoredTypes);
 	}
 	return pType;
+}
+
+TypeRefSharedPtr QWSDLParser::getTypeRefByTypeName(const QString& szTypeName, const QString& szNamespace)
+{
+	return m_pWSDLData->getTypeRefByTypeName(szTypeName, szNamespace);
 }
 
 bool QWSDLParser::loadFromHttp(const QString& szURL, const QString& szNamespaceUri)

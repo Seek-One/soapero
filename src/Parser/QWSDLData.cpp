@@ -43,3 +43,8 @@ const QWSDLNamespaceDeclarations& QWSDLData::getNamespaceDeclarations() const
 {
 	return m_listNamespaceDeclarations;
 }
+
+TypeRefSharedPtr QWSDLData::getTypeRefByTypeName(const QString& szTypeName, const QString& szNamespace)
+{
+	return m_listTypeRef.getByTypeName(szTypeName, szNamespace);
+}

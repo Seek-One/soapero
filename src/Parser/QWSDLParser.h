@@ -69,7 +69,9 @@ private:
 	bool readSchema(QXmlStreamReader& xmlReader);
 
 	bool readComplexType(QXmlStreamReader& xmlReader, Section::Name iParentSection);
-	bool readExtension(QXmlStreamReader& xmlReader);
+	bool readComplexContent(QXmlStreamReader& xmlReader, Section::Name iParentSection);
+	bool readSimpleContent(QXmlStreamReader& xmlReader, Section::Name iParentSection);
+	bool readExtension(QXmlStreamReader& xmlReader, Section::Name iParentSection);
 	bool readElement(QXmlStreamReader& xmlReader, Section::Name iParentSection);
 	bool isGroup(const QString& szTagName) const;
 	bool readGroup(QXmlStreamReader& xmlReader, const QString& szTagName, Section::Name iParentSection);
@@ -117,6 +119,7 @@ private:
 private:
 	ElementSharedPtr getElementByRef(const QString& szRef);
 	TypeSharedPtr getTypeByName(const QString& szLocalName, const QString& szNamespace = QString(), const TypeListSharedPtr& pListIgnoredTypes = TypeList::create());
+	TypeRefSharedPtr getTypeRefByTypeName(const QString& szTypeName, const QString& szNamespace = QString());
 
 	// Remote file loading
 	bool loadFromHttp(const QString& szURL, const QString& szNamespace = QString());

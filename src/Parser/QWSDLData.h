@@ -9,6 +9,8 @@
 #include <QList>
 #include <QMap>
 
+#include "Model/TypeRef.h"
+
 typedef QMap<QString, QString> QWSDLNamespaceDeclarations;
 
 class QWSDLData
@@ -27,10 +29,15 @@ public:
 	QString getNamespaceDeclaration(const QString& szNamespace) const;
 	const QWSDLNamespaceDeclarations& getNamespaceDeclarations() const;
 
+	// Type list
+	TypeRefSharedPtr getTypeRefByTypeName(const QString& szTypeName, const QString& szNamespace = QString());
+
 private:
 	QList<QString> m_listLoadedURI;
 
 	QWSDLNamespaceDeclarations m_listNamespaceDeclarations;
+
+	TypeRefList m_listTypeRef;
 };
 
 

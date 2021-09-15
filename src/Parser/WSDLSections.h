@@ -23,6 +23,8 @@
 
 #define TAG_SCHEMA "schema"
 #define TAG_COMPLEX_TYPE "complexType"
+#define TAG_COMPLEX_CONTENT "complexContent"
+#define TAG_SIMPLE_CONTENT "simpleContent"
 #define TAG_EXTENSION "extension"
 #define TAG_ELEMENT "element"
 #define TAG_GROUP "group"
