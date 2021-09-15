@@ -17,7 +17,9 @@
 #include "Model/Operation.h"
 #include "Model/Service.h"
 #include "Model/Type.h"
-#include "WSDLSections.h"
+
+#include "Parser/WSDLSections.h"
+#include "Parser/QWSDLData.h"
 
 typedef QMap<QString, QString> QWSDLNamespaceDeclarations;
 
@@ -30,7 +32,10 @@ public:
 	void initXMLAttributes();		// https://www.w3.org/2001/xml.xsd
 	void setLogIndent(int iIdent);
 
+	void setWSDLData(const QSharedPointer<QWSDLData>& pDataLoaded);
+
 	void setInitialNamespaceDeclarationList(const QWSDLNamespaceDeclarations& listNamespaceDeclarations);
+	const QWSDLNamespaceDeclarations& getInitialNamespaceDeclarationList() const;
 	void setInitialNamespaceUri(const QString& szNamespaceUri);
 
 	bool parse(QXmlStreamReader& xmlReader);
@@ -140,6 +145,8 @@ private:
     QString m_szCurrentType;
     QString m_szCurrentText;
     QString m_szCurrentOperationName;
+
+    QSharedPointer<QWSDLData> m_pDataLoaded;
 
     // Current namespace
     QWSDLNamespaceDeclarations m_listNamespaceDeclarations;

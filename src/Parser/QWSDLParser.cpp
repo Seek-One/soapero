@@ -23,6 +23,8 @@ QWSDLParser::QWSDLParser()
 {
 	m_bWaitForSoapEnvelopeFault = false;
 
+	m_pDataLoaded = QSharedPointer<QWSDLData>(new QWSDLData());
+
 	m_pService = Service::create();
 	m_pListTypes = TypeList::create();
 	m_pListRequestResponseElements = RequestResponseElementList::create();
@@ -60,9 +62,19 @@ void QWSDLParser::setLogIndent(int iIdent)
 	m_iLogIndent = iIdent;
 }
 
+void QWSDLParser::setWSDLData(const QSharedPointer<QWSDLData>& pDataLoaded)
+{
+	m_pDataLoaded = pDataLoaded;
+}
+
 void QWSDLParser::setInitialNamespaceDeclarationList(const QWSDLNamespaceDeclarations& listNamespaceDeclarations)
 {
 	m_listNamespaceDeclarations = listNamespaceDeclarations;
+}
+
+const QWSDLNamespaceDeclarations& QWSDLParser::getInitialNamespaceDeclarationList() const
+{
+	return m_listNamespaceDeclarations;
 }
 
 void QWSDLParser::setInitialNamespaceUri(const QString& szNamespaceUri)
@@ -663,6 +675,13 @@ bool QWSDLParser::readComplexType(QXmlStreamReader& xmlReader, Section::Name iPa
 			TypeSharedPtr pFoundType;
 			QString szName = xmlAttrs.value(ATTR_NAME).toString();
 
+			if(szName == "NetworkCapabilities"){
+				qDebug("break");
+			}
+			if(szName == "DeviceServiceCapabilities"){
+				qDebug("break");
+			}
+
 			pFoundType = getTypeByName(szName, m_szCurrentTargetNamespacePrefix);
 			if(!pFoundType.isNull()) {
 				if(pFoundType->getClassType() == Type::TypeUnknown) {
@@ -790,6 +809,10 @@ bool QWSDLParser::readElement(QXmlStreamReader& xmlReader, Section::Name iParent
 				QString szValue = xmlAttrs.value(ATTR_TYPE).toString();
 				QString szNamespace = szValue.split(":")[0];
 				QString szLocalName = szValue.split(":")[1];
+
+				if(szLocalName == "NetworkCapabilities"){
+					qDebug("break");
+				}
 
 				TypeSharedPtr pType = getTypeByName(szLocalName, szNamespace);
 				if(!pType.isNull()){
@@ -1205,6 +1228,9 @@ bool QWSDLParser::readInclude(QXmlStreamReader& xmlReader)
 			{
 				szRemoteLocation = m_szCurrentTargetNamespaceUri + (m_szCurrentTargetNamespaceUri.endsWith("/") ? szLocation : ("/" + szLocation));
 			}
+		}
+		if(szNamespaceUri.isEmpty()){
+			szNamespaceUri = m_szCurrentTargetNamespaceUri;
 		}
 
 		if(!szRemoteLocation.isEmpty()){
@@ -1793,6 +1819,11 @@ bool QWSDLParser::loadFromHttp(const QString& szURL, const QString& szNamespaceU
 {
 	bool bRes = false;
 
+	if(m_pDataLoaded->hasLoadedURI(szURL)){
+		logParser("already loaded from http: " + szURL);
+		return true;
+	}
+
 	logParser("loading from http: " + szURL);
 
 	// Download the file
@@ -1822,13 +1853,15 @@ bool QWSDLParser::loadFromHttp(const QString& szURL, const QString& szNamespaceU
 	parser.setInitialNamespaceDeclarationList(m_listNamespaceDeclarations);
 	parser.setInitialNamespaceUri(szNamespaceUri);
 	parser.setLogIndent(m_iLogIndent);
+	parser.setWSDLData(m_pDataLoaded);
 	QXmlStreamReader xmlReader;
 	xmlReader.addData(bytes);
-	//reader.setFeature("http://xml.org/sax/features/namespace-prefixes", true);
-	//reader.setFeature("http://xml.org/sax/features/namespaces", true);
-	if(parser.parse(xmlReader))
+	bRes = parser.parse(xmlReader);
+	if(bRes)
 	{
-		bRes = true;
+		m_pDataLoaded->addLoadedURI(szURL);
+
+		m_listNamespaceDeclarations = parser.getInitialNamespaceDeclarationList();
 
 		TypeListSharedPtr pList = parser.getTypeList();
 		TypeList::const_iterator type;
@@ -1858,6 +1891,11 @@ bool QWSDLParser::loadFromFile(const QString& szFileName, const QString& szNames
 {
 	bool bRes = true;
 
+	if(m_pDataLoaded->hasLoadedURI(szFileName)){
+		logParser("already loaded from file: " + szFileName);
+		return true;
+	}
+
 	logParser("loading from file: " + szFileName);
 
 	QFile file(szFileName);
@@ -1872,14 +1910,16 @@ bool QWSDLParser::loadFromFile(const QString& szFileName, const QString& szNames
 		parser.setInitialNamespaceDeclarationList(m_listNamespaceDeclarations);
 		parser.setInitialNamespaceUri(szNamespaceUri);
 		parser.setLogIndent(m_iLogIndent);
+		parser.setWSDLData(m_pDataLoaded);
 		QXmlStreamReader xmlReader;
 		xmlReader.addData(bytes);
-		//reader.setFeature("http://xml.org/sax/features/namespace-prefixes", true);
-		//reader.setFeature("http://xml.org/sax/features/namespaces", true);
-		xmlReader.setNamespaceProcessing(true);
 		bRes = parser.parse(xmlReader);
 		if(bRes)
 		{
+			m_pDataLoaded->addLoadedURI(szFileName);
+
+			m_listNamespaceDeclarations = parser.getInitialNamespaceDeclarationList();
+
 			TypeListSharedPtr pList = parser.getTypeList();
 			TypeList::const_iterator type;
 			for(type = pList->constBegin(); type != pList->constEnd(); ++type) {

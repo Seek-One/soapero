@@ -239,6 +239,8 @@ set (APP_SOURCES
     src/Model/Type.h
     src/Model/Type.cpp
 
+    src/Parser/QWSDLData.h
+    src/Parser/QWSDLData.cpp
     src/Parser/QWSDLParser.h
     src/Parser/QWSDLParser.cpp
     src/Parser/WSDLAttributes.h
