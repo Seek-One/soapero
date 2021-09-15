@@ -21,8 +21,6 @@
 #include "Parser/WSDLSections.h"
 #include "Parser/QWSDLData.h"
 
-typedef QMap<QString, QString> QWSDLNamespaceDeclarations;
-
 class QWSDLParser
 {
 public:
@@ -34,8 +32,6 @@ public:
 
 	void setWSDLData(const QSharedPointer<QWSDLData>& pDataLoaded);
 
-	void setInitialNamespaceDeclarationList(const QWSDLNamespaceDeclarations& listNamespaceDeclarations);
-	const QWSDLNamespaceDeclarations& getInitialNamespaceDeclarationList() const;
 	void setInitialNamespaceUri(const QString& szNamespaceUri);
 
 	bool parse(QXmlStreamReader& xmlReader);
@@ -146,10 +142,9 @@ private:
     QString m_szCurrentText;
     QString m_szCurrentOperationName;
 
-    QSharedPointer<QWSDLData> m_pDataLoaded;
+    QSharedPointer<QWSDLData> m_pWSDLData;
 
     // Current namespace
-    QWSDLNamespaceDeclarations m_listNamespaceDeclarations;
     QString m_szCurrentTargetNamespacePrefix;
     QString m_szCurrentTargetNamespaceUri;
     QString m_szCurrentSchemaNamespacePrefix;

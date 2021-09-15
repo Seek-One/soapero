@@ -23,7 +23,7 @@ QWSDLParser::QWSDLParser()
 {
 	m_bWaitForSoapEnvelopeFault = false;
 
-	m_pDataLoaded = QSharedPointer<QWSDLData>(new QWSDLData());
+	m_pWSDLData = QSharedPointer<QWSDLData>(new QWSDLData());
 
 	m_pService = Service::create();
 	m_pListTypes = TypeList::create();
@@ -62,19 +62,9 @@ void QWSDLParser::setLogIndent(int iIdent)
 	m_iLogIndent = iIdent;
 }
 
-void QWSDLParser::setWSDLData(const QSharedPointer<QWSDLData>& pDataLoaded)
+void QWSDLParser::setWSDLData(const QSharedPointer<QWSDLData>& pWSDLData)
 {
-	m_pDataLoaded = pDataLoaded;
-}
-
-void QWSDLParser::setInitialNamespaceDeclarationList(const QWSDLNamespaceDeclarations& listNamespaceDeclarations)
-{
-	m_listNamespaceDeclarations = listNamespaceDeclarations;
-}
-
-const QWSDLNamespaceDeclarations& QWSDLParser::getInitialNamespaceDeclarationList() const
-{
-	return m_listNamespaceDeclarations;
+	m_pWSDLData = pWSDLData;
 }
 
 void QWSDLParser::setInitialNamespaceUri(const QString& szNamespaceUri)
@@ -331,7 +321,7 @@ bool QWSDLParser::readXMLNamespaces(QXmlStreamReader& xmlReader)
 		szAttrLocalName = decl.prefix().toString();
 		szAttrValue = decl.namespaceUri().toString();
 
-		m_listNamespaceDeclarations.insert(szAttrLocalName, szAttrValue);
+		m_pWSDLData->addNamespaceDeclaration(szAttrLocalName, szAttrValue);
 	}
 
 	return bRes;
@@ -1797,8 +1787,8 @@ ElementSharedPtr QWSDLParser::getElementByRef(const QString& szRef)
 	if(!pElement){
 		QString szNamespace = szRef.split(":")[0];
 		QString szName = szRef.split(":")[1];
-		if(m_listNamespaceDeclarations.contains(szNamespace)){
-			QString szNamespaceTmp = m_listNamespaceDeclarations.value(szNamespace);
+		if(m_pWSDLData->hasNamespaceDeclaration(szNamespace)){
+			QString szNamespaceTmp = m_pWSDLData->getNamespaceDeclaration(szNamespace);
 			pElement = m_pListElements->getByRef(szNamespaceTmp + ":" + szName);
 		}
 	}
@@ -1808,8 +1798,8 @@ ElementSharedPtr QWSDLParser::getElementByRef(const QString& szRef)
 TypeSharedPtr QWSDLParser::getTypeByName(const QString& szLocalName, const QString& szNamespace, const TypeListSharedPtr& pListIgnoredTypes)
 {
 	TypeSharedPtr pType = m_pListTypes->getByName(szLocalName, szNamespace, pListIgnoredTypes);
-	if(!pType && m_listNamespaceDeclarations.contains(szNamespace)){
-		QString szNamespaceTmp = m_listNamespaceDeclarations.value(szNamespace);
+	if(!pType && m_pWSDLData->hasNamespaceDeclaration(szNamespace)){
+		QString szNamespaceTmp = m_pWSDLData->getNamespaceDeclaration(szNamespace);
 		pType = m_pListTypes->getByName(szLocalName, szNamespaceTmp, pListIgnoredTypes);
 	}
 	return pType;
@@ -1819,7 +1809,7 @@ bool QWSDLParser::loadFromHttp(const QString& szURL, const QString& szNamespaceU
 {
 	bool bRes = false;
 
-	if(m_pDataLoaded->hasLoadedURI(szURL)){
+	if(m_pWSDLData->hasLoadedURI(szURL)){
 		logParser("already loaded from http: " + szURL);
 		return true;
 	}
@@ -1850,18 +1840,15 @@ bool QWSDLParser::loadFromHttp(const QString& szURL, const QString& szNamespaceU
 
 	// Parse WSDL
 	QWSDLParser parser;
-	parser.setInitialNamespaceDeclarationList(m_listNamespaceDeclarations);
 	parser.setInitialNamespaceUri(szNamespaceUri);
 	parser.setLogIndent(m_iLogIndent);
-	parser.setWSDLData(m_pDataLoaded);
+	parser.setWSDLData(m_pWSDLData);
 	QXmlStreamReader xmlReader;
 	xmlReader.addData(bytes);
 	bRes = parser.parse(xmlReader);
 	if(bRes)
 	{
-		m_pDataLoaded->addLoadedURI(szURL);
-
-		m_listNamespaceDeclarations = parser.getInitialNamespaceDeclarationList();
+		m_pWSDLData->addLoadedURI(szURL);
 
 		TypeListSharedPtr pList = parser.getTypeList();
 		TypeList::const_iterator type;
@@ -1891,7 +1878,7 @@ bool QWSDLParser::loadFromFile(const QString& szFileName, const QString& szNames
 {
 	bool bRes = true;
 
-	if(m_pDataLoaded->hasLoadedURI(szFileName)){
+	if(m_pWSDLData->hasLoadedURI(szFileName)){
 		logParser("already loaded from file: " + szFileName);
 		return true;
 	}
@@ -1907,18 +1894,15 @@ bool QWSDLParser::loadFromFile(const QString& szFileName, const QString& szNames
 
 		// Parse WSDL
 		QWSDLParser parser;
-		parser.setInitialNamespaceDeclarationList(m_listNamespaceDeclarations);
 		parser.setInitialNamespaceUri(szNamespaceUri);
 		parser.setLogIndent(m_iLogIndent);
-		parser.setWSDLData(m_pDataLoaded);
+		parser.setWSDLData(m_pWSDLData);
 		QXmlStreamReader xmlReader;
 		xmlReader.addData(bytes);
 		bRes = parser.parse(xmlReader);
 		if(bRes)
 		{
-			m_pDataLoaded->addLoadedURI(szFileName);
-
-			m_listNamespaceDeclarations = parser.getInitialNamespaceDeclarationList();
+			m_pWSDLData->addLoadedURI(szFileName);
 
 			TypeListSharedPtr pList = parser.getTypeList();
 			TypeList::const_iterator type;
@@ -1992,9 +1976,11 @@ void QWSDLParser::popCurrentTargetNamespace()
 
 void QWSDLParser::updateTargetNamespacePrefix(const QString& szTargetNamespaceURI)
 {
+	const QWSDLNamespaceDeclarations& listNamespaceDeclarations = m_pWSDLData->getNamespaceDeclarations();
+
 	QMap<QString, QString>::const_iterator iter;
-	iter = m_listNamespaceDeclarations.constBegin();
-	while(iter != m_listNamespaceDeclarations.constEnd())
+	iter = listNamespaceDeclarations.constBegin();
+	while(iter != listNamespaceDeclarations.constEnd())
 	{
 		const QString& szPrefix = iter.key();
 		const QString& szNamespaceURI = iter.value();
