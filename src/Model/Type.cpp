@@ -77,6 +77,19 @@ TypeSharedPtr TypeList::getByName(const QString& szLocalName, const QString& szN
 	return pBestType;
 }
 
+void TypeList::print()
+{
+	TypeSharedPtr pCurrentType;
+
+	qDebug("type count: %d", count());
+	TypeList::const_iterator iter_type;
+	for(iter_type = constBegin(); iter_type != constEnd(); ++iter_type)
+	{
+		pCurrentType = (*iter_type);
+		qDebug("  type: (%d) %s %s", pCurrentType->getClassType(), qPrintable(pCurrentType->getLocalName()), qPrintable(pCurrentType->getNamespace()));
+	}
+}
+
 void TypeList::add(const TypeListSharedPtr& pList)
 {
 	const_iterator type;

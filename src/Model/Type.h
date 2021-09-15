@@ -71,6 +71,8 @@ public:
 	void add(const TypeSharedPtr& pType);
 
 	TypeSharedPtr getByName(const QString& szLocalName, const QString& szNamespace, const TypeListSharedPtr& pListIgnoredTypes);
+
+	void print();
 };
 
 #endif /* TYPE_H_ */
