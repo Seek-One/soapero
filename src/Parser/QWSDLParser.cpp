@@ -1425,6 +1425,8 @@ bool QWSDLParser::readSimpleType(QXmlStreamReader& xmlReader, Section::Name iPar
 		pushCurrentType(pSimpleType);
 	}
 
+	bool bList = false;
+
 	// Read sub elements
 	incrLogIndent();
 	while (bRes && xmlReader.readNextStartElement())
@@ -1435,7 +1437,8 @@ bool QWSDLParser::readSimpleType(QXmlStreamReader& xmlReader, Section::Name iPar
 		if (xmlReader.name() == TAG_RESTRICTION) {
 			bRes = readRestriction(xmlReader, Section::SimpleType);
 		}else if (xmlReader.name() == TAG_LIST) {
-			bRes = readList(xmlReader, Section::SimpleType);
+			bList = true;
+			bRes = readList(xmlReader, (szName.isNull() ? iParentSection : Section::SimpleType));
 		}else if (xmlReader.name() == TAG_UNION) {
 			bRes = readUnion(xmlReader, Section::SimpleType);
 		}else{
@@ -1445,9 +1448,12 @@ bool QWSDLParser::readSimpleType(QXmlStreamReader& xmlReader, Section::Name iPar
 	decrLogIndent();
 
 	// End of element
-	if(pSimpleType && (pSimpleType->getClassType() == Type::TypeSimple))
+	if(pSimpleType)
 	{
-		m_pListTypes->add(qSharedPointerCast<Type>(pSimpleType));
+		// This is replaced with a complex type if type is list
+		if(!bList){
+			m_pListTypes->add(qSharedPointerCast<Type>(pSimpleType));
+		}
 
 		if(m_pCurrentAttribute){
 			m_pCurrentAttribute->setType(pSimpleType);
@@ -1530,12 +1536,10 @@ bool QWSDLParser::readList(QXmlStreamReader& xmlReader, Section::Name iParentSec
 	{
 		if(xmlAttrs.hasAttribute(ATTR_ITEM_TYPE)){
 			QString szValue = xmlAttrs.value(ATTR_ITEM_TYPE).toString();
-			if(iParentSection == Section::SimpleType){
-				SimpleTypeSharedPtr pType = SimpleType::create();
-				pType->setVariableTypeFromString(m_szCurrentSchemaNamespacePrefix, szValue);
-				m_pCurrentAttribute->setType(pType);
-				m_pCurrentAttribute->setIsList(true);
-			}
+			SimpleTypeSharedPtr pType = SimpleType::create();
+			pType->setVariableTypeFromString(m_szCurrentSchemaNamespacePrefix, szValue);
+			m_pCurrentAttribute->setType(pType);
+			m_pCurrentAttribute->setIsList(true);
 		}
 	}else if((iParentSection == Section::SimpleType) && pCurrentType)
 	{
