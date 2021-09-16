@@ -15,8 +15,6 @@
 #include <QFile>
 #include <QDir>
 #include <QBuffer>
-#include <QXmlInputSource>
-#include <QXmlSimpleReader>
 #include <QCoreApplication>
 
 #include "Builder/FileBuilder.h"
