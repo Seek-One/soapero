@@ -444,9 +444,12 @@ void TypeListBuilder::buildCppFileDescription(QTextStream& os, const QString& sz
 void TypeListBuilder::buildHeaderClassType(QTextStream& os, const TypeSharedPtr& pType) const
 {
 	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pType->getLocalName(true);
+	QString szNamespace = StringUtils::secureString(pType->getNamespace().toUpper());
 
-	os << "namespace " << StringUtils::secureString(pType->getNamespace().toUpper()) << " {" << CRLF;
-	os << CRLF;
+	if(!szNamespace.isEmpty()){
+		os << "namespace " << szNamespace << " {" << CRLF;
+		os << CRLF;
+	}
 
 	if(pType->getClassType() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pType);
@@ -517,7 +520,9 @@ void TypeListBuilder::buildHeaderClassType(QTextStream& os, const TypeSharedPtr&
 		os << CRLF;
 	}
 
-	os << "}" << CRLF;
+	if(!szNamespace.isEmpty()){
+		os << "}" << CRLF;
+	}
 }
 
 void TypeListBuilder::buildHeaderClassSimpleType(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const
@@ -625,9 +630,12 @@ void TypeListBuilder::buildHeaderClassElement(QTextStream& os, const RequestResp
 {
 	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pElement->getLocalName(true);
 	ComplexTypeSharedPtr pComplexType = pElement->getComplexType();
+	QString szNamespace = StringUtils::secureString(pElement->getNamespace().toUpper());
 
-	os << "namespace " << StringUtils::secureString(pElement->getNamespace().toUpper()) << " {" << CRLF;
-	os << CRLF;
+	if(!szNamespace.isEmpty()){
+		os << "namespace " << szNamespace << " {" << CRLF;
+		os << CRLF;
+	}
 
 	if(!pComplexType.isNull()) {
 		os << "class " << szClassname << CRLF;
@@ -643,7 +651,9 @@ void TypeListBuilder::buildHeaderClassElement(QTextStream& os, const RequestResp
 		os << CRLF;
 	}
 
-	os << "}" << CRLF;
+	if(!szNamespace.isEmpty()){
+		os << "}" << CRLF;
+	}
 }
 
 void TypeListBuilder::buildHeaderClassService(QTextStream& os, const ServiceSharedPtr& pService) const
@@ -919,9 +929,12 @@ void TypeListBuilder::buildHeaderIncludeService(QTextStream& os, const ServiceSh
 void TypeListBuilder::buildCppClassType(QTextStream& os, const TypeSharedPtr& pType) const
 {
 	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pType->getLocalName(true);
+	QString szNamespace = StringUtils::secureString(pType->getNamespace().toUpper());
 
-	os << "namespace " << StringUtils::secureString(pType->getNamespace().toUpper()) << " {" << CRLF;
-	os << CRLF;
+	if(!szNamespace.isEmpty()){
+		os << "namespace " << szNamespace << " {" << CRLF;
+		os << CRLF;
+	}
 
 	if(pType->getClassType() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pType);
@@ -1002,8 +1015,10 @@ void TypeListBuilder::buildCppClassType(QTextStream& os, const TypeSharedPtr& pT
 		os << CRLF;
 	}
 
-	os << "}" << CRLF;
-	os << CRLF;
+	if(!szNamespace.isEmpty()){
+		os << "}" << CRLF;
+		os << CRLF;
+	}
 }
 
 void TypeListBuilder::buildCppClassSimpleType(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const
@@ -1082,9 +1097,12 @@ void TypeListBuilder::buildCppClassElement(QTextStream& os, const RequestRespons
 	ComplexTypeSharedPtr pComplexType = pElement->getComplexType();
 	pComplexType->setLocalName(pElement->getLocalName());
 	pComplexType->setNamespace(pElement->getNamespace());
+	QString szNamespace = StringUtils::secureString(pElement->getNamespace().toUpper());
 
-	os << "namespace " << StringUtils::secureString(pElement->getNamespace().toUpper()) << " {" << CRLF;
-	os << CRLF;
+	if(!szNamespace.isEmpty()){
+		os << "namespace " << szNamespace << " {" << CRLF;
+		os << CRLF;
+	}
 
 	if(!pComplexType.isNull()) {
 		os << szClassname << "::" << szClassname << "() {}" << CRLF;
@@ -1096,8 +1114,10 @@ void TypeListBuilder::buildCppClassElement(QTextStream& os, const RequestRespons
 		os << CRLF;
 	}
 
-	os << "}" << CRLF;
-	os << CRLF;
+	if(!szNamespace.isEmpty()){
+		os << "}" << CRLF;
+		os << CRLF;
+	}
 }
 
 void TypeListBuilder::buildCppClassService(QTextStream& os, const ServiceSharedPtr& pService) const

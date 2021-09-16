@@ -43,7 +43,7 @@ int main(int argc, char **argv)
 
 	QString szOutputMode = "Default";
 	QString szNamespace;
-	QString szCPPSourcesPath = "./src";
+	QString szResourcePath = "./resources";
 
 	// Parse extra args
 	for(int i=3; i<argc; i++)
@@ -55,8 +55,8 @@ int main(int argc, char **argv)
 		if(szArg.startsWith("--namespace=")){
 			szNamespace = szArg.mid(12);
 		}
-		if(szArg.startsWith("--cpp-sources-dir=")){
-			szCPPSourcesPath = szArg.mid(18);
+		if(szArg.startsWith("--resources-dir=")){
+			szResourcePath = szArg.mid(16);
 		}
 	}
 
@@ -68,7 +68,7 @@ int main(int argc, char **argv)
 		printf("Usage: ./jet1oeil-soapero SRC_DIR DST_DIR\r\n");
 		printf("       --namespace=[NAMESPACE]: Global namespace to use for generated class (Mandatory)\r\n");
 		printf("       --output-mode=[OUTPUT_MODE]: \"Default\" or \"CMakeLists\"\r\n");
-		printf("       --cpp-sources-dir=[DIR]: Path where to find cpp sources files. Used to copy somes files in output directory. (Default: ./src)\r\n");
+		printf("       --resources-dir=[DIR]: Path where to find resources files. Used to copy some files in output directory. (Default: ./resources)\r\n");
 		return -1;
 	}
 
@@ -144,12 +144,12 @@ int main(int argc, char **argv)
 
 			// Add class for base type
 			if(bGoOn){
-				QString szCPPBasePath = QDir(szCPPSourcesPath).filePath("Base");
-				QDir dir(szCPPBasePath);
+				QString szResourcesBasePath = QDir(szResourcePath).filePath("Base");
+				QDir dir(szResourcesBasePath);
 				if(dir.exists()){
 					foreach (QString f, dir.entryList(QDir::Files))
 					{
-						QString szSrcPath = QDir(szCPPBasePath).filePath(f);
+						QString szSrcPath = QDir(szResourcesBasePath).filePath(f);
 						QString szDstPath = TypeListBuilder::buildPath(szOutputDirectory, "xs", "types", f);
 						QFile::remove(szDstPath);
 
@@ -161,18 +161,18 @@ int main(int argc, char **argv)
 						pListGeneratedFiles->append(QString("types") + QDir::separator() + f);
 					}
 				}else{
-					qDebug("[Main] Base files directory not found %s", qPrintable(szCPPBasePath));
+					qDebug("[Main] Base files directory not found %s", qPrintable(szResourcesBasePath));
 				}
 			}
 
 			if(bGoOn){
-				QString szCPPServicePath = QDir(szCPPSourcesPath).filePath("Service");
-				QDir dir = QDir(szCPPServicePath);
+				QString szResourcesServicePath = QDir(szResourcePath).filePath("Service");
+				QDir dir = QDir(szResourcesServicePath);
 				if(dir.exists()){
 					// Copy services files
 					foreach (QString f, dir.entryList(QDir::Files))
 					{
-						QString szSrcPath = QDir(szCPPServicePath).filePath(f);
+						QString szSrcPath = QDir(szResourcesServicePath).filePath(f);
 						QString szDstPath = QDir(szOutputDirectory).filePath(f);
 
 						// Remove old file
@@ -213,7 +213,7 @@ int main(int argc, char **argv)
 						pListGeneratedFiles->append(f);
 					}
 				}else{
-					qDebug("[Main] Service files directory not found %s", qPrintable(szCPPServicePath));
+					qDebug("[Main] Service files directory not found %s", qPrintable(szResourcesServicePath));
 				}
 			}else{
 				qWarning("[Main] Failed to create directory '%s'", szOutputDirectory);

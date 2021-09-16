@@ -55,8 +55,9 @@ Run:
     ./soapero SRC_DIR DST_DIR --namespace=MYNAMESPACE
 
 Options:
+
 	--namespace=[NAMESPACE]: Global namespace to use for generated class (Mandatory)
-	--output-mode=[OUTPUT_MODE]: \"Default\" or \"CMakeLists\"
-	--cpp-sources-dir=[DIR]: Path where to find cpp sources files. Used to copy somes files in output directory. (Default: ./src)
+	--output-mode=[OUTPUT_MODE]: "Default" or "CMakeLists"
+	--resources-dir=[DIR]: Path where to find resources files. Used to copy some files in output directory. (Default: ./resources)
 
 

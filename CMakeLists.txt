@@ -180,42 +180,45 @@ set (APP_SOURCES
 #    generated/doorcontrol.cpp
 #    generated/doorcontrol.h
 
-	src/Base/XSAnySimpleType.cpp
-	src/Base/XSAnySimpleType.h
-	src/Base/XSAnyType.cpp
-	src/Base/XSAnyType.h
-	src/Base/XSAnyURI.cpp
-	src/Base/XSAnyURI.h
-	src/Base/XSBase64Binary.cpp
-	src/Base/XSBase64Binary.h
-    src/Base/XSBoolean.cpp
-    src/Base/XSBoolean.h
-    src/Base/XSDateTime.cpp
-    src/Base/XSDateTime.h
-    src/Base/XSDouble.cpp
-    src/Base/XSDouble.h
-    src/Base/XSDuration.cpp
-    src/Base/XSDuration.h
-    src/Base/XSFloat.cpp
-    src/Base/XSFloat.h
-    src/Base/XSHexBinary.cpp
-    src/Base/XSHexBinary.h
-    src/Base/XSInteger.cpp
-    src/Base/XSInteger.h
-    src/Base/XSNCName.cpp
-    src/Base/XSNCName.h
-    src/Base/XSNonNegativeInteger.cpp
-    src/Base/XSNonNegativeInteger.h
-    src/Base/XSQName.cpp
-    src/Base/XSQName.h
-    src/Base/XSString.cpp
-    src/Base/XSString.h
-    src/Base/XSToken.cpp
-    src/Base/XSToken.h
-    src/Base/XSUnsignedInteger.cpp
-    src/Base/XSUnsignedInteger.h
-    src/Base/XSUnsignedLong.cpp
-    src/Base/XSUnsignedLong.h
+    resources/Base/XSAnySimpleType.cpp
+    resources/Base/XSAnySimpleType.h
+    resources/Base/XSAnyType.cpp
+    resources/Base/XSAnyType.h
+    resources/Base/XSAnyURI.cpp
+    resources/Base/XSAnyURI.h
+    resources/Base/XSBase64Binary.cpp
+    resources/Base/XSBase64Binary.h
+    resources/Base/XSBoolean.cpp
+    resources/Base/XSBoolean.h
+    resources/Base/XSDateTime.cpp
+    resources/Base/XSDateTime.h
+    resources/Base/XSDouble.cpp
+    resources/Base/XSDouble.h
+    resources/Base/XSDuration.cpp
+    resources/Base/XSDuration.h
+    resources/Base/XSFloat.cpp
+    resources/Base/XSFloat.h
+    resources/Base/XSHexBinary.cpp
+    resources/Base/XSHexBinary.h
+    resources/Base/XSInteger.cpp
+    resources/Base/XSInteger.h
+    resources/Base/XSNCName.cpp
+    resources/Base/XSNCName.h
+    resources/Base/XSNonNegativeInteger.cpp
+    resources/Base/XSNonNegativeInteger.h
+    resources/Base/XSQName.cpp
+    resources/Base/XSQName.h
+    resources/Base/XSString.cpp
+    resources/Base/XSString.h
+    resources/Base/XSToken.cpp
+    resources/Base/XSToken.h
+    resources/Base/XSUnsignedInteger.cpp
+    resources/Base/XSUnsignedInteger.h
+    resources/Base/XSUnsignedLong.cpp
+    resources/Base/XSUnsignedLong.h
+
+    resources/Service/Service.h
+    resources/Service/Service.cpp
 
     src/Builder/FileBuilder.cpp
     src/Builder/FileBuilder.h
@@ -247,9 +250,6 @@ set (APP_SOURCES
     src/Parser/QWSDLParser.cpp
     src/Parser/WSDLAttributes.h
     src/Parser/WSDLSections.h
-
-    src/Service/Service.h
-    src/Service/Service.cpp
     
     src/Utils/StringUtils.h
     src/Utils/UniqueStringList.cpp
