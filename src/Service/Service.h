@@ -15,7 +15,7 @@
 
 #include <QNetworkRequest>
 
-namespace ONVIF {
+namespace SOAPERO {
 
 class IQueryExecutorResponse
 {

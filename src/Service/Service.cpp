@@ -21,7 +21,7 @@
 
 #include "Service.h"
 
-namespace ONVIF {
+namespace SOAPERO {
 
 IQueryExecutor::IQueryExecutor(){}
 IQueryExecutor::~IQueryExecutor(){}
@@ -106,7 +106,6 @@ Service::~Service()
 void Service::setBaseUrl(const QUrl& url)
 {
 	m_url = url;
-	m_url.setPath("/onvif/device_service");
 }
 
 void Service::setCompleteUrl(const QUrl& url)
