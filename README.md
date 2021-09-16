@@ -39,7 +39,7 @@ Install dependencies:
 ```
   * in fedora OS : 
 ```
-    dnf install cmake ImageMagick gcc-c++ qt5-devel
+    dnf install cmake gcc-c++ qt5-devel
 ```
 Get the code:
 
@@ -52,4 +52,11 @@ Compile:
 
 Run:
 
-    ./soapero SRC_DIR DST_DIR [FILE_TYPE] (where FILE_TYPE is "Default" or "CMakeLists")
+    ./soapero SRC_DIR DST_DIR --namespace=MYNAMESPACE
+
+Options:
+	--namespace=[NAMESPACE]: Global namespace to use for generated class (Mandatory)
+	--output-mode=[OUTPUT_MODE]: \"Default\" or \"CMakeLists\"
+	--cpp-sources-dir=[DIR]: Path where to find cpp sources files. Used to copy somes files in output directory. (Default: ./src)
+
+
