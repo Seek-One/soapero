@@ -40,6 +40,9 @@ public:
 	void buildHeaderFiles();
 	void buildCppFiles();
 
+	static QString buildPath(const QString& szBaseDirectory, const QString& szFileNamespace, const QString& szFileCategory, const QString& szFileName);
+	static bool createDirectoryForFile(const QString& szFilePath);
+
 private:
 	void buildFileDescription(QTextStream& os, const QString& szFilename);
 
