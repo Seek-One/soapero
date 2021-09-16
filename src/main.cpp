@@ -35,8 +35,35 @@ int main(int argc, char **argv)
 
 	QCoreApplication a(argc, argv);
 
-	if((argc < 3) || (argc > 4)){
-		printf("Usage: ./jet1oeil-soapero SRC_DIR DST_DIR [FILE_TYPE] (where FILE_TYPE is \"Default\" or \"CMakeLists\")");
+	bool bShowHelp = false;
+
+	if(argc < 2){
+		bShowHelp = true;
+	}
+
+	QString szOutputMode = "Default";
+	QString szNamespace;
+
+	// Parse extra args
+	for(int i=3; i<argc; i++)
+	{
+		QString szArg = argv[i];
+		if(szArg.startsWith("--output-mode=")){
+			szOutputMode = szArg.mid(14);
+		}
+		if(szArg.startsWith("--namespace=")){
+			szNamespace = szArg.mid(12);
+		}
+	}
+
+	if(szNamespace.isEmpty()){
+		bShowHelp = true;
+	}
+
+	if(bShowHelp){
+		printf("Usage: ./jet1oeil-soapero SRC_DIR DST_DIR\r\n");
+		printf("       --output-mode=[OUTPUT_MODE]: \"Default\" or \"CMakeLists\"\r\n");
+		printf("       --namespace=[NAMESPACE]: Global namespace to use for generated class (Mandatory)\r\n");
 		return -1;
 	}
 
@@ -101,7 +128,7 @@ int main(int argc, char **argv)
 			// Build file for service
 			if(bGoOn){
 				TypeListBuilder builder(parser.getService(), parser.getTypeList(), parser.getRequestResponseElementList(), pListGeneratedFiles);
-				builder.setNamespace("ONVIF");
+				builder.setNamespace(szNamespace);
 				builder.setFilename("actionservice");
 				builder.setDirname(szOutputDirectory);
 				builder.buildHeaderFiles();
@@ -116,7 +143,7 @@ int main(int argc, char **argv)
 				if(dir.exists()){
 					foreach (QString f, dir.entryList(QDir::Files)) {
 						QString srcPath = QString("./src/Base") + QDir::separator() + f;
-						QString dstPath = QString(argv[2]) + QDir::separator() + "types" + QDir::separator() + f;
+						QString dstPath = QString(szOutputDirectory) + QDir::separator() + "types" + QDir::separator() + f;
 						QFile::remove(dstPath);
 						QFile::copy(srcPath, dstPath);
 
@@ -132,7 +159,7 @@ int main(int argc, char **argv)
 				if(dir.exists()){
 					foreach (QString f, dir.entryList(QDir::Files)) {
 						QString srcPath = QString("./src/Service") + QDir::separator() + f;
-						QString dstPath = QString(argv[2]) + QDir::separator() + f;
+						QString dstPath = QString(szOutputDirectory) + QDir::separator() + f;
 						QFile::remove(dstPath);
 						QFile::copy(srcPath, dstPath);
 
@@ -151,12 +178,10 @@ int main(int argc, char **argv)
 
 	if(bFileGenerated){
 		FileBuilder::FileType fileType = FileBuilder::Default;
-		if(argc == 4){
-			if(strcmp(argv[3], "CMakeLists") == 0){
-				fileType = FileBuilder::CMakeLists;
-			}
+		if(szOutputMode == "CMakeLists"){
+			fileType = FileBuilder::CMakeLists;
 		}
-		FileBuilder* pFileBuilder = FileBuilder::createFileBuilderFromType(fileType, "onvif", argv[2], pListGeneratedFiles);
+		FileBuilder* pFileBuilder = FileBuilder::createFileBuilderFromType(fileType, szNamespace, szOutputDirectory, pListGeneratedFiles);
 		if(pFileBuilder){
 			pFileBuilder->generateFile();
 		}
