@@ -321,12 +321,8 @@ void TypeListBuilder::buildCppFile(const RequestResponseElementSharedPtr& pEleme
 
 		QTextStream os(&file);
 
-		os << "/*" << CRLF;
-		os << " * " << szCppFilename << CRLF;
-		os << " * Created on: " << QDateTime::currentDateTime().toString("dd MMM yyyy") << CRLF;
-		os << " *     Author: " << QCoreApplication::applicationName() << " v" << QCoreApplication::applicationVersion() << CRLF;
-		os << " */" << CRLF;
-		os << CRLF;
+		buildCppFileDescription(os, szCppFilename);
+
 		os << "#include \"" << szHeaderFilename << "\"" << CRLF;
 		os << CRLF;
 
@@ -359,12 +355,8 @@ void TypeListBuilder::buildCppFile(const ServiceSharedPtr& pService)
 
 		QTextStream os(&file);
 
-		os << "/*" << CRLF;
-		os << " * " << szCppFilename << CRLF;
-		os << " * Created on: " << QDateTime::currentDateTime().toString("dd MMM yyyy") << CRLF;
-		os << " *     Author: " << QCoreApplication::applicationName() << " v" << QCoreApplication::applicationVersion() << CRLF;
-		os << " */" << CRLF;
-		os << CRLF;
+		buildCppFileDescription(os, szCppFilename);
+
 		os << "#include <QUrl>" << CRLF;
 		os << "#include <QEventLoop>" << CRLF;
 		os << "#include <QDomElement>" << CRLF;
