@@ -18,3 +18,5 @@ README
 build
 data/theme/icons
 core
+.idea
+cmake-build-*
