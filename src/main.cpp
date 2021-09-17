@@ -150,21 +150,19 @@ int main(int argc, char **argv)
 					foreach (QString f, dir.entryList(QDir::Files))
 					{
 						QString szSrcPath = QDir(szResourcesBasePath).filePath(f);
-						QString szDstPath = FileHelper::buildPath(szOutputDirectory, "xs", "types", f);
+						QString szDstFullPath = FileHelper::buildPath(szOutputDirectory, "xs", "types", f);
+						QString szDstShortPath = FileHelper::buildPath(QString(), "xs", "types", f);
 
 						// Remove the path
-						QFile::remove(szDstPath);
+						QFile::remove(szDstFullPath);
 
 						// Create directory for file
-						FileHelper::createDirectoryForFile(szDstPath);
+						FileHelper::createDirectoryForFile(szDstFullPath);
 
 						// Copy the path
-						QFile::copy(szSrcPath, szDstPath);
+						QFile::copy(szSrcPath, szDstFullPath);
 
-						QString szInternalPath;
-						szInternalPath = szDstPath.mid(szOutputDirectory.length());
-
-						pListGeneratedFiles->append(szInternalPath);
+						pListGeneratedFiles->append(szDstShortPath);
 					}
 				}else{
 					qDebug("[Main] Base files directory not found %s", qPrintable(szResourcesBasePath));

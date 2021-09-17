@@ -36,7 +36,11 @@ bool FileHelper::isFileMessage(const QString& szFilePath)
 
 QString FileHelper::buildPath(const QString& szBaseDirectory, const QString& szFileNamespace, const QString& szFileCategory, const QString& szFileName)
 {
-	QDir dir(szBaseDirectory);
+	QDir dir;
+
+	if(!szBaseDirectory.isEmpty()){
+		dir.setPath(szBaseDirectory);
+	}
 
 #ifdef WITH_DIR_CREATION
 	if(!szFileNamespace.isEmpty()){

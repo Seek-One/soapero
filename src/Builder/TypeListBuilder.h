@@ -37,6 +37,10 @@ public:
 	void setDirname(const QString& szDirname);
 	QString getDirname() const;
 
+	static QString getHeaderPath(const QString& szNamespace, const QString& szCategory, const QString& szFilename);
+	static QString getTypeHeaderPath(const TypeSharedPtr& pType, const QString& szOrigin);
+	static QString getSimpleTypeHeaderPath(const SimpleTypeSharedPtr& pSimpleType, const QString& szOrigin);
+
 	void buildHeaderFiles();
 	void buildCppFiles();
 
