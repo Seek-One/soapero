@@ -19,6 +19,8 @@
 
 #include "Builder/FileBuilder.h"
 #include "Builder/TypeListBuilder.h"
+#include "Builder/FileHelper.h"
+
 #include "Parser/QWSDLParser.h"
 #include "Utils/UniqueStringList.h"
 
@@ -75,7 +77,7 @@ int main(int argc, char **argv)
 	const char* szWSDLFilesDirectory = argv[1];
 	QDir dirWDSLFiles(szWSDLFilesDirectory);
 
-	const char* szOutputDirectory = argv[2];
+	QString szOutputDirectory = argv[2];
 
 	bool bFileGenerated = false;
 
@@ -114,8 +116,6 @@ int main(int argc, char **argv)
 			if(bGoOn){
 				QXmlStreamReader xmlReader;
 				xmlReader.addData(bytes);
-				//reader.setFeature("http://xml.org/sax/features/namespace-prefixes", true);
-				//reader.setFeature("http://xml.org/sax/features/namespaces", true);
 				bGoOn = parser.parse(xmlReader);
 				if(!bGoOn){
 					qWarning("[Main] Error to parse data (error: %s)", qPrintable(xmlReader.errorString()));
@@ -125,7 +125,7 @@ int main(int argc, char **argv)
 			// Create directory output if not existing
 			if(bGoOn){
 				if(!QDir(szOutputDirectory).exists()) {
-					qDebug("[Main] Creating non-existing directory '%s'", szOutputDirectory);
+					qDebug("[Main] Creating non-existing directory '%s'", qPrintable(szOutputDirectory));
 					bGoOn = QDir().mkdir(szOutputDirectory);
 				}
 			}
@@ -150,15 +150,21 @@ int main(int argc, char **argv)
 					foreach (QString f, dir.entryList(QDir::Files))
 					{
 						QString szSrcPath = QDir(szResourcesBasePath).filePath(f);
-						QString szDstPath = TypeListBuilder::buildPath(szOutputDirectory, "xs", "types", f);
+						QString szDstPath = FileHelper::buildPath(szOutputDirectory, "xs", "types", f);
+
+						// Remove the path
 						QFile::remove(szDstPath);
 
 						// Create directory for file
-						TypeListBuilder::createDirectoryForFile(szDstPath);
+						FileHelper::createDirectoryForFile(szDstPath);
 
+						// Copy the path
 						QFile::copy(szSrcPath, szDstPath);
 
-						pListGeneratedFiles->append(QString("types") + QDir::separator() + f);
+						QString szInternalPath;
+						szInternalPath = szDstPath.mid(szOutputDirectory.length());
+
+						pListGeneratedFiles->append(szInternalPath);
 					}
 				}else{
 					qDebug("[Main] Base files directory not found %s", qPrintable(szResourcesBasePath));
@@ -216,7 +222,7 @@ int main(int argc, char **argv)
 					qDebug("[Main] Service files directory not found %s", qPrintable(szResourcesServicePath));
 				}
 			}else{
-				qWarning("[Main] Failed to create directory '%s'", szOutputDirectory);
+				qWarning("[Main] Failed to create directory '%s'", qPrintable(szOutputDirectory));
 			}
 		}else{
 			qWarning("[Main] Error for opening file %s", qPrintable(file.errorString()));

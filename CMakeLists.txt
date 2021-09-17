@@ -222,6 +222,8 @@ set (APP_SOURCES
 
     src/Builder/FileBuilder.cpp
     src/Builder/FileBuilder.h
+    src/Builder/FileHelper.cpp
+    src/Builder/FileHelper.h
     src/Builder/TypeListBuilder.cpp
     src/Builder/TypeListBuilder.h
 

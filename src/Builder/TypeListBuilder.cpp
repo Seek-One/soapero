@@ -12,12 +12,11 @@
 
 #include "../Utils/StringUtils.h"
 #include "TypeListBuilder.h"
+#include "FileHelper.h"
 
 #ifndef CRLF
 #define CRLF "\r\n"
 #endif
-
-//#define WITH_DIR_CREATION
 
 TypeListBuilder::TypeListBuilder(const ServiceSharedPtr& pService, const TypeListSharedPtr& pListType, const RequestResponseElementListSharedPtr& pListElement, const QSharedPointer<UniqueStringList>& pListGeneratedFiles)
 {
@@ -134,7 +133,7 @@ void TypeListBuilder::buildHeaderFile(const TypeSharedPtr& pType)
 #else
 	QString szHeaderFilename = pType->getQualifiedName() + ".h";
 #endif
-	QString szFilePath = buildPath(m_szDirname, pType->getNamespace(), "types", szHeaderFilename);
+	QString szFilePath = FileHelper::buildPath(m_szDirname, pType->getNamespace(), "types", szHeaderFilename);
 
 	// Remove existing file
 	QFile file(szFilePath);
@@ -143,7 +142,7 @@ void TypeListBuilder::buildHeaderFile(const TypeSharedPtr& pType)
 	}
 
 	// Create directory for file
-	createDirectoryForFile(szFilePath);
+	FileHelper::createDirectoryForFile(szFilePath);
 
 	// Write the file
 	if(file.open(QFile::WriteOnly)) {
@@ -182,7 +181,7 @@ void TypeListBuilder::buildHeaderFile(const RequestResponseElementSharedPtr& pEl
 #else
 	QString szHeaderFilename = pElement->getQualifiedName() + ".h";
 #endif
-	QString szFilePath = buildPath(m_szDirname, pElement->getNamespace(), "messages", szHeaderFilename);
+	QString szFilePath = FileHelper::buildPath(m_szDirname, pElement->getNamespace(), "messages", szHeaderFilename);
 
 	QFile file(szFilePath);
 	if(file.exists()) {
@@ -190,7 +189,7 @@ void TypeListBuilder::buildHeaderFile(const RequestResponseElementSharedPtr& pEl
 	}
 
 	// Create directory for file
-	createDirectoryForFile(szFilePath);
+	FileHelper::createDirectoryForFile(szFilePath);
 
 	if(file.open(QFile::WriteOnly)) {
 
@@ -224,7 +223,7 @@ void TypeListBuilder::buildHeaderFile(const RequestResponseElementSharedPtr& pEl
 void TypeListBuilder::buildHeaderFile(const ServiceSharedPtr& pService)
 {
 	QString szHeaderFilename = pService->getName() + ".h";
-	QString szFilePath = buildPath(m_szDirname, QString(), QString(), szHeaderFilename);
+	QString szFilePath = FileHelper::buildPath(m_szDirname, QString(), QString(), szHeaderFilename);
 
 	QFile file(szFilePath);
 	if(file.exists()) {
@@ -232,7 +231,7 @@ void TypeListBuilder::buildHeaderFile(const ServiceSharedPtr& pService)
 	}
 
 	// Create directory for file
-	createDirectoryForFile(szFilePath);
+	FileHelper::createDirectoryForFile(szFilePath);
 
 	if(file.open(QFile::WriteOnly)) {
 
@@ -280,7 +279,7 @@ void TypeListBuilder::buildCppFile(const TypeSharedPtr& pType)
 	QString szHeaderFilename = pType->getQualifiedName() + ".h";
 	QString szCppFilename = pType->getQualifiedName() + ".cpp";
 #endif
-	QString szFilePath = buildPath(m_szDirname, pType->getNamespace(), "types", szCppFilename);
+	QString szFilePath = FileHelper::buildPath(m_szDirname, pType->getNamespace(), "types", szCppFilename);
 
 	QFile file(szFilePath);
 	if(file.exists()) {
@@ -288,7 +287,7 @@ void TypeListBuilder::buildCppFile(const TypeSharedPtr& pType)
 	}
 
 	// Create directory for file
-	createDirectoryForFile(szFilePath);
+	FileHelper::createDirectoryForFile(szFilePath);
 
 	if(file.open(QFile::WriteOnly)) {
 
@@ -348,7 +347,7 @@ void TypeListBuilder::buildCppFile(const RequestResponseElementSharedPtr& pEleme
 	QString szHeaderFilename = pElement->getQualifiedName() + ".h";
 	QString szCppFilename = pElement->getQualifiedName() + ".cpp";
 #endif
-	QString szFilePath = buildPath(m_szDirname, pElement->getNamespace(), "messages", szCppFilename);
+	QString szFilePath = FileHelper::buildPath(m_szDirname, pElement->getNamespace(), "messages", szCppFilename);
 
 	QFile file(szFilePath);
 	if(file.exists()) {
@@ -356,7 +355,7 @@ void TypeListBuilder::buildCppFile(const RequestResponseElementSharedPtr& pEleme
 	}
 
 	// Create directory for file
-	createDirectoryForFile(szFilePath);
+	FileHelper::createDirectoryForFile(szFilePath);
 
 	if(file.open(QFile::WriteOnly)) {
 
@@ -387,7 +386,7 @@ void TypeListBuilder::buildCppFile(const ServiceSharedPtr& pService)
 {
 	QString szHeaderFilename = pService->getName() + ".h";
 	QString szCppFilename = pService->getName() + ".cpp";
-	QString szFilePath = buildPath(m_szDirname, QString(), QString(), szCppFilename);
+	QString szFilePath = FileHelper::buildPath(m_szDirname, QString(), QString(), szCppFilename);
 
 	QFile file(szFilePath);
 	if(file.exists()) {
@@ -395,7 +394,7 @@ void TypeListBuilder::buildCppFile(const ServiceSharedPtr& pService)
 	}
 
 	// Create directory for file
-	createDirectoryForFile(szFilePath);
+	FileHelper::createDirectoryForFile(szFilePath);
 
 	if(file.open(QFile::WriteOnly)) {
 
@@ -1163,37 +1162,4 @@ void TypeListBuilder::buildCppClassService(QTextStream& os, const ServiceSharedP
 	os << "\t}" CRLF;
 	os << "\treturn map;" CRLF;
 	os << "}" CRLF;
-}
-
-QString TypeListBuilder::buildPath(const QString& szBaseDirectory, const QString& szFileNamespace, const QString& szFileCategory, const QString& szFileName)
-{
-	QDir dir(szBaseDirectory);
-
-#ifdef WITH_DIR_CREATION
-	if(!szFileNamespace.isEmpty()){
-		dir.setPath(dir.filePath(szFileNamespace));
-	}
-
-	if(!szFileCategory.isEmpty()){
-		dir.setPath(dir.filePath(szFileCategory));
-	}
-#else
-	if(!szFileCategory.isEmpty()){
-		dir.setPath(dir.filePath(szFileCategory));
-	}
-#endif
-	return dir.filePath(szFileName);
-}
-
-bool TypeListBuilder::createDirectoryForFile(const QString& szFilePath)
-{
-	bool bRes = true;
-
-	QFileInfo fileInfo(szFilePath);
-	QDir dirPath = fileInfo.dir();
-	if(!dirPath.exists()){
-		bRes = dirPath.mkpath(".");
-	}
-
-	return bRes;
 }

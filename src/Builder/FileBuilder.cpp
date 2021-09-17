@@ -11,6 +11,8 @@
 #include <QDir>
 #include <QTextStream>
 
+#include "FileHelper.h"
+
 #include "FileBuilder.h"
 
 #ifndef CRLF
@@ -78,10 +80,11 @@ public:
 			QList<QString> listMessages;
 			QList<QString> listServices;
 			QList<QString>::const_iterator iter;
-			for(iter = m_pFileList->constBegin(); iter != m_pFileList->constEnd(); ++iter){
-				if(iter->startsWith(QString("types") + QDir::separator())){
+			for(iter = m_pFileList->constBegin(); iter != m_pFileList->constEnd(); ++iter)
+			{
+				if(FileHelper::isFileTypes(*iter)){
 					listTypes.append(*iter);
-				}else if(iter->startsWith(QString("messages") + QDir::separator())){
+				}else if(FileHelper::isFileMessage(*iter)){
 					listMessages.append(*iter);
 				}else{
 					listServices.append(*iter);
