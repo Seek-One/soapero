@@ -116,10 +116,10 @@ public:
 			os << "\t" << "${SERVICES_SRC}" << CRLF;
 			os << ")" << CRLF << CRLF;
 
-			os << "add_library (" << m_szName << " ${" << m_szName.toUpper() << "_SRC})" << CRLF << CRLF;
+			os << "add_library (" << m_szName.toLower() << " ${" << m_szName.toUpper() << "_SRC})" << CRLF << CRLF;
 
 			os << "if(WITH_INSTALL_LIB)" << CRLF;
-			os << "\tinstall(TARGETS " << m_szName << " DESTINATION ${INSTALL_PATH_LIB})" << CRLF;
+			os << "\tinstall(TARGETS " << m_szName.toLower() << " DESTINATION ${INSTALL_PATH_LIB})" << CRLF;
 			os << "endif()" << CRLF << CRLF;
 		}
 	}
