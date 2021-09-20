@@ -1,12 +1,12 @@
 /*
- * XSInteger.h
+ * Integer.h
  *
  *  Created on: 27 juil. 2017
  *      Author: lgruber
  */
 
-#ifndef XSINTEGER_H_
-#define XSINTEGER_H_
+#ifndef XS_INTEGER_H_
+#define XS_INTEGER_H_
 
 #include <QDomElement>
 #include <QString>
@@ -37,4 +37,4 @@ private:
 
 }
 
-#endif /* XSINTEGER_H_ */
+#endif /* XS_INTEGER_H_ */

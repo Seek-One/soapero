@@ -1,12 +1,12 @@
 /*
- * XSBoolean.h
+ * Boolean.h
  *
  *  Created on: 27 juil. 2017
  *      Author: lgruber
  */
 
-#ifndef XSBOOLEAN_H_
-#define XSBOOLEAN_H_
+#ifndef XS_BOOLEAN_H_
+#define XS_BOOLEAN_H_
 
 #include <QDomElement>
 #include <QDomAttr>
@@ -36,4 +36,4 @@ private:
 };
 
 }
-#endif /* XSBOOLEAN_H_ */
+#endif /* XS_BOOLEAN_H_ */

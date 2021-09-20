@@ -5,8 +5,8 @@
  *      Author: alavier
  */
 
-#ifndef SRC_BASE_XSANYSIMPLETYPE_H_
-#define SRC_BASE_XSANYSIMPLETYPE_H_
+#ifndef XS_ANYSIMPLETYPE_H_
+#define XS_ANYSIMPLETYPE_H_
 
 #include "String.h"
 
@@ -19,4 +19,4 @@ public:
 };
 
 }
-#endif /* SRC_BASE_XSANYSIMPLETYPE_H_ */
+#endif /* XS_ANYSIMPLETYPE_H_ */

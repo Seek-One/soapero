@@ -1,12 +1,12 @@
 /*
- * XSDateTime.h
+ * DateTime.h
  *
  *  Created on: 20 juin 2018
  *      Author: alavier
  */
 
-#ifndef SRC_BASE_XSDATETIME_H_
-#define SRC_BASE_XSDATETIME_H_
+#ifndef XS_DATETIME_H_
+#define XS_DATETIME_H_
 
 #include <QDomElement>
 #include <QDateTime>
@@ -33,4 +33,4 @@ private:
 };
 
 }
-#endif /* SRC_BASE_XSDATETIME_H_ */
+#endif /* XS_DATETIME_H_ */

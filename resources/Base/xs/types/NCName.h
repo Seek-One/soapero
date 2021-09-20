@@ -1,12 +1,12 @@
 /*
- * XSNCName.h
+ * NCName.h
  *
  *  Created on: 22 juin 2018
  *      Author: alavier
  */
 
-#ifndef SRC_BASE_XSNCNAME_H_
-#define SRC_BASE_XSNCNAME_H_
+#ifndef XS_NCNAME_H_
+#define XS_NCNAME_H_
 
 #include "String.h"
 
@@ -19,4 +19,4 @@ public:
 };
 
 }
-#endif /* SRC_BASE_XSNCNAME_H_ */
+#endif /* XS_NCNAME_H_ */

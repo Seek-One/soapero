@@ -1,12 +1,12 @@
 /*
- * XSNonNegativeInteger.h
+ * NonNegativeInteger.h
  *
  *  Created on: 10 juil. 2018
  *      Author: alavier
  */
 
-#ifndef SRC_BASE_XSNONNEGATIVEINTEGER_H_
-#define SRC_BASE_XSNONNEGATIVEINTEGER_H_
+#ifndef XS_NONNEGATIVEINTEGER_H_
+#define XS_NONNEGATIVEINTEGER_H_
 
 #include "UnsignedInteger.h"
 
@@ -19,4 +19,4 @@ public:
 };
 
 }
-#endif /* SRC_BASE_XSNONNEGATIVEINTEGER_H_ */
+#endif /* XS_NONNEGATIVEINTEGER_H_ */

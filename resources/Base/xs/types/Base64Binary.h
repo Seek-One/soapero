@@ -1,12 +1,12 @@
 /*
- * XSBase64Binary.h
+ * Base64Binary.h
  *
  *  Created on: 19 juin 2018
  *      Author: alavier
  */
 
-#ifndef SRC_BASE_XSBASE64BINARY_H_
-#define SRC_BASE_XSBASE64BINARY_H_
+#ifndef XS_BASE64BINARY_H_
+#define XS_BASE64BINARY_H_
 
 #include "String.h"
 
@@ -19,4 +19,4 @@ public:
 };
 
 }
-#endif /* SRC_BASE_XSBASE64BINARY_H_ */
+#endif /* XS_BASE64BINARY_H_ */

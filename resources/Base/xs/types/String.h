@@ -1,12 +1,12 @@
 /*
- * XSString.h
+ * String.h
  *
  *  Created on: 27 juil. 2017
  *      Author: lgruber
  */
 
-#ifndef XSSTRING_H_
-#define XSSTRING_H_
+#ifndef XS_STRING_H_
+#define XS_STRING_H_
 
 #include <QDomElement>
 #include <QString>
@@ -34,4 +34,4 @@ private:
 };
 
 }
-#endif /* XSSTRING_H_ */
+#endif /* XS_STRING_H_ */

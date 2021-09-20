@@ -1,12 +1,12 @@
 /*
- * XSQName.h
+ * QName.h
  *
  *  Created on: 21 juin 2018
  *      Author: alavier
  */
 
-#ifndef SRC_BASE_XSQNAME_H_
-#define SRC_BASE_XSQNAME_H_
+#ifndef XS_QNAME_H_
+#define XS_QNAME_H_
 
 #include "String.h"
 
@@ -19,4 +19,4 @@ public:
 };
 
 }
-#endif /* SRC_BASE_XSQNAME_H_ */
+#endif /* XS_QNAME_H_ */

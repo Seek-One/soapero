@@ -1,12 +1,12 @@
 /*
- * XSFloat.h
+ * Float.h
  *
  *  Created on: 19 juin 2018
  *      Author: alavier
  */
 
-#ifndef SRC_BASE_XSFLOAT_H_
-#define SRC_BASE_XSFLOAT_H_
+#ifndef XS_FLOAT_H_
+#define XS_FLOAT_H_
 
 #include <QDomElement>
 
@@ -33,4 +33,4 @@ private:
 };
 
 }
-#endif /* SRC_BASE_XSFLOAT_H_ */
+#endif /* XS_FLOAT_H_ */

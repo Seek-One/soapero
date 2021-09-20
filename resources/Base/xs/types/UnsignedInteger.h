@@ -1,12 +1,12 @@
 /*
- * XSUnsignedInteger.h
+ * UnsignedInteger.h
  *
  *  Created on: 27 juil. 2017
  *      Author: lgruber
  */
 
-#ifndef XSUNSIGNEDINTEGER_H_
-#define XSUNSIGNEDINTEGER_H_
+#ifndef XS_UNSIGNEDINTEGER_H_
+#define XS_UNSIGNEDINTEGER_H_
 
 #include <QDomElement>
 #include <QString>
@@ -36,4 +36,4 @@ private:
 
 }
 
-#endif /* XSUNSIGNEDINTEGER_H_ */
+#endif /* XS_UNSIGNEDINTEGER_H_ */

@@ -1,12 +1,12 @@
 /*
- * XSAnyType.h
+ * AnyType.h
  *
  *  Created on: 5 juil. 2018
  *      Author: alavier
  */
 
-#ifndef SRC_BASE_XSANYTYPE_H_
-#define SRC_BASE_XSANYTYPE_H_
+#ifndef XS_NYTYPE_H_
+#define XS_ANYTYPE_H_
 
 #include "String.h"
 
@@ -19,4 +19,4 @@ public:
 };
 
 }
-#endif /* SRC_BASE_XSANYTYPE_H_ */
+#endif /* XS_ANYTYPE_H_ */

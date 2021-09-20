@@ -1,12 +1,12 @@
 /*
- * XSAnyURI.h
+ * AnyURI.h
  *
  *  Created on: 19 juin 2018
  *      Author: alavier
  */
 
-#ifndef SRC_BASE_XSANYURI_H_
-#define SRC_BASE_XSANYURI_H_
+#ifndef XS_ANYURI_H_
+#define XS_ANYURI_H_
 
 #include "String.h"
 
@@ -19,4 +19,4 @@ public:
 };
 
 }
-#endif /* SRC_BASE_XSANYURI_H_ */
+#endif /* XS_ANYURI_H_ */

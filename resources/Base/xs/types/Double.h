@@ -1,12 +1,12 @@
 /*
- * XSDouble.h
+ * Double.h
  *
  *  Created on: 11 juil. 2018
  *      Author: alavier
  */
 
-#ifndef SRC_BASE_XSDOUBLE_H_
-#define SRC_BASE_XSDOUBLE_H_
+#ifndef XS_DOUBLE_H_
+#define XS_DOUBLE_H_
 
 #include <QDomElement>
 
@@ -32,4 +32,4 @@ private:
 };
 
 }
-#endif /* SRC_BASE_XSDOUBLE_H_ */
+#endif /* XS_DOUBLE_H_ */

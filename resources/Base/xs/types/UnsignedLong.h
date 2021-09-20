@@ -1,12 +1,12 @@
 /*
- * XSUnsignedLong.h
+ * UnsignedLong.h
  *
  *  Created on: 2 juil. 2018
  *      Author: alavier
  */
 
-#ifndef SRC_BASE_XSUNSIGNEDLONG_H_
-#define SRC_BASE_XSUNSIGNEDLONG_H_
+#ifndef XS_UNSIGNEDLONG_H_
+#define XS_UNSIGNEDLONG_H_
 
 #include <QDomElement>
 
@@ -32,4 +32,4 @@ private:
 };
 
 }
-#endif /* SRC_BASE_XSUNSIGNEDLONG_H_ */
+#endif /* XS_UNSIGNEDLONG_H_ */
