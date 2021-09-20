@@ -39,7 +39,6 @@ public:
 		Double,
 		AnySimpleType,
 
-
 		Custom,				// Example:	<xs:simpleType name="ReceiverReference"> <xs:restriction base="tt:ReferenceToken"/> </xs:simpleType>
 							// where "tt:ReferenceToken" is a complex type.
 	};
@@ -49,11 +48,15 @@ public:
 
 	static SimpleTypeSharedPtr create();
 
+	bool hasVariableType() const;
 	void setVariableType(VariableType type);
 	void setVariableTypeFromString(const QString& szNamespacePrefix, const QString& szType);
 	VariableType getVariableType() const;
+	static QString getVariableTypeNameString(VariableType iVariableType);
+	QString getVariableTypeNameString() const;
 	QString getVariableTypeString() const;
 	QString getVariableTypeFilenameString() const;
+	const QString& getVariableTypeNamepace() const;
 
 	void setCustomNamespace(const QString& szCustomNamespace);
 	const QString& getCustomNamespace() const;
@@ -61,6 +64,9 @@ public:
 	const QString& getCustomName() const;
 
 	bool isEnumeration() const;
+
+	QString getExportedNamespace() const;
+	QString getExportedTypename() const;
 
 	QString getSetterDeclaration() const;
 	QString getSetterDeclarationForComplexType() const;
@@ -102,7 +108,9 @@ public:
 	int getMinInclusive()const;
 
 private:
-	VariableType m_variableType;
+	QString m_szVariableTypeNamespace;
+	VariableType m_iVariableType;
+
 	QString m_szCustomNamespace;
 	QString m_szCustomName;
 

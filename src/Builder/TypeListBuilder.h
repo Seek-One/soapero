@@ -22,6 +22,13 @@
 class TypeListBuilder
 {
 public:
+	enum FileCategory {
+		FileCategory_Unknown,
+		FileCategory_Type,
+		FileCategory_Message
+	};
+
+public:
 	TypeListBuilder(const ServiceSharedPtr& pService, const TypeListSharedPtr& pListType, const RequestResponseElementListSharedPtr& pListElement, const QSharedPointer<UniqueStringList>& pListGeneratedFiles);
 	virtual ~TypeListBuilder();
 
@@ -37,9 +44,13 @@ public:
 	void setDirname(const QString& szDirname);
 	QString getDirname() const;
 
-	static QString getHeaderPath(const QString& szNamespace, const QString& szCategory, const QString& szFilename);
-	static QString getTypeHeaderPath(const TypeSharedPtr& pType, const QString& szOrigin);
-	static QString getSimpleTypeHeaderPath(const SimpleTypeSharedPtr& pSimpleType, const QString& szOrigin);
+	static QString getHeaderPath(const QString& szNamespace, const QString& szCategory, const QString& szFilename, FileCategory iOrigin);
+	static QString getTypeHeaderPath(const TypeSharedPtr& pType, FileCategory iOrigin);
+	static QString getSimpleTypeHeaderPath(const SimpleTypeSharedPtr& pSimpleType, FileCategory iOrigin);
+	static QString getComplexTypeHeaderPath(const ComplexTypeSharedPtr& pComplexType, FileCategory iOrigin);
+	static QString getRequestResponseElementHeaderPath(const RequestResponseElementSharedPtr& pRequestResponseElement, FileCategory iOrigin);
+
+	static QString getDefine(const QString& szPrefix, const TypeSharedPtr& pType);
 
 	void buildHeaderFiles();
 	void buildCppFiles();

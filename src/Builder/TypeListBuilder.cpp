@@ -74,40 +74,100 @@ QString TypeListBuilder::getDirname() const
 	return m_szDirname;
 }
 
-QString TypeListBuilder::getHeaderPath(const QString& szNamespace, const QString& szCategory, const QString& szFilename)
+QString TypeListBuilder::getHeaderPath(const QString& szNamespace, const QString& szCategory, const QString& szFilename, FileCategory iOrigin)
 {
-	return FileHelper::buildPath(QString(), szNamespace, szCategory, szFilename);
+	QString szRootPath;
+	if(iOrigin == FileCategory_Type || iOrigin == FileCategory_Message)
+	{
+		szRootPath = "../../";
+	}
+	return FileHelper::buildPath(szRootPath, szNamespace, szCategory, szFilename);
 }
 
-QString TypeListBuilder::getTypeHeaderPath(const TypeSharedPtr& pType, const QString& szOrigin)
+QString TypeListBuilder::getTypeHeaderPath(const TypeSharedPtr& pType, FileCategory iOrigin)
+{
+	if(pType->getClassType() == Type::TypeSimple){
+		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pType);
+		return getSimpleTypeHeaderPath(pSimpleType, iOrigin);
+	}else if(pType->getClassType() == Type::TypeComplex){
+		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pType);
+		return getComplexTypeHeaderPath(pComplexType, iOrigin);
+	}else{
+		qWarning("[TypeListBuilder] Unknown type: %s", qPrintable(pType->getLocalName()));
+		QString szFileName;
+#ifdef WITH_DIR_CREATION
+		szFileName = pType->getLocalName() + ".h";
+#else
+		szFileName = pType->getQualifiedName() + ".h";
+#endif
+		return getHeaderPath(pType->getNamespace(), "types", szFileName, iOrigin);
+	}
+}
+
+QString TypeListBuilder::getSimpleTypeHeaderPath(const SimpleTypeSharedPtr& pSimpleType, FileCategory iOrigin)
+{
+	QString szFileName;
+	QString szNamespace;
+	if(pSimpleType->hasVariableType()){
+#ifdef WITH_DIR_CREATION
+		szFileName = pSimpleType->getExportedTypename() + ".h";
+		szNamespace = pSimpleType->getExportedNamespace();
+		if(szNamespace == "xsd"){
+			szNamespace = "xs";
+		}
+#else
+		szFileName = pSimpleType->getVariableTypeFilenameString() + ".h";
+#endif
+		return getHeaderPath(szNamespace, "types", szFileName, iOrigin);
+	}
+	return QString();
+}
+
+QString TypeListBuilder::getComplexTypeHeaderPath(const ComplexTypeSharedPtr& pComplexType, FileCategory iOrigin)
+{
+	QString szFileName;
+#ifdef WITH_DIR_CREATION
+	szFileName = pComplexType->getLocalName() + ".h";
+#else
+	szFileName = pComplexType->getQualifiedName() + ".h";
+#endif
+	return getHeaderPath( pComplexType->getNamespace(), "types", szFileName, iOrigin);
+}
+
+QString TypeListBuilder::getRequestResponseElementHeaderPath(const RequestResponseElementSharedPtr& pRequestResponseElement, FileCategory iOrigin)
 {
 	QString szFileName;
 
-	SimpleTypeSharedPtr pSimpleType;
-	if(pType->getClassType() == Type::TypeSimple){
-		pSimpleType = qSharedPointerCast<SimpleType>(pType);
+#ifdef WITH_DIR_CREATION
+	szFileName = pRequestResponseElement->getLocalName() + ".h";
+#else
+	szFileName = pRequestResponseElement->getQualifiedName() + ".h";
+#endif
+	return getHeaderPath( pRequestResponseElement->getNamespace(), "types", szFileName, iOrigin);
+}
+
+QString TypeListBuilder::getDefine(const QString& szPrefix, const TypeSharedPtr& pType)
+{
+	QString szDefine;
+
+	if(!szPrefix.isEmpty()){
+		szDefine += szPrefix.toUpper() + "_";
 	}
 
 #ifdef WITH_DIR_CREATION
-	szFileName = pType->getLocalName() + ".h";
+	if(!pType->getNamespace().isEmpty()){
+		szDefine += pType->getNamespace().toUpper() + "_";
+	}
+	if(!pType->getLocalName().isEmpty()){
+		szDefine += pType->getLocalName().toUpper() + "_";
+	}
 #else
-	pSimpleType->getVariableTypeFilenameString() << ".h\""
-	szFileName = pType->getQualifiedName() + ".h";
+	szDefine += pType->getQualifiedName().toUpper() + "_";
 #endif
-	return FileHelper::buildPath(QString(), pType->getNamespace(), "types", szFileName);
-}
 
-QString TypeListBuilder::getSimpleTypeHeaderPath(const SimpleTypeSharedPtr& pSimpleType, const QString& szOrigin)
-{
-	QString szFileName;
+	szDefine += "H_";
 
-#ifdef WITH_DIR_CREATION
-	szFileName = pSimpleType->getVariableTypeFilenameString() + ".h";
-#else
-	pSimpleType->getVariableTypeFilenameString() << ".h\""
-	szFileName = pType->getQualifiedName() + ".h";
-#endif
-	return FileHelper::buildPath(QString(), pSimpleType->getNamespace(), "types", szFileName);
+	return szDefine;
 }
 
 void TypeListBuilder::buildHeaderFiles()
@@ -185,7 +245,7 @@ void TypeListBuilder::buildHeaderFile(const TypeSharedPtr& pType)
 	if(file.open(QFile::WriteOnly)) {
 
 		QTextStream os(&file);
-		QString szDefine = (!m_szPrefix.isEmpty() ? m_szPrefix.toUpper() + "_" : "") + pType->getQualifiedName().toUpper() + "_H_";
+		QString szDefine = getDefine(m_szPrefix, pType);
 
 		buildHeaderFileDescription(os, szHeaderFilename, szDefine);
 
@@ -354,7 +414,7 @@ void TypeListBuilder::buildCppFile(const TypeSharedPtr& pType)
 				ElementList::const_iterator iter;
 				for(iter = pComplexType->getElementList()->constBegin(); iter != pComplexType->getElementList()->constEnd(); ++iter){
 					if((*iter)->getType() && (*iter)->isPointer()){
-						os << "#include \"" << (*iter)->getType()->getQualifiedName() << ".h\"" << CRLF;
+						os << "#include \"" << getTypeHeaderPath((*iter)->getType(), FileCategory_Type) << CRLF;
 					}
 				}
 			}
@@ -730,9 +790,8 @@ void TypeListBuilder::buildHeaderIncludeType(QTextStream& os, const TypeSharedPt
 
 	if(pType->getClassType() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pType);
-
-		if(!pSimpleType->getVariableTypeFilenameString().isEmpty()) {
-			os << "#include \"" << pSimpleType->getVariableTypeFilenameString() << ".h\"" << CRLF;
+		if(pSimpleType->hasVariableType()) {
+			os << "#include \"" << getSimpleTypeHeaderPath(pSimpleType, FileCategory_Type) << "\"" << CRLF;
 		}
 	}else if(pType->getClassType() == Type::TypeComplex){
 
@@ -747,15 +806,7 @@ void TypeListBuilder::buildHeaderIncludeType(QTextStream& os, const TypeSharedPt
 		ElementSharedPtr pElement;
 
 		if(!pComplexType->getExtensionType().isNull()) {
-			QString szExtensionName;
-			if(pComplexType->getExtensionType()->getClassType() == Type::TypeSimple){
-				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pComplexType->getExtensionType());
-				szExtensionName = pSimpleType->getVariableTypeFilenameString();
-			}else{
-				szExtensionName = pComplexType->getExtensionType()->getQualifiedName();
-			}
-
-			os << "#include \"" << szExtensionName << ".h\"" << CRLF;
+			os << "#include \"" << getTypeHeaderPath(pComplexType->getExtensionType(), FileCategory_Type) << "\"" << CRLF;
 		}
 
 		if(pListAttributes->count() > 0 || pListElements->count() > 0) {
@@ -773,23 +824,11 @@ void TypeListBuilder::buildHeaderIncludeType(QTextStream& os, const TypeSharedPt
 					continue;
 				}
 
-				if( pAttribute->getType()->getClassType() == Type::TypeSimple) {
-					SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pAttribute->getType());
-
-					if(!list.contains(pSimpleType->getVariableTypeFilenameString())) {
-						os << "#include \"" << pSimpleType->getVariableTypeFilenameString() << ".h\"" << CRLF;
-						list.append(pSimpleType->getVariableTypeFilenameString());
-
-					}
-				}else if( pAttribute->getType()->getClassType() == Type::TypeComplex) {
-					ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pAttribute->getType());
-
-					if(!list.contains(pComplexType->getQualifiedName())) {
-						os << "#include \"" << pComplexType->getQualifiedName() << ".h\"" << CRLF;
-						list.append(pComplexType->getQualifiedName());
-
-					}
-
+				// Add required include file
+				QString szFilename = getTypeHeaderPath(pAttribute->getType(), FileCategory_Type);
+				if(!list.contains(szFilename)) {
+					os << "#include \"" << szFilename << "\"" << CRLF;
+					list.append(szFilename);
 				}
 			}
 			for(element = pListElements->constBegin(); element != pListElements->constEnd(); ++element) {
@@ -807,29 +846,12 @@ void TypeListBuilder::buildHeaderIncludeType(QTextStream& os, const TypeSharedPt
 					continue;
 				}
 
-				if( pElement->getType()->getClassType() == Type::TypeSimple) {
-					SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pElement->getType());
-					if(!list.contains(pSimpleType->getVariableTypeFilenameString())) {
-						os << "#include \"" << pSimpleType->getVariableTypeFilenameString() << ".h\"" << CRLF;
-						list.append(pSimpleType->getVariableTypeFilenameString());
 
-					}
-
-				}else if(pElement->getType()->getClassType() == Type::TypeComplex) {
-					ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pElement->getType());
-					if(!list.contains(pComplexType->getQualifiedName())) {
-						os << "#include \"" << pComplexType->getQualifiedName() << ".h\"" << CRLF;
-						list.append(pComplexType->getQualifiedName());
-
-					}
-
-				}else{
-					qWarning("[TypeListBuilder::buildHeaderIncludeType] Element %s has an unknown type: %s", qPrintable(pElement->getName()), qPrintable(pElement->getType()->getLocalName()));
-					if(!list.contains(pElement->getType()->getQualifiedName())) {
-						os << "#include \"" << pElement->getType()->getQualifiedName() << ".h\"" << CRLF;
-						list.append(pElement->getType()->getQualifiedName());
-
-					}
+				// Add required include file
+				QString szFilename = getTypeHeaderPath(pElement->getType(), FileCategory_Type);
+				if(!szFilename.isEmpty() && !list.contains(szFilename)) {
+					os << "#include \"" << szFilename << "\"" << CRLF;
+					list.append(szFilename);
 				}
 			}
 		}
@@ -853,15 +875,7 @@ void TypeListBuilder::buildHeaderIncludeElement(QTextStream& os, const RequestRe
 	ElementSharedPtr pElement;
 
 	if(!pComplexType->getExtensionType().isNull()) {
-		QString szExtensionName;
-		if(pComplexType->getExtensionType()->getClassType() == Type::TypeSimple){
-			SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pComplexType->getExtensionType());
-			szExtensionName = pSimpleType->getVariableTypeFilenameString();
-		}else{
-			szExtensionName = pComplexType->getExtensionType()->getQualifiedName();
-		}
-
-		os << "#include \"../types/" << szExtensionName << ".h\"" << CRLF;
+		os << "#include \"" << getTypeHeaderPath(pComplexType->getExtensionType(), FileCategory_Type) << "\"" << CRLF;
 	}
 
 	if(pListAttributes->count() > 0 || pListElements->count() > 0) {
@@ -878,23 +892,12 @@ void TypeListBuilder::buildHeaderIncludeElement(QTextStream& os, const RequestRe
 			if(!pAttribute->getType()) {
 				continue;
 			}
-			if( pAttribute->getType()->getClassType() == Type::TypeSimple) {
-				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pAttribute->getType());
 
-				if(!list.contains(pSimpleType->getVariableTypeFilenameString())) {
-					os << "#include \"../types/" << pSimpleType->getVariableTypeFilenameString() << ".h\"" << CRLF;
-					list.append(pSimpleType->getVariableTypeFilenameString());
-
-				}
-			}else if( pAttribute->getType()->getClassType() == Type::TypeComplex) {
-				ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pAttribute->getType());
-
-				if(!list.contains(pComplexType->getQualifiedName())) {
-					os << "#include \"../types/" << pComplexType->getQualifiedName() << ".h\"" << CRLF;
-					list.append(pComplexType->getQualifiedName());
-
-				}
-
+			// Add required include file
+			QString szFilename = getTypeHeaderPath(pAttribute->getType(), FileCategory_Type);
+			if(!list.contains(szFilename)) {
+				os << "#include \"" << szFilename << "\"" << CRLF;
+				list.append(szFilename);
 			}
 		}
 		for(element = pListElements->constBegin(); element != pListElements->constEnd(); ++element) {
@@ -908,22 +911,11 @@ void TypeListBuilder::buildHeaderIncludeElement(QTextStream& os, const RequestRe
 				continue;
 			}
 
-			if(pElement->getType()->getClassType() == Type::TypeSimple) {
-				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pElement->getType());
-				if(!list.contains(pSimpleType->getVariableTypeFilenameString())) {
-					os << "#include \"../types/" << pSimpleType->getVariableTypeFilenameString() << ".h\"" << CRLF;
-					list.append(pSimpleType->getVariableTypeFilenameString());
-
-				}
-
-			}else/* if( (*element)->getType()->getClassType() == Type::TypeComplex)*/ {
-				ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pElement->getType());
-				if(!list.contains(pComplexType->getQualifiedName())) {
-					os << "#include \"../types/" << pComplexType->getQualifiedName() << ".h\"" << CRLF;
-					list.append(pComplexType->getQualifiedName());
-
-				}
-
+			// Add required include file
+			QString szFilename = getTypeHeaderPath(pElement->getType(), FileCategory_Message);
+			if(!list.contains(szFilename)) {
+				os << "#include \"" << szFilename << "\"" << CRLF;
+				list.append(szFilename);
 			}
 		}
 	}
@@ -935,6 +927,8 @@ void TypeListBuilder::buildHeaderIncludeService(QTextStream& os, const ServiceSh
 	bool bSoapEnvelopeFaultIncluded = false;
 
 	os << "#include \"Service.h\"" << CRLF << CRLF;
+
+	QString szTmpFileName;
 
 	OperationListSharedPtr pOperationList = pService->getOperationList();
 	OperationList::const_iterator operation;
@@ -950,17 +944,19 @@ void TypeListBuilder::buildHeaderIncludeService(QTextStream& os, const ServiceSh
 		//qDebug(qPrintable(pOperation->getInputMessage()->getParameter() ? "NotNull" : "Null"));
 
 		if(!bSoapEnvelopeFaultIncluded && pOperation->getSoapEnvelopeFaultType()){
-			os << "#include \"types/" << (*operation)->getSoapEnvelopeFaultType()->getQualifiedName() << ".h\"" << CRLF;
+			os << "#include \"" << getComplexTypeHeaderPath((*operation)->getSoapEnvelopeFaultType(), FileCategory_Message) << "\"" << CRLF;
 			bSoapEnvelopeFaultIncluded = true;
 		}
 
-		if(!list.contains((*operation)->getInputMessage()->getParameter()->getQualifiedName())) {
-			os << "#include \"messages/" << (*operation)->getInputMessage()->getParameter()->getQualifiedName() << ".h\"" << CRLF;
-			list.append((*operation)->getInputMessage()->getParameter()->getQualifiedName());
+		szTmpFileName = getRequestResponseElementHeaderPath((*operation)->getInputMessage()->getParameter(), FileCategory_Message);
+		if(!list.contains(szTmpFileName)) {
+			os << "#include \"" << szTmpFileName << "\"" << CRLF;
+			list.append(szTmpFileName);
 		}
-		if(!list.contains((*operation)->getOutputMessage()->getParameter()->getQualifiedName())) {
-			os << "#include \"messages/" << (*operation)->getOutputMessage()->getParameter()->getQualifiedName() << ".h\"" << CRLF;
-			list.append((*operation)->getOutputMessage()->getParameter()->getQualifiedName());
+		szTmpFileName = getRequestResponseElementHeaderPath((*operation)->getOutputMessage()->getParameter(), FileCategory_Message);
+		if(!list.contains(szTmpFileName)) {
+			os << "#include \"" << szTmpFileName << "\"" << CRLF;
+			list.append(szTmpFileName);
 		}
 	}
 

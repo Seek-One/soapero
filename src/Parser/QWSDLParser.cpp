@@ -51,6 +51,7 @@ void QWSDLParser::initXMLAttributes()		// https://www.w3.org/2001/xml.xsd
 	pAttribute->setName("lang");
 	SimpleTypeSharedPtr pSimpleType = SimpleType::create();
 	pSimpleType->setVariableTypeFromString("xs", "xs:string");
+	pSimpleType->setNamespace("xml");
 	pSimpleType->setName("lang");
 	m_pListTypes->append(pSimpleType);
 	pAttribute->setType(pSimpleType);

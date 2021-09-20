@@ -15,7 +15,7 @@
 SimpleType::SimpleType()
 	:Type(Type::TypeSimple)
 {
-	m_variableType = Unknown;
+	m_iVariableType = Unknown;
 	m_iMaxLength = -1;
 	m_iMinLength = -1;
 	m_iMinInclusive = -1;
@@ -29,108 +29,134 @@ SimpleTypeSharedPtr SimpleType::create()
 	return SimpleTypeSharedPtr(new SimpleType());
 }
 
+bool SimpleType::hasVariableType() const
+{
+	return (m_iVariableType != Unknown);
+}
+
 void SimpleType::setVariableType(VariableType type)
 {
-	m_variableType = type;
+	m_iVariableType = type;
 }
 
 void SimpleType::setVariableTypeFromString(const QString& szNamespacePrefix, const QString& szType)
 {
 	if(szType == (szNamespacePrefix + ":string")) {
-		m_variableType = String;
+		m_iVariableType = String;
 	} else if(szType == (szNamespacePrefix + ":anyURI")) {
-		m_variableType = AnyURI;
+		m_iVariableType = AnyURI;
 	} else if(szType == (szNamespacePrefix + ":int")) {
-		m_variableType = Int;
+		m_iVariableType = Int;
 	} else if(szType == (szNamespacePrefix + ":integer")) {
-		m_variableType = Int;
+		m_iVariableType = Int;
 	} else if(szType == (szNamespacePrefix + ":unsignedInt")) {
-		m_variableType = UnsignedInt;
+		m_iVariableType = UnsignedInt;
 	} else if(szType == (szNamespacePrefix + ":boolean")) {
-		m_variableType = Boolean;
+		m_iVariableType = Boolean;
 	}else if(szType == (szNamespacePrefix + ":duration")) {
-		m_variableType = Duration;
+		m_iVariableType = Duration;
 	}else if(szType == (szNamespacePrefix + ":base64Binary")) {
-		m_variableType = Base64Binary;
+		m_iVariableType = Base64Binary;
 	}else if(szType == (szNamespacePrefix + ":float")){
-		m_variableType = Float;
+		m_iVariableType = Float;
 	}else if(szType == (szNamespacePrefix + ":dateTime")){
-		m_variableType = DateTime;
+		m_iVariableType = DateTime;
 	}else if(szType == (szNamespacePrefix + ":QName")){
-		m_variableType = QName;
+		m_iVariableType = QName;
 	}else if(szType == (szNamespacePrefix + ":NCName")){
-		m_variableType = NCName;
+		m_iVariableType = NCName;
 	}else if(szType == (szNamespacePrefix + ":token")){
-		m_variableType = Token;
+		m_iVariableType = Token;
 	}else if(szType == (szNamespacePrefix + ":unsignedLong")){
-		m_variableType = UnsignedLong;
+		m_iVariableType = UnsignedLong;
 	}else if(szType == (szNamespacePrefix + ":anyType")){
-		m_variableType = AnyType;
+		m_iVariableType = AnyType;
 	}else if(szType == (szNamespacePrefix + ":nonNegativeInteger")){
-		m_variableType = NonNegativeInteger;
+		m_iVariableType = NonNegativeInteger;
 	}else if(szType == (szNamespacePrefix + ":hexBinary")){
-		m_variableType = HexBinary;
+		m_iVariableType = HexBinary;
 	}else if(szType == (szNamespacePrefix + ":double")){
-		m_variableType = Double;
+		m_iVariableType = Double;
 	}else if(szType == (szNamespacePrefix + ":anySimpleType")){
-		m_variableType = AnySimpleType;
+		m_iVariableType = AnySimpleType;
+	}else{
+		m_iVariableType = Unknown;
 	}
+	m_szVariableTypeNamespace = szNamespacePrefix;
 }
 
 SimpleType::VariableType SimpleType::getVariableType()const
 {
-	return m_variableType;
+	return m_iVariableType;
 }
 
-QString SimpleType::getVariableTypeString()const
+QString SimpleType::getVariableTypeNameString(SimpleType::VariableType iVariableType)
+{
+	switch(iVariableType) {
+	case String:
+		return "String";
+	case Int:
+		return "Integer";
+	case UnsignedInt:
+		return "UnsignedInteger";
+	case Boolean:
+		return "Boolean";
+	case Duration:
+		return "Duration";
+	case Base64Binary:
+		return "Base64Binary";
+	case AnyURI:
+		return "AnyURI";
+	case Float:
+		return "Float";
+	case DateTime:
+		return "DateTime";
+	case QName:
+		return "QName";
+	case NCName:
+		return "NCName";
+	case Token:
+		return "Token";
+	case UnsignedLong:
+		return "UnsignedLong";
+	case AnyType:
+		return "AnyType";
+	case NonNegativeInteger:
+		return "NonNegativeInteger";
+	case HexBinary:
+		return "HexBinary";
+	case Double:
+		return "Double";
+	case AnySimpleType:
+		return "AnySimpleType";
+	default:
+		break;
+	}
+	return QString();
+}
+
+QString SimpleType::getVariableTypeNameString() const
 {
 	if(isEnumeration()) {
 		return getLocalName() + "::Values";
-
 	}else{
-		switch(m_variableType) {
-		case String:
-			return "XS::String";
-		case Int:
-			return "XS::Integer";
-		case UnsignedInt:
-			return "XS::UnsignedInteger";
-		case Boolean:
-			return "XS::Boolean";
-		case Duration:
-			return "XS::Duration";
-		case Base64Binary:
-			return "XS::Base64Binary";
-		case AnyURI:
-			return "XS::AnyURI";
-		case Float:
-			return "XS::Float";
-		case DateTime:
-			return "XS::DateTime";
-		case QName:
-			return "XS::QName";
-		case NCName:
-			return "XS::NCName";
-		case Token:
-			return "XS::Token";
-		case UnsignedLong:
-			return "XS::UnsignedLong";
-		case AnyType:
-			return "XS::AnyType";
-		case NonNegativeInteger:
-			return "XS::NonNegativeInteger";
-		case HexBinary:
-			return "XS::HexBinary";
-		case Double:
-			return "XS::Double";
-		case AnySimpleType:
-			return "XS::AnySimpleType";
-
-
-		case Custom:
+		if(m_iVariableType == Custom){
 			return (m_szCustomNamespace + "::" + m_szCustomName);
-		default:
-			return QString();
+		}else{
+			return getVariableTypeNameString(m_iVariableType);
+		}
+	}
+}
+
+QString SimpleType::getVariableTypeString() const
+{
+	if(isEnumeration()) {
+		return getLocalName() + "::Values";
+	}else{
+		if(m_iVariableType == Custom){
+			return (m_szCustomNamespace + "::" + m_szCustomName);
+		}else{
+			return getVariableTypeNameString(m_iVariableType);
 		}
 	}
 }
@@ -141,7 +167,7 @@ QString SimpleType::getVariableTypeFilenameString() const
 		return getQualifiedName();
 
 	}else{
-		switch(m_variableType) {
+		switch(m_iVariableType) {
 		case String:
 			return "XSString";
 		case Int:
@@ -179,13 +205,17 @@ QString SimpleType::getVariableTypeFilenameString() const
 		case AnySimpleType:
 			return "XSAnySimpleType";
 
-
 		case Custom:
 			return (m_szCustomNamespace + m_szCustomName);
 		default:
 			return QString();
 		}
 	}
+}
+
+const QString& SimpleType::getVariableTypeNamepace() const
+{
+	return m_szVariableTypeNamespace;
 }
 
 void SimpleType::setCustomNamespace(const QString& szCustomNamespace)
@@ -211,13 +241,41 @@ const QString& SimpleType::getCustomName() const
 bool SimpleType::isEnumeration() const
 {
 	return m_bRestricted &&
-			((m_variableType == String) ||
-					(m_variableType == Base64Binary) ||
-					(m_variableType == AnyURI) ||
-					(m_variableType == QName) ||
-					(m_variableType == NCName) ||
-					(m_variableType == Token)) &&
+			((m_iVariableType == String) ||
+					(m_iVariableType == Base64Binary) ||
+					(m_iVariableType == AnyURI) ||
+					(m_iVariableType == QName) ||
+					(m_iVariableType == NCName) ||
+					(m_iVariableType == Token)) &&
 			(m_listEnumerationValues.count() > 0);
+}
+
+QString SimpleType::getExportedNamespace() const
+{
+	if(hasVariableType()){
+		if(isEnumeration()){
+			return getNamespace();
+		}else if(m_iVariableType == Custom){
+			return m_szCustomNamespace;
+		}else{
+			return getVariableTypeNamepace();
+		}
+	}
+	return getNamespace();
+}
+
+QString SimpleType::getExportedTypename() const
+{
+	if(hasVariableType()){
+		if(isEnumeration()){
+			return getLocalName();
+		}else if(m_iVariableType == Custom){
+			return m_szCustomName;
+		}else{
+			return getVariableTypeString();
+		}
+	}
+	return getLocalName();
 }
 
 QString SimpleType::getSetterDeclaration() const
