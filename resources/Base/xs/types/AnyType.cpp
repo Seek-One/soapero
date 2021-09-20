@@ -5,7 +5,7 @@
  *      Author: alavier
  */
 
-#include "XSAnyType.h"
+#include "AnyType.h"
 
 namespace XS {
 

@@ -5,7 +5,7 @@
  *      Author: lgruber
  */
 
-#include "XSString.h"
+#include "String.h"
 
 namespace XS {
 

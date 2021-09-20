@@ -5,7 +5,7 @@
  *      Author: lgruber
  */
 
-#include "XSDuration.h"
+#include "Duration.h"
 
 namespace XS {
 

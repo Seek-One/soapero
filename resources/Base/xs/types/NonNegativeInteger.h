@@ -8,7 +8,7 @@
 #ifndef SRC_BASE_XSNONNEGATIVEINTEGER_H_
 #define SRC_BASE_XSNONNEGATIVEINTEGER_H_
 
-#include "XSUnsignedInteger.h"
+#include "UnsignedInteger.h"
 
 namespace XS {
 

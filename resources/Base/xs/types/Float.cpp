@@ -5,7 +5,7 @@
  *      Author: alavier
  */
 
-#include "XSFloat.h"
+#include "Float.h"
 
 namespace XS {
 

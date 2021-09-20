@@ -5,7 +5,7 @@
  *      Author: alavier
  */
 
-#include "XSUnsignedLong.h"
+#include "UnsignedLong.h"
 
 namespace XS {
 

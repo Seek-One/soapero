@@ -5,7 +5,7 @@
  *      Author: alavier
  */
 
-#include "XSDouble.h"
+#include "Double.h"
 
 namespace XS {
 

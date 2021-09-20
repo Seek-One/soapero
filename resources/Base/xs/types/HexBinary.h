@@ -8,7 +8,7 @@
 #ifndef SRC_BASE_XSHEXBINARY_H_
 #define SRC_BASE_XSHEXBINARY_H_
 
-#include "XSString.h"
+#include "String.h"
 
 namespace XS {
 

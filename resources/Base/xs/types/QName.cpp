@@ -5,7 +5,7 @@
  *      Author: alavier
  */
 
-#include "XSQName.h"
+#include "QName.h"
 
 namespace XS {
 

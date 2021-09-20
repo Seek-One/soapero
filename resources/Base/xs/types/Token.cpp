@@ -5,7 +5,7 @@
  *      Author: alavier
  */
 
-#include "XSToken.h"
+#include "Token.h"
 
 namespace XS {
 

@@ -8,7 +8,7 @@
 #ifndef SRC_BASE_XSANYTYPE_H_
 #define SRC_BASE_XSANYTYPE_H_
 
-#include "XSString.h"
+#include "String.h"
 
 namespace XS {
 

@@ -5,7 +5,7 @@
  *      Author: alavier
  */
 
-#include "XSNonNegativeInteger.h"
+#include "NonNegativeInteger.h"
 
 namespace XS {
 

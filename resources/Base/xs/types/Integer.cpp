@@ -5,7 +5,7 @@
  *      Author: lgruber
  */
 
-#include "XSInteger.h"
+#include "Integer.h"
 
 namespace XS {
 

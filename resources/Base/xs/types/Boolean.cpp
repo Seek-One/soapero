@@ -5,7 +5,7 @@
  *      Author: lgruber
  */
 
-#include "XSBoolean.h"
+#include "Boolean.h"
 
 namespace XS {
 

@@ -5,7 +5,7 @@
  *      Author: alavier
  */
 
-#include "XSNCName.h"
+#include "NCName.h"
 
 namespace XS {
 

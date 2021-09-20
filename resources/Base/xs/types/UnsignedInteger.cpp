@@ -5,7 +5,7 @@
  *      Author: lgruber
  */
 
-#include "XSUnsignedInteger.h"
+#include "UnsignedInteger.h"
 
 namespace XS {
 

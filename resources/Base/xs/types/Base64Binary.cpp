@@ -1,21 +1,21 @@
 /*
- * XSAnyURI.cpp
+ * XSBase64Binary.cpp
  *
  *  Created on: 19 juin 2018
  *      Author: alavier
  */
 
-#include "XSAnyURI.h"
+#include "Base64Binary.h"
 
 namespace XS {
 
-AnyURI::AnyURI()
+Base64Binary::Base64Binary()
 	: String()
 {
 
 }
 
-AnyURI::~AnyURI()
+Base64Binary::~Base64Binary()
 {
 
 }

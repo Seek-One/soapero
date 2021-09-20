@@ -5,7 +5,7 @@
  *      Author: alavier
  */
 
-#include "XSHexBinary.h"
+#include "HexBinary.h"
 
 namespace XS {
 
