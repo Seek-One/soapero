@@ -231,9 +231,11 @@ void TypeListBuilder::buildFileDescription(QTextStream& os, const QString& szFil
 {
 	os << "/*" << CRLF;
 	os << " * " << szFilename << CRLF;
+	os << " * " << CRLF;
 	os << " * Created on: " << QDateTime::currentDateTime().toString("dd MMM yyyy") << CRLF;
 	//os << " * Created on: 16 sept. 2021" << CRLF;
-	os << " *     Author: " << QCoreApplication::applicationName() << " v" << QCoreApplication::applicationVersion() << CRLF;
+	os << " * Author: " << QCoreApplication::applicationName() << " v" << QCoreApplication::applicationVersion() << CRLF;
+	os << " * License: MIT License" << CRLF;
 	os << " */" << CRLF;
 }
 

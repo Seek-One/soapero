@@ -19,6 +19,8 @@ License
 
 This program is licensed under the terms of the GNU GENERAL PUBLIC LICENSE Version 3.
 
+All generated files are licensed under the terms of the MIT License.
+
 Requirements
 ------------
 
