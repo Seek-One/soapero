@@ -53,7 +53,8 @@ public:
 	void setVariableTypeFromString(const QString& szNamespacePrefix, const QString& szType);
 	VariableType getVariableType() const;
 	static QString getVariableTypeNameString(VariableType iVariableType);
-	QString getVariableTypeNameString() const;
+	QString getCPPTypeNameString() const;
+	QString getCPPTypeNameValuesString() const;
 	QString getVariableTypeString() const;
 	QString getVariableTypeFilenameString() const;
 	const QString& getVariableTypeNamepace() const;

@@ -6,6 +6,8 @@
  */
 
 #include "../Utils/StringUtils.h"
+#include "../Utils/ModelUtils.h"
+
 #include "SimpleType.h"
 #include "ComplexType.h"
 
@@ -133,7 +135,13 @@ int Element::getMaxOccurs()const
 
 QString Element::getVariableName() const
 {
-	return StringUtils::secureString(QString("_%0%1").arg(getName().left(1).toLower()).arg(getName().mid(1)));
+	QString szName = ModelUtils::getUncapitalizedName(getName());
+	return StringUtils::secureString(QString("_%0").arg(szName));
+}
+
+QString Element::getVariableNameList() const
+{
+	return getVariableName() + "List";
 }
 
 QString Element::getTagQualifiedName() const
@@ -143,110 +151,88 @@ QString Element::getTagQualifiedName() const
 
 QString Element::getSetterDeclaration() const
 {
+	QString szDeclaration;
+
+	QString szFuncName = ModelUtils::getCapitalizedName(getName());
+	QString szParamType;
+	QString szParamName = ModelUtils::getUncapitalizedName(getName());
+
 	if(m_pType->getClassType() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
+		szParamType = pSimpleType->getCPPTypeNameString();
+		szParamName = ModelUtils::getUncapitalizedName(getName());
 		if(m_iMaxOccurs > 1 || m_iMaxOccurs == -1) {
-			QString szLocalName = getName();
-			QString szVarName = szLocalName.left(1).toLower() + szLocalName.mid(1);
-			QString szVarListName = szVarName + "List";
-			QString szDeclaration = "void set%0List(const QList<%1>& %2);" CRLF;
-			szDeclaration += "\tvoid add%0(const %1& %3);";
-
-			if(pSimpleType->isEnumeration()){
-				return szDeclaration.arg(szLocalName).arg(pSimpleType->getNameWithNamespace()).arg(szVarListName).arg(szVarName);
-			}else{
-				return szDeclaration.arg(szLocalName).arg(pSimpleType->getVariableTypeString()).arg(szVarListName).arg(szVarName);
-			}
+			szDeclaration += "void set%0List(const QList<%1>& %2List);" CRLF;
+			szDeclaration += "\tvoid add%0(const %1& %2);";
 		}else{
-			if(pSimpleType->isEnumeration()) {
-				QString szVarName = getName().left(1).toLower() + getName().mid(1);
-				QString szDeclaration = "void set%0(const %1& %2);";
-
-				return szDeclaration.arg(getName()).arg(pSimpleType->getNameWithNamespace()).arg(szVarName);
-
-			} else {
-				QString szVarName = StringUtils::secureString(getName().left(1).toLower() + getName().mid(1));
-				QString szDeclaration = "void set%0(const %1& %2);";
-
-				return szDeclaration.arg(StringUtils::secureString(getName())).arg(pSimpleType->getVariableTypeString()).arg(szVarName);
-			}
+			szDeclaration = "void set%0(const %1& %2);";
 		}
 	}else{
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(m_pType);
 		if(m_iMaxOccurs > 1 || m_iMaxOccurs == -1) {
-			QString szLocalName = getName();
-			QString szVarName = szLocalName.left(1).toLower() + szLocalName.mid(1);
-			QString szVarListName = szVarName + "List";
-			QString szDeclaration;
+			szParamType = pComplexType->getNameWithNamespace();
 			if(m_bIsPointer){
-				szDeclaration = "void set%0List(const QList<%1*>& %2);" CRLF;
-				szDeclaration += "\tvoid add%0(%1* %3);";
+				szDeclaration = "void set%0List(const QList<%1*>& %2List);" CRLF;
+				szDeclaration += "\tvoid add%0(%1* %2);";
 			}else{
 				szDeclaration = "void set%0List(const QList<%1>& %2);" CRLF;
-				szDeclaration += "\tvoid add%0(const %1& %3);";
+				szDeclaration += "\tvoid add%0(const %1& %2);";
 			}
-
-			return szDeclaration.arg(szLocalName).arg(pComplexType->getNameWithNamespace()).arg(szVarListName).arg(szVarName);
-
 		}else{
-			QString szLocalName = pComplexType->getLocalName();
-			QString szVarName = szLocalName.left(1).toLower() + szLocalName.mid(1);
-			QString szDeclaration;
 			if(m_bIsNested || m_bIsPointer){
-				szDeclaration = QString("void set%0(%1* %2);").arg(getName()).arg(pComplexType->getLocalName()).arg(szVarName);
+				szDeclaration = QString("void set%0(%1* %2);");
+				szParamType = pComplexType->getLocalName();
 			}else{
-				szDeclaration = QString("void set%0(const %1& %2);").arg(getName()).arg(pComplexType->getNameWithNamespace()).arg(szVarName);
+				szDeclaration = QString("void set%0(const %1& %2);");
+				szParamType = pComplexType->getNameWithNamespace();
 			}
-
-			return szDeclaration;
 		}
 	}
+	return szDeclaration.arg(szFuncName).arg(szParamType).arg(szParamName);
 }
 
 QString Element::getGetterDeclaration() const
 {
+	QString szDeclaration;
+
+	QString szFuncName = ModelUtils::getCapitalizedName(getName());
+
+	QString szMemberTypeName;
+
 	if(m_pType->getClassType() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
+		szMemberTypeName = pSimpleType->getCPPTypeNameString();
 		if(m_iMaxOccurs > 1 || m_iMaxOccurs == -1) {
-			QString szDeclaration = "const QList<%0>& get%1List() const;";
-			if(pSimpleType->isEnumeration()){
-				return szDeclaration.arg(pSimpleType->getNameWithNamespace()).arg(getName());
-			}else{
-				return szDeclaration.arg(pSimpleType->getVariableTypeString()).arg(getName());
-			}
-
+			szDeclaration = "const QList<%0>& get%1List() const;";
 		}else{
 			if(pSimpleType->isEnumeration()) {
-				QString szDeclaration = "%0 get%1() const;";
-				return szDeclaration.arg(pSimpleType->getNameWithNamespace()).arg(getName());
+				szDeclaration = "%0 get%1() const;";
 			} else {
-				QString szDeclaration = "const %0& get%1() const;";
-				return szDeclaration.arg(pSimpleType->getVariableTypeString()).arg(StringUtils::secureString(getName()));
+				szDeclaration = "const %0& get%1() const;";
 			}
 		}
 
 	}else{
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(m_pType);
 		if(m_iMaxOccurs > 1 || m_iMaxOccurs == -1) {
-			QString szDeclaration;
+			szMemberTypeName = pComplexType->getNameWithNamespace();
 			if(m_bIsPointer){
 				szDeclaration = "const QList<%0*>& get%1List() const;";
 			}else{
 				szDeclaration = "const QList<%0>& get%1List() const;";
 			}
-
-			return szDeclaration.arg(pComplexType->getNameWithNamespace()).arg(getName());
-
 		}else{
-			QString szDeclaration;
 			if(m_bIsNested || m_bIsPointer){
-				szDeclaration = QString("%0* get%1() const;").arg(pComplexType->getLocalName()).arg(getName());
+				szMemberTypeName = pComplexType->getLocalName();
+				szDeclaration ="%0* get%1() const;";
 			}else{
-				szDeclaration = QString("const %0& get%1() const;").arg(pComplexType->getNameWithNamespace()).arg(getName());
+				szMemberTypeName = pComplexType->getNameWithNamespace();
+				szDeclaration = "const %0& get%1() const;";
 			}
-			return szDeclaration;
 		}
 	}
+
+	return szDeclaration.arg(szMemberTypeName).arg(szFuncName);
 }
 
 QString Element::getSerializerDeclaration() const
@@ -254,13 +240,10 @@ QString Element::getSerializerDeclaration() const
 	if(m_pType->getClassType() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
 		return pSimpleType->getSerializerDeclaration();
-
 	}else{
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(m_pType);
 		if(m_iMaxOccurs > 1 || m_iMaxOccurs == -1) {
-
 			return "";
-
 		} else {
 			return pComplexType->getSerializerDeclaration();
 		}
@@ -274,188 +257,156 @@ QString Element::getDeserializerDeclaration() const
 
 QString Element::getSetterDefinition(const QString& szClassname) const
 {
-	if(m_pType->getClassType() == Type::TypeSimple) {
+	QString szDefinition;
+
+	QString szFuncName = ModelUtils::getCapitalizedName(getName());
+	QString szMemberName;
+	QString szParamType;
+	QString szParamName = ModelUtils::getUncapitalizedName(getName());
+
+	if(m_pType->getClassType() == Type::TypeSimple)
+	{
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
+		szParamType = pSimpleType->getCPPTypeNameString();
 		if(m_iMaxOccurs > 1 || m_iMaxOccurs == -1) {
-			QString szLocalName = getName();
-			QString szVarName = szLocalName.left(1).toLower() + szLocalName.mid(1);
-			QString szVarListName = szVarName + "List";
-			QString szDeclaration = ""
-			"void %0::set%1List(const QList<%2>& %3)" CRLF
-			"{" CRLF
-			"\t%4List = %3;" CRLF
-			"}" CRLF CRLF
-			"void %0::add%1(const %2& %5)" CRLF
-			"{" CRLF
-			"\t%4List.append(%5);" CRLF
-			"}" CRLF;
+			szMemberName = getVariableNameList();
 
-			if(pSimpleType->isEnumeration()){
-				return szDeclaration.arg(szClassname).arg(szLocalName).arg(pSimpleType->getNameWithNamespace())
-										.arg(szVarListName).arg(getVariableName()).arg(szVarName);
-			}else{
-				return szDeclaration.arg(szClassname).arg(szLocalName).arg(pSimpleType->getVariableTypeString())
-						.arg(szVarListName).arg(getVariableName()).arg(szVarName);
-			}
-
+			szDefinition += "void %0::set%1List(const QList<%2>& %3List)" CRLF;
+			szDefinition += "{" CRLF;
+			szDefinition += "\t%4 = %3List;" CRLF;
+			szDefinition += "}" CRLF CRLF;
+			szDefinition += "void %0::add%1(const %2& %3)" CRLF;
+			szDefinition += "{" CRLF;
+			szDefinition += "\t%4.append(%3);" CRLF;
+			szDefinition += "}" CRLF;;
 		}else{
-			if(!pSimpleType->isEnumeration()) {
-				QString szVarName = StringUtils::secureString(getName().left(1).toLower() + getName().mid(1));
-
-				QString szDefinition = "";
-				szDefinition = "void %0::set%1(const %2& %3)" CRLF;
-				szDefinition += "{" CRLF;
-				szDefinition += "\t%4 = %5;" CRLF;
-				szDefinition += "}" CRLF;
-
-				return szDefinition.arg(szClassname).arg(StringUtils::secureString(getName())).arg(pSimpleType->getVariableTypeString())
-									.arg(szVarName).arg(getVariableName()).arg(szVarName);
-			} else {
-				QString szLocalName = StringUtils::secureString(getName());
-				QString szVarName = szLocalName.left(1).toLower() + szLocalName.mid(1);
-
-				QString szDefinition = "void %0::set%1(const %2& %3)" CRLF;
-				szDefinition += "{" CRLF;
-				szDefinition += "\t%4 = %3;" CRLF;
-				szDefinition += "}" CRLF;
-
-				return szDefinition.arg(szClassname).arg(szLocalName).arg(pSimpleType->getNameWithNamespace())
-									.arg(szVarName).arg(getVariableName());
-			}
+			szMemberName = getVariableName();
+			szDefinition += "void %0::set%1(const %2& %3)" CRLF;
+			szDefinition += "{" CRLF;
+			szDefinition += "\t%4 = %3;" CRLF;
+			szDefinition += "}" CRLF;
 		}
 	}else{
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(m_pType);
 		if(m_iMaxOccurs > 1 || m_iMaxOccurs == -1) {
-			QString szLocalName = getName();
-			QString szVarName = szLocalName.left(1).toLower() + szLocalName.mid(1);
-			QString szVarListName = szVarName + "List";
-			QString szDeclaration;
+			szParamType = pComplexType->getNameWithNamespace();
+			szMemberName = getVariableNameList();
 			if(m_bIsPointer){
-				szDeclaration = ""
-						"void %0::set%1List(const QList<%2*>& %3)" CRLF
-						"{" CRLF
-						"\t%4List = %3;" CRLF
-						"}" CRLF CRLF
-						"void %0::add%1(%2* %5)" CRLF
-						"{" CRLF
-						"\t%4List.append(%5);" CRLF
-						"}" CRLF;
-			}else{
-				szDeclaration = ""
-						"void %0::set%1List(const QList<%2>& %3)" CRLF
-						"{" CRLF
-						"\t%4List = %3;" CRLF
-						"}" CRLF CRLF
-						"void %0::add%1(const %2& %5)" CRLF
-						"{" CRLF
-						"\t%4List.append(%5);" CRLF
-						"}" CRLF;
+				szDefinition += "void %0::set%1List(const QList<%2*>& %3List)" CRLF;
+				szDefinition += "{" CRLF;
+				szDefinition += "\t%4 = %3List;" CRLF;
+				szDefinition += "}" CRLF CRLF;
+				szDefinition += "void %0::add%1(%2* %3)" CRLF;
+				szDefinition += "{" CRLF;
+				szDefinition += "\t%4.append(%3);" CRLF;
+				szDefinition += "}" CRLF;
+			}else{;
+				szDefinition += "void %0::set%1List(const QList<%2>& %3)" CRLF;
+				szDefinition += "{" CRLF;
+				szDefinition += "\t%4 = %3;" CRLF;
+				szDefinition += "}" CRLF CRLF;
+				szDefinition += "void %0::add%1(const %2& %3)" CRLF;
+				szDefinition += "{" CRLF;
+				szDefinition += "\t%4.append(%3);" CRLF;
+				szDefinition += "}" CRLF;
 			}
-
-
-			return szDeclaration.arg(szClassname).arg(szLocalName).arg(pComplexType->getNameWithNamespace())
-					.arg(szVarListName).arg(getVariableName()).arg(szVarName);
-
 		}else{
-			QString szLocalName = getName();
-			QString szVarName = szLocalName.left(1).toLower() + szLocalName.mid(1);
-			QString szDeclaration;
+			szMemberName = getVariableName();
 			if(m_bIsNested || m_bIsPointer){
-				szDeclaration = QString("void %0::set%1(%2* %3)" CRLF
-						"{" CRLF
-						"\t%4 = %3;" CRLF
-						"}" CRLF).arg(szClassname).arg(szLocalName).arg(pComplexType->getLocalName()).arg(szVarName).arg(getVariableName());
-			}else{
-				szDeclaration = QString("void %0::set%1(const %2& %3)" CRLF
-						"{" CRLF
-						"\t%4 = %3;" CRLF
-						"}" CRLF).arg(szClassname).arg(szLocalName).arg(pComplexType->getNameWithNamespace()).arg(szVarName).arg(getVariableName());
-			}
+				szParamType = pComplexType->getLocalName();
 
-			return szDeclaration;
+				szDefinition += "void %0::set%1(%2* %3)" CRLF;
+				szDefinition += "{" CRLF;
+				szDefinition += "\t%4 = %3;" CRLF;
+				szDefinition += "}" CRLF;
+			}else{
+				szParamType = pComplexType->getNameWithNamespace();
+
+				szDefinition += "void %0::set%1(const %2& %3)" CRLF;
+				szDefinition += "{" CRLF;
+				szDefinition += "\t%4 = %3;" CRLF;
+				szDefinition += "}" CRLF;
+			}
 		}
 	}
+
+	szDefinition = szDefinition.arg(szClassname);
+	szDefinition = szDefinition.arg(szFuncName);
+	szDefinition = szDefinition.arg(szParamType);
+	szDefinition = szDefinition.arg(szParamName);
+	szDefinition = szDefinition.arg(szMemberName);
+
+	return szDefinition;
 }
 
 QString Element::getGetterDefinition(const QString& szClassname) const
 {
-	if(m_pType->getClassType() == Type::TypeSimple) {
+	QString szDefinition;
+
+	QString szFuncName = ModelUtils::getCapitalizedName(getName());
+	QString szMemberType;
+	QString szMemberName;
+
+	if(m_pType->getClassType() == Type::TypeSimple)
+	{
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
+		szMemberType = pSimpleType->getCPPTypeNameString();
+
 		if(m_iMaxOccurs > 1 || m_iMaxOccurs == -1) {
-			QString szLocalName = getName();
-			QString szVarName = szLocalName.left(1).toLower() + szLocalName.mid(1);
-			QString szVarListName = szVarName + "List";
-			QString szDefinition = ""
-			"const QList<%0>& %1::get%2List() const" CRLF
-			"{" CRLF
-			"\treturn %3List;" CRLF
-			"}" CRLF;
-
-			if(pSimpleType->isEnumeration()){
-				return szDefinition.arg(pSimpleType->getNameWithNamespace()).arg(szClassname).arg(getName()).arg(getVariableName());
-			}else{
-				return szDefinition.arg(pSimpleType->getVariableTypeString()).arg(szClassname).arg(getName()).arg(getVariableName());
-			}
+			szMemberName = getVariableNameList();
+			szDefinition += "const QList<%0>& %1::get%2List() const" CRLF;
+			szDefinition += "{" CRLF;
+			szDefinition += "\treturn %3;" CRLF;
+			szDefinition += "}" CRLF;
 		}else{
+			szMemberName = getVariableName();
 			if(pSimpleType->isEnumeration()) {
-				QString szDefinition = ""
-				"%0 %1::get%2() const" CRLF
-				"{" CRLF
-				"\treturn %3;" CRLF
-				"}" CRLF;
-
-				return szDefinition.arg(pSimpleType->getNameWithNamespace()).arg(szClassname).arg(getName()).arg(getVariableName());
+				szDefinition += "%0 %1::get%2() const" CRLF;
+				szDefinition += "{" CRLF;
+				szDefinition += "\treturn %3;" CRLF;
+				szDefinition += "}" CRLF;
 			}else{
-				QString szDefinition = ""
-				"const %0& %1::get%2() const" CRLF
-				"{" CRLF
-				"\treturn %3;" CRLF
-				"}" CRLF;
-
-				return szDefinition.arg(pSimpleType->getVariableTypeString()).arg(szClassname).arg(StringUtils::secureString(getName())).arg(getVariableName());
+				szDefinition += "const %0& %1::get%2() const" CRLF;
+				szDefinition += "{" CRLF;
+				szDefinition += "\treturn %3;" CRLF;
+				szDefinition += "}" CRLF;
 			}
 		}
-
 	}else{
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(m_pType);
 		if(m_iMaxOccurs > 1 || m_iMaxOccurs == -1) {
-			QString szLocalName = getName();
-			QString szVarName = szLocalName.left(1).toLower() + szLocalName.mid(1);
-			QString szVarListName = szVarName + "List";
-			QString szDefinition;
+			szMemberType = pComplexType->getNameWithNamespace();
+			szMemberName = getVariableNameList();
 			if(m_bIsPointer){
-				szDefinition = ""
-						"const QList<%0*>& %1::get%2List() const" CRLF
-						"{" CRLF
-						"\treturn %3List;" CRLF
-						"}" CRLF;
+				szDefinition += "const QList<%0*>& %1::get%2List() const" CRLF;
+				szDefinition += "{" CRLF;
+				szDefinition += "\treturn %3;" CRLF;
+				szDefinition += "}" CRLF;
 			}else{
-				szDefinition = ""
-						"const QList<%0>& %1::get%2List() const" CRLF
-						"{" CRLF
-						"\treturn %3List;" CRLF
-						"}" CRLF;
+				szDefinition += "const QList<%0>& %1::get%2List() const" CRLF;
+				szDefinition += "{" CRLF;
+				szDefinition += "\treturn %3;" CRLF;
+				szDefinition += "}" CRLF;
 			}
-
-			return szDefinition.arg(pComplexType->getNameWithNamespace()).arg(szClassname).arg(getName()).arg(getVariableName());
-
 		}else{
-			QString szDefinition;
+			szMemberName = getVariableName();
 			if(m_bIsNested || m_bIsPointer){
-				szDefinition = QString("%0* %1::get%2() const" CRLF
-						"{" CRLF
-						"\treturn %3;" CRLF
-						"}" CRLF).arg(pComplexType->getLocalName()).arg(szClassname).arg(getName()).arg(getVariableName());
+				szMemberType = pComplexType->getLocalName();
+				szDefinition = "%0* %1::get%2() const" CRLF;
+				szDefinition += "{" CRLF;
+				szDefinition += "\treturn %3;" CRLF;
+				szDefinition += "}" CRLF;
 			}else{
-				szDefinition = QString("const %0& %1::get%2() const" CRLF
-						"{" CRLF
-						"\treturn %3;" CRLF
-						"}" CRLF).arg(pComplexType->getNameWithNamespace()).arg(szClassname).arg(getName()).arg(getVariableName());
+				szMemberType = pComplexType->getNameWithNamespace();
+				szDefinition = "const %0& %1::get%2() const" CRLF;
+				szDefinition += "{" CRLF;
+				szDefinition += "\treturn %3;" CRLF;
+				szDefinition += "}" CRLF;
 			}
-
-			return szDefinition;
 		}
 	}
+
+	return szDefinition.arg(szMemberType).arg(szClassname).arg(szFuncName).arg(szMemberName);
 }
 
 QString Element::getSerializerDefinition(const QString& szClassname, const QString& szNamespace) const
@@ -484,61 +435,45 @@ QString Element::getDeserializerDefinition(const QString& szClassname) const
 
 QString Element::getVariableDeclaration() const
 {
-	if(m_pType->getClassType() == Type::TypeSimple) {
-		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
-		QString szDeclaration;
+	QString szDeclaration;
 
-		QString szVarName = StringUtils::secureString("_" + getName().left(1).toLower() + getName().mid(1));
+	QString szVariableName = getVariableName();
+
+	if(m_pType->getClassType() == Type::TypeSimple)
+	{
+		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
 
 		if(m_iMaxOccurs > 1 || m_iMaxOccurs == -1) {
 			szDeclaration += "QList<";
-			if(pSimpleType->isEnumeration()){
-				szDeclaration += pSimpleType->getNameWithNamespace();
-			}else{
-				szDeclaration += pSimpleType->getVariableTypeString();
-			}
+			szDeclaration += pSimpleType->getCPPTypeNameString();
 			szDeclaration += "> ";
-			szDeclaration += szVarName;
+			szDeclaration += szVariableName;
 			szDeclaration += "List";
 			szDeclaration += ";";
-
-			return szDeclaration;
-
 		} else {
-			QString szDeclaration;
-			if(!pSimpleType->isEnumeration()) {
-				szDeclaration += pSimpleType->getVariableTypeString();
-			} else {
-				szDeclaration += pSimpleType->getNameWithNamespace();
-			}
+			szDeclaration += pSimpleType->getCPPTypeNameString();
 			szDeclaration += " ";
-			szDeclaration += szVarName;
+			szDeclaration += szVariableName;
 			szDeclaration += ";";
-
-			return szDeclaration;
 		}
 	}else{
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(m_pType);
-		QString szDeclaration;
-
-		QString szVarName = "_" + getName().left(1).toLower() + getName().mid(1);
 
 		if(m_iMaxOccurs > 1 || m_iMaxOccurs == -1) {
 			szDeclaration += "QList<";
 			szDeclaration += m_pType->getNameWithNamespace() + (m_bIsPointer ? "*" : "");
 			szDeclaration += "> ";
-			szDeclaration += szVarName;
+			szDeclaration += szVariableName;
 			szDeclaration += "List";
 		} else {
 			szDeclaration += (m_bIsNested || m_bIsPointer) ? m_pType->getLocalName() : m_pType->getNameWithNamespace();
 			szDeclaration += (m_bIsNested || m_bIsPointer) ? "* " : " ";
-			szDeclaration += szVarName;
+			szDeclaration += szVariableName;
 		}
-
 		szDeclaration += ";";
-
-		return szDeclaration;
 	}
+
+	return szDeclaration;
 }
 
 ElementList::ElementList()
@@ -654,16 +589,19 @@ bool Attribute::isList() const
 QString Attribute::getSetterDeclaration() const
 {
 	QString szDeclaration;
+
+	QString szFuncName = ModelUtils::getCapitalizedName(getName());
+	QString szParamType;
+	QString szParamName = ModelUtils::getUncapitalizedName(getName());
+
 	if(m_pType->getClassType() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
 
 		if(m_bIsList){
-			QString szLocalName = getName();
-			QString szVarName = szLocalName.left(1).toLower() + szLocalName.mid(1);
-			QString szVarListName = szVarName + "List";
-			szDeclaration = "void set%0List(const QList<%1>& %2);" CRLF;
-			szDeclaration += "\tvoid add%0(const %1& %3);" CRLF;
-			szDeclaration = szDeclaration.arg(szLocalName).arg(pSimpleType->getVariableTypeString()).arg(szVarListName).arg(szVarName);
+			szParamType = pSimpleType->getCPPTypeNameString();
+			szDeclaration = "void set%0List(const QList<%1>& %2List);" CRLF;
+			szDeclaration += "\tvoid add%0(const %1& %2);" CRLF;
+			szDeclaration = szDeclaration.arg(szFuncName).arg(szParamType).arg(szParamName);
 		}else if(pSimpleType->isEnumeration()) {
 			szDeclaration += pSimpleType->getSetterDeclarationForComplexType() + CRLF;
 		} else {
@@ -674,28 +612,32 @@ QString Attribute::getSetterDeclaration() const
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(m_pType);
 
 		if(m_bIsList){
-			QString szLocalName = getName();
-			QString szVarName = szLocalName.left(1).toLower() + szLocalName.mid(1);
-			QString szVarListName = szVarName + "List";
+			szParamType = pComplexType->getNameWithNamespace();
 			szDeclaration = "void set%0List(const QList<%1>& %2);" CRLF;
 			szDeclaration += "\tvoid add%0(const %1& %3);" CRLF;
-			szDeclaration = szDeclaration.arg(szLocalName).arg(pComplexType->getNameWithNamespace()).arg(szVarListName).arg(szVarName);
+			szDeclaration = szDeclaration.arg(szFuncName).arg(szParamType).arg(szParamName);
 		}else{
 			szDeclaration += pComplexType->getSetterDeclaration(getName()) + CRLF;
 		}
 	}
+
 	return szDeclaration;
 }
 
 QString Attribute::getGetterDeclaration() const
 {
 	QString szDeclaration;
+
+	QString szFuncName = ModelUtils::getCapitalizedName(getName());
+	QString szMemberType;
+
 	if(m_pType->getClassType() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
 
 		if(m_bIsList){
+			szMemberType = pSimpleType->getCPPTypeNameString();
 			szDeclaration = "const QList<%0>& get%1List() const;" CRLF;
-			szDeclaration = szDeclaration.arg(pSimpleType->getVariableTypeString()).arg(getName());
+			szDeclaration = szDeclaration.arg(szMemberType).arg(szFuncName);
 		}else if(pSimpleType->isEnumeration()) {
 			szDeclaration += pSimpleType->getGetterDeclarationForComplexType() + CRLF;
 		} else {
@@ -705,66 +647,74 @@ QString Attribute::getGetterDeclaration() const
 	}else if(m_pType->getClassType() == Type::TypeComplex) {
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(m_pType);
 		if(m_bIsList){
+			szMemberType = pComplexType->getNameWithNamespace();
 			szDeclaration = "const QList<%0>& get%1List() const;" CRLF;
-			szDeclaration = szDeclaration.arg(pComplexType->getNameWithNamespace()).arg(getName());
+			szDeclaration = szDeclaration.arg(szMemberType).arg(szFuncName);
 		}else{
 			szDeclaration += pComplexType->getGetterDeclaration(getName()) + CRLF ;
 		}
 	}
+
 	return szDeclaration;
 }
 
 QString Attribute::getVariableDeclaration() const
 {
 	QString szDeclaration;
+
 	if(m_pType->getClassType() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
 		if(m_bIsList){
 			szDeclaration += "QList<";
-			szDeclaration += pSimpleType->getVariableTypeString();
+			szDeclaration += pSimpleType->getCPPTypeNameString();
 			szDeclaration += "> ";
-			szDeclaration += "_" + getName().left(1).toLower() + getName().mid(1);
+			szDeclaration +=  getVariableName();
 			szDeclaration += "List";
 			szDeclaration += ";";
 		}else{
 			szDeclaration += pSimpleType->getVariableDeclarationForComplexType() ;
 		}
 	}else if(m_pType->getClassType() == Type::TypeComplex) {
-		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(m_pType);if(m_bIsList){
+		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(m_pType);
+		if(m_bIsList){
 			szDeclaration += "QList<";
 			szDeclaration += pComplexType->getNameWithNamespace();
 			szDeclaration += "> ";
-			szDeclaration += "_" + getName().left(1).toLower() + getName().mid(1);
+			szDeclaration += getVariableName();
 			szDeclaration += "List";
 			szDeclaration += ";";
 		}else{
 			szDeclaration += pComplexType->getVariableDeclaration(getName());
 		}
 	}
+
 	return szDeclaration;
 }
 
 QString Attribute::getSetterDefinition(const QString& szClassname) const
 {
 	QString szDefinition;
+
+	QString szFuncName = ModelUtils::getCapitalizedName(getName());
+	QString szMemberName = getVariableNameList();
+	QString szParamName = ModelUtils::getUncapitalizedName(getName());
+	QString szParamType;
+
 	if(m_pType->getClassType() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
+		szParamType = pSimpleType->getCPPTypeNameString();
 
 		if(m_bIsList){
-			QString szLocalName = getName();
-			QString szVarName = szLocalName.left(1).toLower() + szLocalName.mid(1);
-			QString szVarListName = szVarName + "List";
-			szDefinition = "void %0::set%1List(const QList<%2>& %3)" CRLF
-			"{" CRLF
-			"\t_%4List = %3;" CRLF
-			"}" CRLF CRLF
-			"void %0::add%1(const %2& %5)" CRLF
-			"{" CRLF
-			"\t_%4List.append(%5);" CRLF
-			"}" CRLF CRLF;
+			szDefinition += "void %0::set%1List(const QList<%2>& %3List)" CRLF;
+			szDefinition += "{" CRLF;
+			szDefinition += "\t%4 = %3List;" CRLF;
+			szDefinition += "}" CRLF CRLF;
+			szDefinition += "void %0::add%1(const %2& %3)" CRLF;
+			szDefinition += "{" CRLF;
+			szDefinition += "\t%4.append(%3);" CRLF;
+			szDefinition += "}" CRLF CRLF;
 
-			szDefinition = szDefinition.arg(szClassname).arg(szLocalName).arg(pSimpleType->getVariableTypeString())
-					.arg(szVarListName).arg(szLocalName).arg(szVarName);
+			szDefinition = szDefinition.arg(szClassname).arg(szFuncName).arg(szParamType).arg(szParamName).arg(szMemberName);
 		}else if(!pSimpleType->isEnumeration()) {
 			szDefinition += pSimpleType->getSetterDefinition(szClassname) + CRLF;
 		} else {
@@ -773,45 +723,46 @@ QString Attribute::getSetterDefinition(const QString& szClassname) const
 
 	}else if(m_pType->getClassType() == Type::TypeComplex) {
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(m_pType);
+		szParamType = pComplexType->getNameWithNamespace();
 		if(m_bIsList){
-			QString szLocalName = getName();
-			QString szVarName = szLocalName.left(1).toLower() + szLocalName.mid(1);
-			QString szVarListName = szVarName + "List";
-			szDefinition = "void %0::set%1List(const QList<%2>& %3)" CRLF
-			"{" CRLF
-			"\t_%4List = %3;" CRLF
-			"}" CRLF CRLF
-			"void %0::add%1(const %2& %5)" CRLF
-			"{" CRLF
-			"\t_%4List.append(%5);" CRLF
-			"}" CRLF CRLF;
+			szDefinition = "void %0::set%1List(const QList<%2>& %3List)" CRLF;
+			szDefinition += "{" CRLF;
+			szDefinition += "\t%4 = %3List;" CRLF;
+			szDefinition += "}" CRLF CRLF;
+			szDefinition += "void %0::add%1(const %2& %3)" CRLF;
+			szDefinition += "{" CRLF;
+			szDefinition += "\t%4.append(%3);" CRLF;
+			szDefinition += "}" CRLF CRLF;
 
-			szDefinition = szDefinition.arg(szClassname).arg(szLocalName).arg(pComplexType->getNameWithNamespace())
-					.arg(szVarListName).arg(szLocalName).arg(szVarName);
+			szDefinition = szDefinition.arg(szClassname).arg(szFuncName).arg(szParamType).arg(szParamName).arg(szMemberName);
 		}else{
 			szDefinition += pComplexType->getSetterDefinition(szClassname, getName()) + CRLF;
 		}
 	}
+
 	return szDefinition;
 }
 
 QString Attribute::getGetterDefinition(const QString& szClassname) const
 {
 	QString szDefinition;
+
+	QString szFuncName = ModelUtils::getCapitalizedName(getName());
+	QString szMemberType;
+	QString szMemberName;
+
 	if(m_pType->getClassType() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
-
 		if(m_bIsList){
-			QString szLocalName = getName();
-			QString szVarName = szLocalName.left(1).toLower() + szLocalName.mid(1);
-			QString szVarListName = szVarName + "List";
-			szDefinition = ""
-			"const QList<%0>& %1::get%2List() const" CRLF
-			"{" CRLF
-			"\treturn _%3List;" CRLF
-			"}" CRLF;
+			szMemberType = pSimpleType->getCPPTypeNameString();
+			szMemberName = getVariableNameList();
 
-			szDefinition = szDefinition.arg(pSimpleType->getVariableTypeString()).arg(szClassname).arg(getName()).arg(szVarName);
+			szDefinition += "const QList<%0>& %1::get%2List() const" CRLF;
+			szDefinition += "{" CRLF;
+			szDefinition += "\treturn %3;" CRLF;
+			szDefinition += "}" CRLF;
+
+			szDefinition = szDefinition.arg(szMemberType).arg(szClassname).arg(szFuncName).arg(szMemberName);
 		}else if(!pSimpleType->isEnumeration()) {
 			szDefinition += pSimpleType->getGetterDefinition(szClassname);
 		} else {
@@ -822,21 +773,31 @@ QString Attribute::getGetterDefinition(const QString& szClassname) const
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(m_pType);
 
 		if(m_bIsList){
-			QString szLocalName = getName();
-			QString szVarName = szLocalName.left(1).toLower() + szLocalName.mid(1);
-			QString szVarListName = szVarName + "List";
-			szDefinition = ""
-			"const QList<%0>& %1::get%2List() const" CRLF
-			"{" CRLF
-			"\treturn _%3List;" CRLF
-			"}" CRLF;
+			szMemberType = pComplexType->getNameWithNamespace();
+			szMemberName = getVariableNameList();
 
-			szDefinition = szDefinition.arg(pComplexType->getNameWithNamespace()).arg(szClassname).arg(getName()).arg(szVarName);
+			szDefinition += "const QList<%0>& %1::get%2List() const" CRLF;
+			szDefinition += "{" CRLF;
+			szDefinition += "\treturn %3;" CRLF;
+			szDefinition += "}" CRLF;;
+
+			szDefinition = szDefinition.arg(szMemberType).arg(szClassname).arg(szFuncName).arg(szMemberName);
 		}else{
 			szDefinition += pComplexType->getGetterDefinition(szClassname, getName());
 		}
 	}
 	return szDefinition;
+}
+
+QString Attribute::getVariableName() const
+{
+	QString szName = ModelUtils::getUncapitalizedName(getName());
+	return StringUtils::secureString(QString("_%0").arg(szName));
+}
+
+QString Attribute::getVariableNameList() const
+{
+	return getVariableName() + "List";
 }
 
 AttributeList::AttributeList()
@@ -953,29 +914,23 @@ ElementListSharedPtr ComplexType::getElementList() const
 
 QString ComplexType::getSetterDeclaration(const QString& szName) const
 {
-	QString szLocalName;
-	QString szVarName;
-	if(!szName.isEmpty()){
-		szLocalName = szName;
-	}else{
-		szLocalName = getLocalName();
-	}
-	szVarName = szLocalName.left(1).toLower() + szLocalName.mid(1);
+	QString szLocalName = (szName.isEmpty() ? getLocalName() : szName);
+	QString szFuncName = ModelUtils::getCapitalizedName(szLocalName);
+	QString szParamName = ModelUtils::getUncapitalizedName(szLocalName);
+	QString szParamType = getNameWithNamespace();
 
 	QString szDeclaration = "void set%0(const %1& %2);";
-	return szDeclaration.arg(szLocalName).arg(getNameWithNamespace()).arg(szVarName);
+	return szDeclaration.arg(szFuncName).arg(szParamType).arg(szParamName);
 }
 
 QString ComplexType::getGetterDeclaration(const QString& szName) const
 {
-	QString szLocalName;
-	if(!szName.isEmpty()){
-		szLocalName = szName;
-	}else{
-		szLocalName = getLocalName();
-	}
+	QString szLocalName = (szName.isEmpty() ? getLocalName() : szName);
+	QString szFuncName = ModelUtils::getCapitalizedName(szLocalName);
+	QString szMemberType = getNameWithNamespace();
+
 	QString szDeclaration = "const %0& get%1() const;";
-	return szDeclaration.arg(getNameWithNamespace()).arg(szLocalName);
+	return szDeclaration.arg(szMemberType).arg(szFuncName);
 }
 
 QString ComplexType::getSerializerDeclaration() const
@@ -990,43 +945,35 @@ QString ComplexType::getDeserializerDeclaration() const
 
 QString ComplexType::getSetterDefinition(const QString& szClassname, const QString& szName) const
 {
-	QString szLocalName;
-	QString szVarName;
-	if(!szName.isEmpty()){
-		szLocalName = szName;
-	}else{
-		szLocalName = getLocalName();
-	}
-	szVarName = szLocalName.left(1).toLower() + szLocalName.mid(1);
+	QString szLocalName = (szName.isEmpty() ? getLocalName() : szName);
+	QString szFuncName = ModelUtils::getCapitalizedName(szLocalName);
+	QString szParamName = ModelUtils::getUncapitalizedName(szLocalName);
+	QString szParamType = getNameWithNamespace();
+	QString szMemberName = getVariableName();
 
-	QString szDeclaration = ""
-	"void %0::set%1(const %2& %3)" CRLF
-	"{" CRLF
-	"\t%4 = %5;" CRLF
-	"}" CRLF;
+	QString szDeclaration;
+	szDeclaration += "void %0::set%1(const %2& %3)" CRLF;
+	szDeclaration += "{" CRLF;
+	szDeclaration += "\t%4 = %3;" CRLF;
+	szDeclaration += "}" CRLF;
 
-	return szDeclaration.arg(szClassname).arg(szLocalName).arg(getNameWithNamespace())
-			.arg(szVarName).arg("_" + szVarName).arg(szVarName);
+	return szDeclaration.arg(szClassname).arg(szFuncName).arg(szParamType).arg(szParamName).arg(szMemberName);
 }
 
 QString ComplexType::getGetterDefinition(const QString& szClassname, const QString& szName) const
 {
-	QString szLocalName;
-	QString szVarName;
-	if(!szName.isEmpty()){
-		szLocalName = szName;
-	}else{
-		szLocalName = getLocalName();
-	}
-	szVarName = szLocalName.left(1).toLower() + szLocalName.mid(1);
+	QString szLocalName = (szName.isEmpty() ? getLocalName() : szName);
+	QString szFuncName = ModelUtils::getCapitalizedName(szLocalName);
+	QString szMemberType = getNameWithNamespace();
+	QString szMemberName = getVariableName();
 
-	QString szDefinition = ""
-	"const %0& %1::get%2() const" CRLF
-	"{" CRLF
-	"\treturn %3;" CRLF
-	"}" CRLF;
+	QString szDefinition;
+	szDefinition += "const %0& %1::get%2() const" CRLF;
+	szDefinition += "{" CRLF;
+	szDefinition += "\treturn %3;" CRLF;
+	szDefinition += "}" CRLF;
 
-	return szDefinition.arg(getNameWithNamespace()).arg(szClassname).arg(szLocalName).arg("_" + szVarName);
+	return szDefinition.arg(szMemberType).arg(szClassname).arg(szFuncName).arg(szMemberName);
 }
 
 QString ComplexType::getSerializerDefinition(const QString& szClassname, const QString& szNamespace) const
@@ -1062,7 +1009,7 @@ QString ComplexType::getSerializerDefinition(const QString& szClassname, const Q
 					szIterator = "iter_" + QString::number(iIteratorCount++);
 					szDefinition += "\tif(_" + pAttribute->getName() + "List" + ".size() > 0) {" CRLF;
 					szDefinition += "\t\tszValue += \" " + pAttribute->getName() + "=\\\"\";" CRLF;
-					szDefinition += QString("\t\tQList<%0>::const_iterator %1;" CRLF).arg( pSimpleType->getVariableTypeString()).arg(szIterator);
+					szDefinition += QString("\t\tQList<%0>::const_iterator %1;" CRLF).arg( pSimpleType->getCPPTypeNameString()).arg(szIterator);
 					szDefinition += QString("\t\tfor(%0 = _%1List.constBegin(); %0 != _%1List.constEnd(); ++%0) {" CRLF).arg(szIterator).arg(pAttribute->getName());
 					szDefinition += QString("\t\t\tif(!%0->isNull()) {" CRLF).arg(szIterator);
 					szDefinition += QString("\t\t\t\tszValue += %0->serialize() + \" \";" CRLF).arg(szIterator);
@@ -1090,7 +1037,7 @@ QString ComplexType::getSerializerDefinition(const QString& szClassname, const Q
 					szDefinition += "\t\tszValue +=\"\\\"\";" CRLF;
 					szDefinition += "\t}" CRLF;
 				}else{
-					QString szVariableName = "_" + pAttribute->getName().left(1).toLower() + pAttribute->getName().mid(1);
+					QString szVariableName = "_" + ModelUtils::getUncapitalizedName(pAttribute->getName());
 					szDefinition += "\tif(!" + szVariableName + ".isNull()) {" CRLF;
 					szDefinition += "\t\tszValue += \" " + pAttribute->getName() + "=\\\"\" + " + szVariableName + ".serialize() + \"\\\"\";" CRLF;
 					szDefinition += "\t}" CRLF;
@@ -1103,7 +1050,7 @@ QString ComplexType::getSerializerDefinition(const QString& szClassname, const Q
 		QString szExtensionName;
 		if(getExtensionType()->getClassType() == Type::TypeSimple){
 			SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(getExtensionType());
-			szExtensionName = pSimpleType->getVariableTypeString();
+			szExtensionName = pSimpleType->getCPPTypeNameString();
 		}else{
 			szExtensionName = getExtensionType()->getNameWithNamespace();
 		}
@@ -1147,7 +1094,7 @@ QString ComplexType::getSerializerDefinition(const QString& szClassname, const Q
 				if(pSimpleType->isEnumeration()){
 					szDefinition += QString("\tQList<%0>::const_iterator %1;" CRLF).arg(pSimpleType->getNameWithNamespace()).arg(szIterator);
 				}else{
-					szDefinition += QString("\tQList<%0>::const_iterator %1;" CRLF).arg(pSimpleType->getVariableTypeString()).arg(szIterator);
+					szDefinition += QString("\tQList<%0>::const_iterator %1;" CRLF).arg(pSimpleType->getCPPTypeNameString()).arg(szIterator);
 				}
 				szDefinition += QString("\tfor(%0 = %1List.constBegin(); %0 != %1List.constEnd(); ++%0) {" CRLF).arg(szIterator).arg(pElement->getVariableName());
 				szDefinition += QString("\t\tif(!%0->isNull()) {" CRLF).arg(szIterator);
@@ -1214,7 +1161,7 @@ QString ComplexType::getDeserializerDefinition(const QString& szClassname) const
 		QString szExtensionName;
 		if(getExtensionType()->getClassType() == Type::TypeSimple){
 			SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(getExtensionType());
-			szExtensionName = pSimpleType->getVariableTypeString();
+			szExtensionName = pSimpleType->getCPPTypeNameString();
 		}else{
 			szExtensionName = getExtensionType()->getNameWithNamespace();
 		}
@@ -1252,9 +1199,9 @@ QString ComplexType::getDeserializerDefinition(const QString& szClassname) const
 				szDefinition += "\t\t\tQStringList szValues = szAttrValue.split(\" \");" CRLF;
 				szDefinition += "\t\t\tfor(int i = 0; i < szValues.size(); ++i){" CRLF;
 				szDefinition += "\t\t\t\tif(!szValues[i].isEmpty()){" CRLF;
-				szDefinition += "\t\t\t\t\t" + pSimpleType->getVariableTypeString() + " tmp;" CRLF;
+				szDefinition += "\t\t\t\t\t" + pSimpleType->getCPPTypeNameString() + " tmp;" CRLF;
 				szDefinition += "\t\t\t\t\ttmp.setValue(szValues[i]);" CRLF;
-				szDefinition += "\t\t\t\t\tadd" + pAttribute->getName() + "(tmp);" CRLF;
+				szDefinition += "\t\t\t\t\tadd" + ModelUtils::getCapitalizedName(pAttribute->getName()) + "(tmp);" CRLF;
 				szDefinition += "\t\t\t\t}" CRLF;
 				szDefinition += "\t\t\t}" CRLF;
 				szDefinition += "\t\t}" CRLF;
@@ -1288,7 +1235,7 @@ QString ComplexType::getDeserializerDefinition(const QString& szClassname) const
 				if(pSimpleType->isEnumeration()){
 					szDefinition += "\t\t\t" + pSimpleType->getNameWithNamespace() + " item;" CRLF;
 				}else{
-					szDefinition += "\t\t\t" + pSimpleType->getVariableTypeString() + " item;" CRLF;
+					szDefinition += "\t\t\t" + pSimpleType->getCPPTypeNameString() + " item;" CRLF;
 				}
 				szDefinition += "\t\t\titem.deserialize(child);" CRLF;
 				szDefinition += "\t\t\t" + pElement->getVariableName() + "List.append(item);" CRLF;
@@ -1356,7 +1303,7 @@ QString ComplexType::getIsNullDefinition(const QString& szClassname) const
 		QString szExtensionName;
 		if(getExtensionType()->getClassType() == Type::TypeSimple){
 			SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(getExtensionType());
-			szExtensionName = pSimpleType->getVariableTypeString();
+			szExtensionName = pSimpleType->getCPPTypeNameString();
 		}else{
 			szExtensionName = getExtensionType()->getNameWithNamespace();
 		}
@@ -1389,7 +1336,7 @@ QString ComplexType::getIsNullDefinition(const QString& szClassname) const
 				if(pAttribute->isList()){
 					szCond += "(_" + pAttribute->getName() + "List.size() > 0) && ";
 				}else{
-					QString szVariableName = "_" + pAttribute->getName().left(1).toLower() + pAttribute->getName().mid(1);
+					QString szVariableName = "_" + ModelUtils::getUncapitalizedName(pAttribute->getName());
 					szCond += szVariableName + ".isNull() && ";
 				}
 			}
@@ -1486,7 +1433,7 @@ QString ComplexType::getVariableDeclaration(const QString& szName) const
 	QString szVarName;
 	QString szDeclaration;
 	if(!szName.isEmpty()){
-		szVarName = "_" + szName.left(1).toLower() + szName.mid(1);
+		szVarName = "_" + ModelUtils::getUncapitalizedName(szName);
 	}else{
 		szVarName = getVariableName();
 	}

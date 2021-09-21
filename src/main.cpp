@@ -144,7 +144,7 @@ int main(int argc, char **argv)
 
 			// Add class for base type
 			if(bGoOn){
-				QString szResourcesBasePath = QDir(szResourcePath).filePath("Base");
+				QString szResourcesBasePath = QDir(szResourcePath).filePath("Base/xs/types");
 				QDir dir(szResourcesBasePath);
 				if(dir.exists()){
 					foreach (QString f, dir.entryList(QDir::Files))

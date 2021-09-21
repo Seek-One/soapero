@@ -6,6 +6,8 @@
  */
 
 #include "../Utils/StringUtils.h"
+#include "../Utils/ModelUtils.h"
+
 #include "SimpleType.h"
 
 #ifndef CRLF
@@ -135,16 +137,25 @@ QString SimpleType::getVariableTypeNameString(SimpleType::VariableType iVariable
 	return QString();
 }
 
-QString SimpleType::getVariableTypeNameString() const
+QString SimpleType::getCPPTypeNameString() const
 {
 	if(isEnumeration()) {
-		return getLocalName() + "::Values";
+		return getNameWithNamespace();
 	}else{
 		if(m_iVariableType == Custom){
 			return (m_szCustomNamespace + "::" + m_szCustomName);
 		}else{
-			return getVariableTypeNameString(m_iVariableType);
+			return "XS::" + getVariableTypeNameString(m_iVariableType);
 		}
+	}
+}
+
+QString SimpleType::getCPPTypeNameValuesString() const
+{
+	if(isEnumeration()) {
+		return getNameWithNamespace() + "::Values";
+	}else{
+		return getCPPTypeNameString();
 	}
 }
 
@@ -280,7 +291,9 @@ QString SimpleType::getExportedTypename() const
 
 QString SimpleType::getSetterDeclaration() const
 {
-	QString szVarName = getLocalName(true).left(1).toLower() + getLocalName(true).mid(1);
+	QString szFunctionName = getLocalName(true);
+	QString szVariableType = getCPPTypeNameValuesString();
+	QString szVariableName = getLocalName(true).left(1).toLower() + getLocalName(true).mid(1);
 
 	QString szDeclaration;
 	if(isEnumeration()) {
@@ -288,38 +301,46 @@ QString SimpleType::getSetterDeclaration() const
 	}else{
 		szDeclaration = "void set%0(const %1& %2);";
 	}
-	return szDeclaration.arg(getLocalName(true)).arg(getVariableTypeString()).arg(szVarName);
+	return szDeclaration.arg(szFunctionName).arg(szVariableType).arg(szVariableName);
 }
 
 QString SimpleType::getSetterDeclarationForComplexType() const
 {
-	QString szVarName = getLocalName(true).left(1).toLower() + getLocalName(true).mid(1);
+	QString szFunctionName = getLocalName(true);
+	QString szVariableType = getCPPTypeNameString();
+	QString szVariableName = getLocalName(true).left(1).toLower() + getLocalName(true).mid(1);
 
 	QString szDeclaration = "void set%0(const %1& %2);";
 
-	return szDeclaration.arg(getLocalName(true)).arg(isEnumeration() ? getNameWithNamespace() : getVariableTypeString()).arg(szVarName);
+	return szDeclaration.arg(szFunctionName).arg(szVariableType).arg(szVariableName);
 }
 
 QString SimpleType::getGetterDeclaration() const
 {
+	QString szVariableType = getCPPTypeNameValuesString();
+	QString szVariableName = getLocalName(true);
+
 	QString szDeclaration;
 	if(isEnumeration()) {
 		szDeclaration = "%0 get%1() const;";
 	}else{
 		szDeclaration = "const %0& get%1() const;";
 	}
-	return szDeclaration.arg(getVariableTypeString()).arg(getLocalName(true));
+	return szDeclaration.arg(szVariableType).arg(szVariableName);
 }
 
 QString SimpleType::getGetterDeclarationForComplexType() const
 {
+	QString szVariableType = getCPPTypeNameString();
+	QString szVariableName = getLocalName();
+
 	QString szDeclaration;
 //	if(isEnumeration()) {
 //		szDeclaration = "%0 get%1() const;";
 //	}else{
 		szDeclaration = "const %0& get%1() const;";
 //	}
-	return szDeclaration.arg(isEnumeration() ? getNameWithNamespace() : getVariableTypeString()).arg(getLocalName());
+return szDeclaration.arg(szVariableType).arg(szVariableName);
 }
 
 QString SimpleType::getSerializerDeclaration() const
@@ -356,7 +377,7 @@ QString SimpleType::getIsNullDeclaration() const
 QString SimpleType::getVariableDeclaration() const
 {
 	QString szDeclaration;
-	szDeclaration += getVariableTypeString();
+	szDeclaration += getCPPTypeNameValuesString();
 	szDeclaration += " ";
 	szDeclaration += getVariableName();
 	szDeclaration += ";";
@@ -367,11 +388,7 @@ QString SimpleType::getVariableDeclaration() const
 QString SimpleType::getVariableDeclarationForComplexType() const
 {
 	QString szDeclaration;
-	if(!isEnumeration()) {
-		szDeclaration += getVariableTypeString();
-	} else {
-		szDeclaration += getNameWithNamespace();
-	}
+	szDeclaration += getCPPTypeNameString();
 	szDeclaration += " ";
 	szDeclaration += getVariableName();
 	szDeclaration += ";";
@@ -405,7 +422,8 @@ QString SimpleType::getEnumerationDeclaration() const
 
 QString SimpleType::getSetterDefinition(const QString& szClassname) const
 {
-	QString szVarName = getLocalName(true).left(1).toLower() + getLocalName(true).mid(1);
+	QString szVarName = ModelUtils::getUncapitalizedName(getLocalName(true));
+	QString szTypeName = getCPPTypeNameValuesString();
 
 	QString szDefinition = "";
 	if(isEnumeration()) {
@@ -417,13 +435,14 @@ QString SimpleType::getSetterDefinition(const QString& szClassname) const
 	szDefinition += "\t%4 = %5;" CRLF;
 	szDefinition += "}" CRLF;
 
-	return szDefinition.arg(szClassname).arg(getLocalName(true)).arg(getVariableTypeString())
+	return szDefinition.arg(szClassname).arg(getLocalName(true)).arg(szTypeName)
 						.arg(szVarName).arg(getVariableName()).arg(szVarName);
 }
 
 QString SimpleType::getSetterDefinitionForComplexType(const QString& szClassname) const
 {
-	QString szVarName = getLocalName(true).left(1).toLower() + getLocalName(true).mid(1);
+	QString szVarName = ModelUtils::getUncapitalizedName(getLocalName(true));
+	QString szTypeName = getCPPTypeNameString();
 
 	QString szDefinition = "void %0::set%1(const %2& %3)" CRLF;
 
@@ -431,12 +450,14 @@ QString SimpleType::getSetterDefinitionForComplexType(const QString& szClassname
 	szDefinition += "\t%4 = %5;" CRLF;
 	szDefinition += "}" CRLF;
 
-	return szDefinition.arg(szClassname).arg(getLocalName(true)).arg(getNameWithNamespace())
+	return szDefinition.arg(szClassname).arg(getLocalName(true)).arg(szTypeName)
 						.arg(szVarName).arg(getVariableName()).arg(szVarName);
 }
 
 QString SimpleType::getGetterDefinition(const QString& szClassname) const
 {
+	QString szTypeName = getCPPTypeNameValuesString();
+
 	QString szDefinition;
 	if(isEnumeration()) {
 		szDefinition = ""
@@ -452,18 +473,20 @@ QString SimpleType::getGetterDefinition(const QString& szClassname) const
 		"}" CRLF;
 	}
 
-	return szDefinition.arg(getVariableTypeString()).arg(szClassname).arg(getLocalName(true)).arg(getVariableName());
+	return szDefinition.arg(szTypeName).arg(szClassname).arg(getLocalName(true)).arg(getVariableName());
 }
 
 QString SimpleType::getGetterDefinitionForComplexType(const QString& szClassname) const
 {
+	QString szTypeName = getCPPTypeNameValuesString();
+
 	QString szDefinition = ""
 	"const %0& %1::get%2() const" CRLF
 	"{" CRLF
 	"\treturn %3;" CRLF
 	"}" CRLF;
 
-	return szDefinition.arg(getNameWithNamespace()).arg(szClassname).arg(getLocalName(true)).arg(getVariableName());
+	return szDefinition.arg(szTypeName).arg(szClassname).arg(getLocalName(true)).arg(getVariableName());
 }
 
 QString SimpleType::getSerializerDefinition(const QString& szClassname) const

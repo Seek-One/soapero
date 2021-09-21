@@ -151,19 +151,34 @@ QString TypeListBuilder::getDefine(const QString& szPrefix, const TypeSharedPtr&
 	QString szDefine;
 
 	if(!szPrefix.isEmpty()){
-		szDefine += szPrefix.toUpper() + "_";
+		szDefine += StringUtils::secureString(szPrefix).toUpper() + "_";
 	}
 
 #ifdef WITH_DIR_CREATION
 	if(!pType->getNamespace().isEmpty()){
-		szDefine += pType->getNamespace().toUpper() + "_";
+		szDefine += StringUtils::secureString(pType->getNamespace()).toUpper() + "_";
 	}
 	if(!pType->getLocalName().isEmpty()){
-		szDefine += pType->getLocalName().toUpper() + "_";
+		szDefine += StringUtils::secureString(pType->getLocalName()).toUpper() + "_";
 	}
 #else
 	szDefine += pType->getQualifiedName().toUpper() + "_";
 #endif
+
+	szDefine += "H_";
+
+	return szDefine;
+}
+
+QString TypeListBuilder::getDefine(const QString& szPrefix, const RequestResponseElementSharedPtr& pElement)
+{
+	QString szDefine;
+
+	if(!szPrefix.isEmpty()){
+		szDefine += StringUtils::secureString(szPrefix).toUpper() + "_";
+	}
+
+	szDefine += StringUtils::secureString(pElement->getQualifiedName()).toUpper() + "_";
 
 	szDefine += "H_";
 
@@ -292,7 +307,7 @@ void TypeListBuilder::buildHeaderFile(const RequestResponseElementSharedPtr& pEl
 	if(file.open(QFile::WriteOnly)) {
 
 		QTextStream os(&file);
-		QString szDefine = (!m_szPrefix.isEmpty() ? m_szPrefix.toUpper() + "_" : "") + pElement->getQualifiedName().toUpper() + "_H_";
+		QString szDefine = getDefine(m_szPrefix, pElement);
 
 		buildHeaderFileDescription(os, szHeaderFilename, szDefine);
 
@@ -598,7 +613,7 @@ void TypeListBuilder::buildHeaderClassType(QTextStream& os, const TypeSharedPtr&
 			}
 			if(pComplexType->getExtensionType()->getClassType() == Type::TypeSimple){
 				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pComplexType->getExtensionType());
-				szExtendedClassname += pSimpleType->getVariableTypeString();
+				szExtendedClassname += pSimpleType->getCPPTypeNameString();
 			}else{
 				QString szExtensionName = pComplexType->getExtensionType()->getNameWithNamespace();
 				szExtendedClassname += (!m_szPrefix.isEmpty() ? m_szPrefix : "") + szExtensionName;

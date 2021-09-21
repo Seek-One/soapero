@@ -250,7 +250,9 @@ set (APP_SOURCES
     src/Parser/QWSDLParser.cpp
     src/Parser/WSDLAttributes.h
     src/Parser/WSDLSections.h
-    
+
+    src/Utils/ModelUtils.h
+    src/Utils/ModelUtils.cpp
     src/Utils/StringUtils.h
     src/Utils/UniqueStringList.cpp
     src/Utils/UniqueStringList.h

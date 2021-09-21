@@ -51,6 +51,7 @@ public:
 	static QString getRequestResponseElementHeaderPath(const RequestResponseElementSharedPtr& pRequestResponseElement, FileCategory iOrigin);
 
 	static QString getDefine(const QString& szPrefix, const TypeSharedPtr& pType);
+	static QString getDefine(const QString& szPrefix, const RequestResponseElementSharedPtr& pElement);
 
 	void buildHeaderFiles();
 	void buildCppFiles();

@@ -51,6 +51,7 @@ public:
 	int getMaxOccurs()const;
 
 	QString getVariableName() const;
+	QString getVariableNameList() const;
 	QString getTagQualifiedName() const;
 
 	QString getSetterDeclaration() const;
@@ -123,6 +124,9 @@ public:
 
 	QString getSetterDefinition(const QString& szClassname) const;
 	QString getGetterDefinition(const QString& szClassname) const;
+
+	QString getVariableName() const;
+	QString getVariableNameList() const;
 
 private:
 	AttributeSharedPtr m_pRef;		//https://www.w3schools.com/xml/el_attribute.asp (see "ref" part)
