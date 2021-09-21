@@ -143,7 +143,7 @@ QString TypeListBuilder::getRequestResponseElementHeaderPath(const RequestRespon
 #else
 	szFileName = pRequestResponseElement->getQualifiedName() + ".h";
 #endif
-	return getHeaderPath( pRequestResponseElement->getNamespace(), "types", szFileName, iOrigin);
+	return getHeaderPath( pRequestResponseElement->getNamespace(), "messages", szFileName, iOrigin);
 }
 
 QString TypeListBuilder::getDefine(const QString& szPrefix, const TypeSharedPtr& pType)
@@ -959,16 +959,16 @@ void TypeListBuilder::buildHeaderIncludeService(QTextStream& os, const ServiceSh
 		//qDebug(qPrintable(pOperation->getInputMessage()->getParameter() ? "NotNull" : "Null"));
 
 		if(!bSoapEnvelopeFaultIncluded && pOperation->getSoapEnvelopeFaultType()){
-			os << "#include \"" << getComplexTypeHeaderPath((*operation)->getSoapEnvelopeFaultType(), FileCategory_Message) << "\"" << CRLF;
+			os << "#include \"" << getComplexTypeHeaderPath((*operation)->getSoapEnvelopeFaultType(), FileCategory_Service) << "\"" << CRLF;
 			bSoapEnvelopeFaultIncluded = true;
 		}
 
-		szTmpFileName = getRequestResponseElementHeaderPath((*operation)->getInputMessage()->getParameter(), FileCategory_Message);
+		szTmpFileName = getRequestResponseElementHeaderPath((*operation)->getInputMessage()->getParameter(), FileCategory_Service);
 		if(!list.contains(szTmpFileName)) {
 			os << "#include \"" << szTmpFileName << "\"" << CRLF;
 			list.append(szTmpFileName);
 		}
-		szTmpFileName = getRequestResponseElementHeaderPath((*operation)->getOutputMessage()->getParameter(), FileCategory_Message);
+		szTmpFileName = getRequestResponseElementHeaderPath((*operation)->getOutputMessage()->getParameter(), FileCategory_Service);
 		if(!list.contains(szTmpFileName)) {
 			os << "#include \"" << szTmpFileName << "\"" << CRLF;
 			list.append(szTmpFileName);

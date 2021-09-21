@@ -25,7 +25,8 @@ public:
 	enum FileCategory {
 		FileCategory_Unknown,
 		FileCategory_Type,
-		FileCategory_Message
+		FileCategory_Message,
+		FileCategory_Service,
 	};
 
 public:
