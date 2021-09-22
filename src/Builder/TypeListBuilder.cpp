@@ -572,6 +572,10 @@ void TypeListBuilder::buildHeaderClassType(QTextStream& os, const TypeSharedPtr&
 	if(pType->getClassType() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pType);
 
+		os << "const QString " << pSimpleType->getLocalName(true) << "TargetNamespace = \"" << pSimpleType->getNamespace() << "\";" CRLF;
+		os << "const QString " << pSimpleType->getLocalName(true) << "TargetNamespaceUri = \"" << pSimpleType->getNamespaceUri() << "\";" CRLF;
+		os << CRLF;
+
 		os << "class " << szClassname << CRLF;
 		os << "{" << CRLF;
 		os << "public:" << CRLF;
