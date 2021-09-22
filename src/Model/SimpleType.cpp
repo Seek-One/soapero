@@ -291,9 +291,9 @@ QString SimpleType::getExportedTypename() const
 
 QString SimpleType::getSetterDeclaration() const
 {
-	QString szFuncName = ModelUtils::getCapitalizedName(getLocalName(true));
+	QString szFuncName = ModelUtils::getCapitalizedName(getLocalName());
 	QString szParamType = getCPPTypeNameValuesString();
-	QString szParamName = ModelUtils::getUncapitalizedName(getLocalName(true));
+	QString szParamName = ModelUtils::getUncapitalizedName(getLocalName());
 
 	QString szDeclaration;
 	if(isEnumeration()) {
@@ -306,9 +306,9 @@ QString SimpleType::getSetterDeclaration() const
 
 QString SimpleType::getSetterDeclarationForComplexType() const
 {
-	QString szFuncName = ModelUtils::getCapitalizedName(getLocalName(true));
-	QString szParamType = getCPPTypeNameValuesString();
-	QString szParamName = ModelUtils::getUncapitalizedName(getLocalName(true));
+	QString szFuncName = ModelUtils::getCapitalizedName(getLocalName());
+	QString szParamType = getCPPTypeNameString();
+	QString szParamName = ModelUtils::getUncapitalizedName(getLocalName());
 
 	QString szDeclaration = "void set%0(const %1& %2);";
 
@@ -317,7 +317,7 @@ QString SimpleType::getSetterDeclarationForComplexType() const
 
 QString SimpleType::getGetterDeclaration() const
 {
-	QString szFuncName = ModelUtils::getCapitalizedName(getLocalName(true));
+	QString szFuncName = ModelUtils::getCapitalizedName(getLocalName());
 	QString szMemberType = getCPPTypeNameValuesString();
 
 	QString szDeclaration;
@@ -359,12 +359,13 @@ QString SimpleType::getDeserializerDeclaration() const
 
 QString SimpleType::getEnumConvertDeclaration() const
 {
+	QString szFuncName = ModelUtils::getCapitalizedName(getLocalName());
+
 	QString szDeclaration;
 	if(isEnumeration()) {
-
 		szDeclaration += "void set%0FromString(const QString& szValue);" CRLF;
 		szDeclaration += "\tQString get%0ToString() const;";
-		szDeclaration = szDeclaration.arg(getLocalName());
+		szDeclaration = szDeclaration.arg(szFuncName);
 	}
 	return szDeclaration;
 }
@@ -422,9 +423,9 @@ QString SimpleType::getEnumerationDeclaration() const
 
 QString SimpleType::getSetterDefinition(const QString& szClassname) const
 {
-	QString szFuncName = ModelUtils::getCapitalizedName(getLocalName(true));
+	QString szFuncName = ModelUtils::getCapitalizedName(getLocalName());
 	QString szParamType = getCPPTypeNameValuesString();
-	QString szParamName = ModelUtils::getUncapitalizedName(getLocalName(true));
+	QString szParamName = ModelUtils::getUncapitalizedName(getLocalName());
 	QString szMemberName = getVariableName();
 
 	QString szDefinition;
@@ -442,9 +443,9 @@ QString SimpleType::getSetterDefinition(const QString& szClassname) const
 
 QString SimpleType::getSetterDefinitionForComplexType(const QString& szClassname) const
 {
-	QString szFuncName = ModelUtils::getCapitalizedName(getLocalName(true));
-	QString szParamType = getCPPTypeNameValuesString();
-	QString szParamName = ModelUtils::getUncapitalizedName(getLocalName(true));
+	QString szFuncName = ModelUtils::getCapitalizedName(getLocalName());
+	QString szParamType = getCPPTypeNameString();
+	QString szParamName = ModelUtils::getUncapitalizedName(getLocalName());
 	QString szMemberName = getVariableName();
 
 	QString szDefinition;
@@ -459,7 +460,7 @@ QString SimpleType::getSetterDefinitionForComplexType(const QString& szClassname
 
 QString SimpleType::getGetterDefinition(const QString& szClassname) const
 {
-	QString szFuncName = ModelUtils::getCapitalizedName(getLocalName(true));
+	QString szFuncName = ModelUtils::getCapitalizedName(getLocalName());
 	QString szMemberType = getCPPTypeNameValuesString();
 	QString szMemberName = getVariableName();
 
@@ -483,8 +484,8 @@ QString SimpleType::getGetterDefinition(const QString& szClassname) const
 
 QString SimpleType::getGetterDefinitionForComplexType(const QString& szClassname) const
 {
-	QString szFuncName = ModelUtils::getCapitalizedName(getLocalName(true));
-	QString szMemberType = getCPPTypeNameValuesString();
+	QString szFuncName = ModelUtils::getCapitalizedName(getLocalName());
+	QString szMemberType = getCPPTypeNameString();
 	QString szMemberName = getVariableName();
 
 	QString szDefinition = ""
@@ -568,6 +569,9 @@ QString SimpleType::getDeserializerDefinition(const QString& szClassname) const
 QString SimpleType::getEnumConvertDefinition(const QString& szClassname) const
 {
 	QString szDefinition;
+
+	QString szFuncName = ModelUtils::getCapitalizedName(getLocalName());
+
 	if(isEnumeration()) {
 
 		szDefinition += ""
@@ -604,7 +608,7 @@ QString SimpleType::getEnumConvertDefinition(const QString& szClassname) const
 		szDefinition += "\t}" CRLF;
 		szDefinition += "}" CRLF;
 
-		szDefinition = szDefinition.arg(szClassname).arg(getLocalName()).arg(getVariableName());
+		szDefinition = szDefinition.arg(szClassname).arg(szFuncName).arg(getVariableName());
 	}
 	return szDefinition;
 }

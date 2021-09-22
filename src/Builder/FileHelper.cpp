@@ -44,7 +44,7 @@ QString FileHelper::buildPath(const QString& szBaseDirectory, const QString& szF
 
 #ifdef WITH_DIR_CREATION
 	if(!szFileNamespace.isEmpty()){
-		dir.setPath(dir.filePath(szFileNamespace));
+		dir.setPath(dir.filePath(szFileNamespace.toLower()));
 	}
 
 	if(!szFileCategory.isEmpty()){

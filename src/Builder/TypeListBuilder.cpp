@@ -431,7 +431,7 @@ void TypeListBuilder::buildCppFile(const TypeSharedPtr& pType)
 				ElementList::const_iterator iter;
 				for(iter = pComplexType->getElementList()->constBegin(); iter != pComplexType->getElementList()->constEnd(); ++iter){
 					if((*iter)->getType() && (*iter)->isPointer()){
-						os << "#include \"" << getTypeHeaderPath((*iter)->getType(), FileCategory_Type) << CRLF;
+						os << "#include \"" << getTypeHeaderPath((*iter)->getType(), FileCategory_Type) << "\"" << CRLF;
 					}
 				}
 			}
@@ -561,7 +561,7 @@ void TypeListBuilder::buildCppFileDescription(QTextStream& os, const QString& sz
 
 void TypeListBuilder::buildHeaderClassType(QTextStream& os, const TypeSharedPtr& pType) const
 {
-	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pType->getLocalName(true);
+	QString szClassname = (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pType->getLocalName(true);
 	QString szNamespace = StringUtils::secureString(pType->getNamespace().toUpper());
 
 	if(!szNamespace.isEmpty()){
@@ -804,6 +804,7 @@ void TypeListBuilder::buildHeaderIncludeType(QTextStream& os, const TypeSharedPt
 	os << "#include <QDomElement>" << CRLF;
 	os << "#include <QList>" << CRLF;
 	os << "#include <QString>" << CRLF;
+	os << CRLF;
 
 	if(pType->getClassType() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pType);
@@ -882,6 +883,7 @@ void TypeListBuilder::buildHeaderIncludeElement(QTextStream& os, const RequestRe
 	os << "#include <QDomElement>" << CRLF;
 	os << "#include <QList>" << CRLF;
 	os << "#include <QString>" << CRLF;
+	os << CRLF;
 
 	AttributeListSharedPtr pListAttributes = pComplexType->getAttributeList();
 	AttributeList::const_iterator attr;
@@ -893,6 +895,7 @@ void TypeListBuilder::buildHeaderIncludeElement(QTextStream& os, const RequestRe
 
 	if(!pComplexType->getExtensionType().isNull()) {
 		os << "#include \"" << getTypeHeaderPath(pComplexType->getExtensionType(), FileCategory_Type) << "\"" << CRLF;
+		os << CRLF;
 	}
 
 	if(pListAttributes->count() > 0 || pListElements->count() > 0) {
