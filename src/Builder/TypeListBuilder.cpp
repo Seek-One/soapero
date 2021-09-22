@@ -1050,7 +1050,7 @@ void TypeListBuilder::buildCppClassType(QTextStream& os, const TypeSharedPtr& pT
 			}
 			if(pComplexType->getExtensionType()->getClassType() == Type::TypeSimple){
 				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pComplexType->getExtensionType());
-				szExtensionName += pSimpleType->getVariableTypeString();
+				szExtensionName += pSimpleType->getCPPTypeNameString();
 			}else{
 				szExtensionName += pComplexType->getExtensionType()->getNameWithNamespace();
 			}
@@ -1059,7 +1059,7 @@ void TypeListBuilder::buildCppClassType(QTextStream& os, const TypeSharedPtr& pT
 			}
 			QString szExtendedClassname = (!m_szPrefix.isEmpty() ? m_szPrefix : "") + szExtensionName;
 
-			os << szClassname << "::" << szClassname << "() :" << szExtendedClassname << "() {}" << CRLF;
+			os << szClassname << "::" << szClassname << "() : " << szExtendedClassname << "() {}" << CRLF;
 			os << szClassname << "::~" << szClassname << "() {}" << CRLF;
 		}
 		os << CRLF;
