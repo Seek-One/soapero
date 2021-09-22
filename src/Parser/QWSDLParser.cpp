@@ -850,8 +850,10 @@ bool QWSDLParser::readElement(QXmlStreamReader& xmlReader, Section::Name iParent
 				pElement->setRefValue(xmlAttrs.value(ATTR_REF).toString());
 			}
 		}else{
+			QString szName;
 			if(xmlAttrs.hasAttribute(ATTR_NAME)) {
-				pElement->setName(xmlAttrs.value(ATTR_NAME).toString());
+				szName = xmlAttrs.value(ATTR_NAME).toString();
+				pElement->setName(szName);
 			}
 
 			if(xmlAttrs.hasAttribute(ATTR_TYPE)) {
@@ -1412,14 +1414,14 @@ bool QWSDLParser::readSimpleType(QXmlStreamReader& xmlReader, Section::Name iPar
 		if(!pFoundType.isNull()) {
 			if(pFoundType->getClassType() == Type::TypeUnknown) {
 				pSimpleType = SimpleType::create();
-				pSimpleType->setLocalName(szName);
-				pSimpleType->setNamespace(m_szCurrentTargetNamespacePrefix);
-				pSimpleType->setNamespaceUri(m_szCurrentTargetNamespaceUri);
 			}
 		}else{
 			pSimpleType = SimpleType::create();
+		}
+		if(pSimpleType){
 			pSimpleType->setLocalName(szName);
 			pSimpleType->setNamespace(m_szCurrentTargetNamespacePrefix);
+			pSimpleType->setNamespaceUri(m_szCurrentTargetNamespaceUri);
 		}
 	}
 	if(pSimpleType){
@@ -1778,6 +1780,9 @@ ElementSharedPtr QWSDLParser::getElementByRef(const QString& szRef)
 TypeSharedPtr QWSDLParser::getTypeByName(const QString& szLocalName, const QString& szNamespace, const TypeListSharedPtr& pListIgnoredTypes)
 {
 	TypeSharedPtr pType = m_pListTypes->getByName(szLocalName, szNamespace, pListIgnoredTypes);
+	if(!pType && m_pWSDLData){
+		pType = m_pWSDLData->getTypeByName(szLocalName, szNamespace, pListIgnoredTypes);
+	}
 	if(!pType && m_pWSDLData->hasNamespaceDeclaration(szNamespace)){
 		QString szNamespaceTmp = m_pWSDLData->getNamespaceDeclaration(szNamespace);
 		pType = m_pListTypes->getByName(szLocalName, szNamespaceTmp, pListIgnoredTypes);
@@ -1828,6 +1833,7 @@ bool QWSDLParser::loadFromHttp(const QString& szURL, const QString& szNamespaceU
 	parser.setInitialNamespaceUri(szNamespaceUri);
 	parser.setLogIndent(m_iLogIndent);
 	parser.setWSDLData(m_pWSDLData);
+	m_pWSDLData->setTypeList(m_pListTypes);
 	QXmlStreamReader xmlReader;
 	xmlReader.addData(bytes);
 	bRes = parser.parse(xmlReader);
@@ -1882,6 +1888,7 @@ bool QWSDLParser::loadFromFile(const QString& szFileName, const QString& szNames
 		parser.setInitialNamespaceUri(szNamespaceUri);
 		parser.setLogIndent(m_iLogIndent);
 		parser.setWSDLData(m_pWSDLData);
+		m_pWSDLData->setTypeList(m_pListTypes);
 		QXmlStreamReader xmlReader;
 		xmlReader.addData(bytes);
 		bRes = parser.parse(xmlReader);

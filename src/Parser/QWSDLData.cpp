@@ -44,6 +44,26 @@ const QWSDLNamespaceDeclarations& QWSDLData::getNamespaceDeclarations() const
 	return m_listNamespaceDeclarations;
 }
 
+void QWSDLData::setTypeList(const TypeListSharedPtr& pListType)
+{
+	m_pListType = pListType;
+}
+
+void QWSDLData::addType(const TypeSharedPtr& pType)
+{
+	if(m_pListType){
+		m_pListType->add(pType);
+	}
+}
+
+TypeSharedPtr QWSDLData::getTypeByName(const QString& szLocalName, const QString& szNamespace, const TypeListSharedPtr& pListIgnoredTypes)
+{
+	if(m_pListType){
+		return m_pListType->getByName(szLocalName, szNamespace, pListIgnoredTypes);
+	}
+	return TypeSharedPtr();
+}
+
 TypeRefSharedPtr QWSDLData::getTypeRefByTypeName(const QString& szTypeName, const QString& szNamespace)
 {
 	return m_listTypeRef.getByTypeName(szTypeName, szNamespace);

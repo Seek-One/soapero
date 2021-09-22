@@ -30,6 +30,9 @@ public:
 	const QWSDLNamespaceDeclarations& getNamespaceDeclarations() const;
 
 	// Type list
+	void setTypeList(const TypeListSharedPtr& pListType);
+	void addType(const TypeSharedPtr& pType);
+	TypeSharedPtr getTypeByName(const QString& szLocalName, const QString& szNamespace, const TypeListSharedPtr& pListIgnoredTypes);
 	TypeRefSharedPtr getTypeRefByTypeName(const QString& szTypeName, const QString& szNamespace = QString());
 
 private:
@@ -38,6 +41,7 @@ private:
 	QWSDLNamespaceDeclarations m_listNamespaceDeclarations;
 
 	TypeRefList m_listTypeRef;
+	TypeListSharedPtr m_pListType;
 };
 
 
