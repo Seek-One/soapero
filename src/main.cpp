@@ -46,6 +46,7 @@ int main(int argc, char **argv)
 	QString szOutputMode = "Default";
 	QString szNamespace;
 	QString szResourcePath = "./resources";
+	QString szServiceName;
 
 	// Parse extra args
 	for(int i=3; i<argc; i++)
@@ -60,6 +61,9 @@ int main(int argc, char **argv)
 		if(szArg.startsWith("--resources-dir=")){
 			szResourcePath = szArg.mid(16);
 		}
+		if(szArg.startsWith("--service-name=")){
+			szServiceName = szArg.mid((15));
+		}
 	}
 
 	if(szNamespace.isEmpty()){
@@ -71,6 +75,7 @@ int main(int argc, char **argv)
 		printf("       --namespace=[NAMESPACE]: Global namespace to use for generated class (Mandatory)\r\n");
 		printf("       --output-mode=[OUTPUT_MODE]: \"Default\" or \"CMakeLists\"\r\n");
 		printf("       --resources-dir=[DIR]: Path where to find resources files. Used to copy some files in output directory. (Default: ./resources)\r\n");
+		printf("       --service-name=[SERVICE_NAME]: Force service name, useful for wsdl service not defining the name tag.\r\n");
 		return -1;
 	}
 
@@ -121,6 +126,21 @@ int main(int argc, char **argv)
 					qWarning("[Main] Error to parse data (error: %s)", qPrintable(xmlReader.errorString()));
 				}
 			}
+
+			// Check service
+			ServiceSharedPtr pService;
+			if(bGoOn){
+				pService = parser.getService();
+				if(szServiceName.isNull()){
+					szServiceName = pService->getName();
+				}else{
+					pService->setName(szServiceName);
+				}
+				if(szServiceName.isNull()){
+					qDebug("[Main] Service name is not defined");
+					bGoOn = false;
+				}
+			}
 			
 			// Create directory output if not existing
 			if(bGoOn){
@@ -132,7 +152,7 @@ int main(int argc, char **argv)
 
 			// Build file for service
 			if(bGoOn){
-				TypeListBuilder builder(parser.getService(), parser.getTypeList(), parser.getRequestResponseElementList(), pListGeneratedFiles);
+				TypeListBuilder builder(pService, parser.getTypeList(), parser.getRequestResponseElementList(), pListGeneratedFiles);
 				builder.setNamespace(szNamespace);
 				builder.setFilename("actionservice");
 				builder.setDirname(szOutputDirectory);
@@ -219,8 +239,6 @@ int main(int argc, char **argv)
 				}else{
 					qDebug("[Main] Service files directory not found %s", qPrintable(szResourcesServicePath));
 				}
-			}else{
-				qWarning("[Main] Failed to create directory '%s'", qPrintable(szOutputDirectory));
 			}
 		}else{
 			qWarning("[Main] Error for opening file %s", qPrintable(file.errorString()));
