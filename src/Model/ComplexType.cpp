@@ -949,7 +949,7 @@ QString ComplexType::getSetterDefinition(const QString& szClassname, const QStri
 	QString szFuncName = ModelUtils::getCapitalizedName(szLocalName);
 	QString szParamName = ModelUtils::getUncapitalizedName(szLocalName);
 	QString szParamType = getNameWithNamespace();
-	QString szMemberName = getVariableName();
+	QString szMemberName = "_" + ModelUtils::getUncapitalizedName(szLocalName);
 
 	QString szDeclaration;
 	szDeclaration += "void %0::set%1(const %2& %3)" CRLF;
@@ -965,7 +965,7 @@ QString ComplexType::getGetterDefinition(const QString& szClassname, const QStri
 	QString szLocalName = (szName.isEmpty() ? getLocalName() : szName);
 	QString szFuncName = ModelUtils::getCapitalizedName(szLocalName);
 	QString szMemberType = getNameWithNamespace();
-	QString szMemberName = getVariableName();
+	QString szMemberName = "_" + ModelUtils::getUncapitalizedName(szLocalName);
 
 	QString szDefinition;
 	szDefinition += "const %0& %1::get%2() const" CRLF;
@@ -1457,7 +1457,7 @@ QString ComplexType::getGetNamespaceDeclarationDeclaration() const
 
 QString ComplexType::getVariableName() const
 {
-	return "_" + getLocalName().left(1).toLower() + getLocalName().mid(1);
+	return "_" + ModelUtils::getUncapitalizedName(getLocalName());
 }
 
 ComplexTypeList::ComplexTypeList()
@@ -1475,4 +1475,3 @@ ComplexTypeListSharedPtr ComplexTypeList::create()
 {
 	return ComplexTypeListSharedPtr(new ComplexTypeList());
 }
-
