@@ -1994,7 +1994,7 @@ void QWSDLParser::logParser(const QString& szMsg)
 	{
 		szIdent += " ";
 	}
-	qDebug("[QWSDLParser] %s%s", qPrintable(szIdent), qPrintable(szMsg));
+	//qDebug("[QWSDLParser] %s%s", qPrintable(szIdent), qPrintable(szMsg));
 }
 
 void QWSDLParser::incrLogIndent()
