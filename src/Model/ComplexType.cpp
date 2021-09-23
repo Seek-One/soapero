@@ -1243,7 +1243,8 @@ QString ComplexType::getDeserializerDefinition(const QString& szClassname) const
 
 			} else{
 				szDefinition += "\t\tif((child.tagName() == \"" + getNamespace() + ":" + pElement->getName() + "\")" +
-						" || child.tagName().endsWith(\":" + pElement->getName() + "\"" + ")){" CRLF;
+						" || (child.tagName().endsWith(\":" + pElement->getName() + "\"" + "))"
+						" || (child.tagName() == \"" + pElement->getName() + "\"" + ")){" CRLF;
 				szDefinition += "\t\t\t" + pElement->getVariableName() + ".deserialize(child);" CRLF;
 				szDefinition += "\t\t}" CRLF;
 			}

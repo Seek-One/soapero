@@ -131,9 +131,9 @@ QString Operation::getOperationDefinition(const QString& szClassname, const QStr
 	szDefinition += "\tQMap<QString, QString> namespaceRoutingMap;" CRLF;
 	szDefinition += CRLF;
 	szDefinition += "\tif(doc.setContent(response.getResponse(), &szErrorMsg, &iErrorLine, &iErrorColumn)){" CRLF;
+	szDefinition += "\t\tnamespaceRoutingMap = buildNamespaceRoutingMap(doc);" CRLF;
+	szDefinition += CRLF;
 	if(m_pSoapEnvFaultType){
-		szDefinition += "\t\tnamespaceRoutingMap = buildNamespaceRoutingMap(doc);" CRLF;
-		szDefinition += CRLF;
 		szDefinition += "\t\tQString szNamespace = namespaceRoutingMap.value(SOAP_ENV_URI, " + szNamespace + "::" + m_pSoapEnvFaultType->getNameWithNamespace() + "TargetNamespace);" CRLF;
 		szDefinition += "\t\tQString szFaultTagName = szNamespace + \":Fault\";" CRLF;
 		szDefinition += "\t\tif(doc.elementsByTagName(szFaultTagName).size() > 0){" CRLF;
@@ -159,6 +159,10 @@ QString Operation::getOperationDefinition(const QString& szClassname, const QStr
 	szDefinition += "\t\tqWarning(\"[" + szNamespace + "::" + m_szName + "] Error with HTTP status code: %d\", response.getHttpStatusCode());" CRLF;
 	szDefinition += "\t}" CRLF;
 	szDefinition += CRLF;
+
+	//szDefinition += "\t\tqWarning(\"Message:\\n%s\", qPrintable(QString::fromUtf8(soapMessage)));" CRLF;
+	//szDefinition += "\t\tqWarning(\"Response:\\n%s\", qPrintable(QString::fromUtf8(response.getResponse())));" CRLF;
+
 	szDefinition += "\treturn bGoOn;" CRLF;
 	szDefinition += "}" CRLF;
 
