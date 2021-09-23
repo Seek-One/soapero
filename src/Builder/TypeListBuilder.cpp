@@ -802,7 +802,15 @@ void TypeListBuilder::buildHeaderClassService(QTextStream& os, const ServiceShar
 		os << "\t" << (*operation)->getOperationDeclaration() << CRLF;
 	}
 
+	os << CRLF;
 	os << "\tQMap<QString, QString> buildNamespaceRoutingMap(const QDomDocument& doc) const;" << CRLF;
+
+	os << CRLF;
+	os << "public:" << CRLF;
+	os << "\tvoid setDebug(bool bDebug);" << CRLF;
+	os << CRLF;
+	os << "private:" << CRLF;
+	os << "\tbool m_bDebug;" << CRLF;
 
 	os << "};" << CRLF;
 }
@@ -1203,8 +1211,15 @@ void TypeListBuilder::buildCppClassService(QTextStream& os, const ServiceSharedP
 {
 	QString szClassname = pService->getName();
 
-	os << szClassname << "::" << szClassname << "() {}" << CRLF;
+	os << szClassname << "::" << szClassname << "() {" << CRLF;
+	os << "\tm_bDebug = false;" << CRLF;
+	os << "}" << CRLF;
+	os << CRLF;
 	os << szClassname << "::~" << szClassname << "() {}" << CRLF;
+	os << CRLF;
+	os << "void " << szClassname << "::setDebug(bool bDebug) {" << CRLF;
+	os << "\tm_bDebug = bDebug;" << CRLF;
+	os << "}" << CRLF;
 	os << CRLF;
 
 	OperationListSharedPtr pOperationList = pService->getOperationList();

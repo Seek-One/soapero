@@ -122,6 +122,13 @@ QString Operation::getOperationDefinition(const QString& szClassname, const QStr
 	szDefinition += "\trequest.setRawHeader(QString(\"SoapAction\").toLatin1(), QString(\"" + m_szSoapAction + "\").toLatin1());" CRLF;
 	szDefinition += CRLF;
 	szDefinition += "\tQByteArray soapMessage = buildSoapMessage(" + m_pInputMessage->getParameter()->getLocalName() + ".serialize(), " + m_pInputMessage->getParameter()->getNameWithNamespace() + "::getNamespaceDeclaration());" CRLF;
+
+	// Debug request
+	szDefinition += "\tif(m_bDebug){" CRLF;
+	szDefinition += "\t\tqWarning(\"Message:\\n%s\", qPrintable(QString::fromUtf8(soapMessage)));" CRLF;
+	szDefinition += "\t}" CRLF;
+	szDefinition += CRLF;
+
 	szDefinition += CRLF;
 	szDefinition += "\tIQueryExecutorResponse response = m_pQueryExecutor->execQuery(request, soapMessage);" CRLF;
 	szDefinition += "\tQString szErrorMsg;" CRLF;
@@ -150,8 +157,6 @@ QString Operation::getOperationDefinition(const QString& szClassname, const QStr
 	szDefinition += "\t}else{" CRLF;
 	szDefinition += "\t\tbGoOn = false;" CRLF;
 	szDefinition += "\t\tqWarning(\"[" + szNamespace + "::" + m_szName + "] Error during parsing response : %s (%d:%d)\", qPrintable(szErrorMsg), iErrorLine, iErrorColumn);" CRLF;
-	szDefinition += "\t\tqWarning(\"Message:\\n%s\", qPrintable(QString::fromUtf8(soapMessage)));" CRLF;
-	szDefinition += "\t\tqWarning(\"Response:\\n%s\", qPrintable(QString::fromUtf8(response.getResponse())));" CRLF;
 	szDefinition += "\t}" CRLF;
 	szDefinition += CRLF;
 	szDefinition += "\tif(response.getHttpStatusCode() != 200){" CRLF;
@@ -160,8 +165,10 @@ QString Operation::getOperationDefinition(const QString& szClassname, const QStr
 	szDefinition += "\t}" CRLF;
 	szDefinition += CRLF;
 
-	//szDefinition += "\t\tqWarning(\"Message:\\n%s\", qPrintable(QString::fromUtf8(soapMessage)));" CRLF;
-	//szDefinition += "\t\tqWarning(\"Response:\\n%s\", qPrintable(QString::fromUtf8(response.getResponse())));" CRLF;
+	szDefinition += "\tif(m_bDebug){" CRLF;
+	szDefinition += "\t\tqWarning(\"Response:\\n%s\", qPrintable(QString::fromUtf8(response.getResponse())));" CRLF;
+	szDefinition += "\t}" CRLF;
+	szDefinition += CRLF;
 
 	szDefinition += "\treturn bGoOn;" CRLF;
 	szDefinition += "}" CRLF;
