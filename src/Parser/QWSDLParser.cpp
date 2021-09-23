@@ -215,7 +215,7 @@ bool QWSDLParser::endDocument()
 
 		TypeSharedPtr pType = pRequestResponseElement->getType();
 		ComplexTypeSharedPtr pComplexType;
-		if(pType->getClassType() == Type::TypeComplex){
+		if(pType && pType->getClassType() == Type::TypeComplex){
 			pComplexType = qSharedPointerCast<ComplexType>(pType);
 		}
 		if(pComplexType.isNull()){
@@ -857,6 +857,8 @@ bool QWSDLParser::readElement(QXmlStreamReader& xmlReader, Section::Name iParent
 	QXmlStreamAttributes xmlAttrs = xmlReader.attributes();
 
 	TypeSharedPtr pTypeFound;
+	ElementSharedPtr pPreviousElement;
+	RequestResponseElementSharedPtr pRequestResponseElement;
 
 	// Read attributes
 	QString szName;
@@ -868,6 +870,7 @@ bool QWSDLParser::readElement(QXmlStreamReader& xmlReader, Section::Name iParent
 		TypeSharedPtr pCurrentType = getCurrentType();
 
 		ElementSharedPtr pElement = Element::create();
+		pPreviousElement = m_pCurrentElement;
 		m_pCurrentElement = pElement;
 
 		if(xmlAttrs.hasAttribute(ATTR_REF)){
@@ -952,10 +955,11 @@ bool QWSDLParser::readElement(QXmlStreamReader& xmlReader, Section::Name iParent
 	}else{
 		if(iParentSection == Section::Schema){
 			//We are in Message Request/Response elements list section
-			m_pCurrentRequestResponseElement = RequestResponseElement::create();
-			m_pCurrentRequestResponseElement->setLocalName(szName);
-			m_pCurrentRequestResponseElement->setNamespace(m_szCurrentTargetNamespacePrefix);
-			m_pCurrentRequestResponseElement->setNamespaceUri(m_szCurrentTargetNamespaceUri);
+			pRequestResponseElement = RequestResponseElement::create();
+			pRequestResponseElement->setLocalName(szName);
+			pRequestResponseElement->setNamespace(m_szCurrentTargetNamespacePrefix);
+			pRequestResponseElement->setNamespaceUri(m_szCurrentTargetNamespaceUri);
+			m_pCurrentRequestResponseElement = pRequestResponseElement;
 		}
 
 		m_pCurrentElement = ElementSharedPtr::create();
@@ -1009,10 +1013,13 @@ bool QWSDLParser::readElement(QXmlStreamReader& xmlReader, Section::Name iParent
 		m_pListElements->append(m_pCurrentElement);
 		m_pCurrentElement.clear();
 	}
+	m_pCurrentElement = pPreviousElement;
 
-	if(m_pCurrentRequestResponseElement && !getCurrentType()){
-		m_pCurrentRequestResponseElement->setType(pTypeFound);
-		m_pListRequestResponseElements->append(m_pCurrentRequestResponseElement);
+	if(pRequestResponseElement){
+		if(pTypeFound){
+			pRequestResponseElement->setType(pTypeFound);
+		}
+		m_pListRequestResponseElements->append(pRequestResponseElement);
 		m_pCurrentRequestResponseElement.clear();
 	}
 
