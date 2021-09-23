@@ -20,3 +20,5 @@ data/theme/icons
 core
 .idea
 cmake-build-*
+examples/CalculatorService/calculator
+examples/CalculatorService/wsdl
