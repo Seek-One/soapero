@@ -61,5 +61,12 @@ Options:
 	--namespace=[NAMESPACE]: Global namespace to use for generated class (Mandatory)
 	--output-mode=[OUTPUT_MODE]: "Default" or "CMakeLists"
 	--resources-dir=[DIR]: Path where to find resources files. Used to copy some files in output directory. (Default: ./resources)
+	--service-name=[SERVICE_NAME]: Force service name, useful for wsdl service not defining the name tag.
+
+
+Examples
+--------
+
+Check the Calculator example: https://github.com/Jet1oeil/soapero/tree/master/examples/CalculatorService
 
 
