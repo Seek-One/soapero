@@ -26,11 +26,11 @@ public:
 
 	static RequestResponseElementSharedPtr create();
 
-	void setComplexType(const ComplexTypeSharedPtr& pComplexType);
-	ComplexTypeSharedPtr getComplexType() const;
+	void setType(const TypeSharedPtr& pType);
+	TypeSharedPtr getType() const;
 
 private:
-	ComplexTypeSharedPtr m_pComplexType;
+	TypeSharedPtr m_pType;
 
 };
 

@@ -23,14 +23,14 @@ RequestResponseElementSharedPtr RequestResponseElement::create()
 	return RequestResponseElementSharedPtr(new RequestResponseElement());
 }
 
-void RequestResponseElement::setComplexType(const ComplexTypeSharedPtr& pComplexType)
+void RequestResponseElement::setType(const TypeSharedPtr& pType)
 {
-	m_pComplexType = pComplexType;
+	m_pType = pType;
 }
 
-ComplexTypeSharedPtr RequestResponseElement::getComplexType() const
+TypeSharedPtr RequestResponseElement::getType() const
 {
-	return m_pComplexType;
+	return m_pType;
 }
 
 RequestResponseElementList::RequestResponseElementList()

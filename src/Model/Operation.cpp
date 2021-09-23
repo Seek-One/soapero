@@ -149,12 +149,14 @@ QString Operation::getOperationDefinition(const QString& szClassname, const QStr
 	}
 	szDefinition += "\t}else{" CRLF;
 	szDefinition += "\t\tbGoOn = false;" CRLF;
-	szDefinition += "\t\tqWarning(\"[DeviceMgmt::" + m_szName + "] Error during parsing response : %s (%d:%d)\", qPrintable(szErrorMsg), iErrorLine, iErrorColumn);" CRLF;
+	szDefinition += "\t\tqWarning(\"[" + szNamespace + "::" + m_szName + "] Error during parsing response : %s (%d:%d)\", qPrintable(szErrorMsg), iErrorLine, iErrorColumn);" CRLF;
+	szDefinition += "\t\tqWarning(\"Message:\\n%s\", qPrintable(QString::fromUtf8(soapMessage)));" CRLF;
+	szDefinition += "\t\tqWarning(\"Response:\\n%s\", qPrintable(QString::fromUtf8(response.getResponse())));" CRLF;
 	szDefinition += "\t}" CRLF;
 	szDefinition += CRLF;
 	szDefinition += "\tif(response.getHttpStatusCode() != 200){" CRLF;
 	szDefinition += "\t\tbGoOn = false;" CRLF;
-	szDefinition += "\t\tqWarning(\"[DeviceMgmt::" + m_szName + "] Error with HTTP status code: %d\", response.getHttpStatusCode());" CRLF;
+	szDefinition += "\t\tqWarning(\"[" + szNamespace + "::" + m_szName + "] Error with HTTP status code: %d\", response.getHttpStatusCode());" CRLF;
 	szDefinition += "\t}" CRLF;
 	szDefinition += CRLF;
 	szDefinition += "\treturn bGoOn;" CRLF;

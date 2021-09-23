@@ -121,6 +121,8 @@ private:
 	TypeSharedPtr getTypeByName(const QString& szLocalName, const QString& szNamespace = QString(), const TypeListSharedPtr& pListIgnoredTypes = TypeList::create());
 	TypeRefSharedPtr getTypeRefByTypeName(const QString& szTypeName, const QString& szNamespace = QString());
 
+	bool isWSDLSchema(const QString& szQName);
+
 	// Remote file loading
 	bool loadFromHttp(const QString& szURL, const QString& szNamespace = QString());
 	bool loadFromFile(const QString& szFileName, const QString& szNamespace = QString());

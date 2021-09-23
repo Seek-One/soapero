@@ -112,7 +112,7 @@ QString TypeListBuilder::getSimpleTypeHeaderPath(const SimpleTypeSharedPtr& pSim
 #ifdef WITH_DIR_CREATION
 		szFileName = pSimpleType->getExportedTypename() + ".h";
 		szNamespace = pSimpleType->getExportedNamespace();
-		if(szNamespace == "xsd"){
+		if(szNamespace == "xsd" || szNamespace == "s"){
 			szNamespace = "xs";
 		}
 #else
@@ -188,7 +188,7 @@ QString TypeListBuilder::getDefine(const QString& szPrefix, const RequestRespons
 void TypeListBuilder::buildHeaderFiles()
 {
 	TypeList::const_iterator type;
-	RequestResponseElementList::const_iterator element;
+	RequestResponseElementList::const_iterator iter_element;
 
 	QDir dir(m_szDirname);
 
@@ -198,9 +198,11 @@ void TypeListBuilder::buildHeaderFiles()
 		}
 	}
 
-	for(element = m_pListElement->constBegin(); element != m_pListElement->constEnd(); ++element) {
-		if(!(*element)->getLocalName().isEmpty()) {
-			buildHeaderFile(*element);
+	for(iter_element = m_pListElement->constBegin(); iter_element != m_pListElement->constEnd(); ++iter_element)
+	{
+		RequestResponseElementSharedPtr pElement = (*iter_element);
+		if(!pElement->getLocalName().isEmpty()) {
+			buildHeaderFile(pElement);
 		}
 	}
 
@@ -751,7 +753,7 @@ void TypeListBuilder::buildHeaderClassComplexType(QTextStream& os, const Complex
 void TypeListBuilder::buildHeaderClassElement(QTextStream& os, const RequestResponseElementSharedPtr& pElement) const
 {
 	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pElement->getLocalName(true);
-	ComplexTypeSharedPtr pComplexType = pElement->getComplexType();
+	TypeSharedPtr pType = pElement->getType();
 	QString szNamespace = StringUtils::secureString(pElement->getNamespace().toUpper());
 
 	if(!szNamespace.isEmpty()){
@@ -759,7 +761,9 @@ void TypeListBuilder::buildHeaderClassElement(QTextStream& os, const RequestResp
 		os << CRLF;
 	}
 
-	if(!pComplexType.isNull()) {
+	ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pType);
+	if(!pComplexType.isNull())
+	{
 		os << "class " << szClassname << CRLF;
 		os << "{" << CRLF;
 		os << "public:" << CRLF;
@@ -882,7 +886,8 @@ void TypeListBuilder::buildHeaderIncludeType(QTextStream& os, const TypeSharedPt
 
 void TypeListBuilder::buildHeaderIncludeElement(QTextStream& os, const RequestResponseElementSharedPtr& pRequestResponseElement) const
 {
-	ComplexTypeSharedPtr pComplexType = pRequestResponseElement->getComplexType();
+	TypeSharedPtr pType = pRequestResponseElement->getType();
+	ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pType);
 
 	os << "#include <QDomElement>" << CRLF;
 	os << "#include <QList>" << CRLF;
@@ -950,9 +955,16 @@ void TypeListBuilder::buildHeaderIncludeService(QTextStream& os, const ServiceSh
 	QStringList list;
 	bool bSoapEnvelopeFaultIncluded = false;
 
+	os << "#include <QString>" << CRLF;
+	os << "#include <QMap>" << CRLF;
+	os << "#include <QDomDocument>" << CRLF;
+	os << CRLF;
+
 	os << "#include \"Service.h\"" << CRLF << CRLF;
 
 	QString szTmpFileName;
+
+	MessageSharedPtr pMessage;
 
 	OperationListSharedPtr pOperationList = pService->getOperationList();
 	OperationList::const_iterator operation;
@@ -972,12 +984,17 @@ void TypeListBuilder::buildHeaderIncludeService(QTextStream& os, const ServiceSh
 			bSoapEnvelopeFaultIncluded = true;
 		}
 
-		szTmpFileName = getRequestResponseElementHeaderPath((*operation)->getInputMessage()->getParameter(), FileCategory_Service);
-		if(!list.contains(szTmpFileName)) {
-			os << "#include \"" << szTmpFileName << "\"" << CRLF;
-			list.append(szTmpFileName);
+		pMessage = pOperation->getInputMessage();
+		if(pMessage){
+			szTmpFileName = getRequestResponseElementHeaderPath(pMessage->getParameter(), FileCategory_Service);
+			if(!list.contains(szTmpFileName)) {
+				os << "#include \"" << szTmpFileName << "\"" << CRLF;
+				list.append(szTmpFileName);
+			}
 		}
-		szTmpFileName = getRequestResponseElementHeaderPath((*operation)->getOutputMessage()->getParameter(), FileCategory_Service);
+
+		pMessage = pOperation->getOutputMessage();
+		szTmpFileName = getRequestResponseElementHeaderPath(pMessage->getParameter(), FileCategory_Service);
 		if(!list.contains(szTmpFileName)) {
 			os << "#include \"" << szTmpFileName << "\"" << CRLF;
 			list.append(szTmpFileName);
@@ -1155,7 +1172,8 @@ void TypeListBuilder::buildCppClassComplexType(QTextStream& os, const ComplexTyp
 void TypeListBuilder::buildCppClassElement(QTextStream& os, const RequestResponseElementSharedPtr& pElement) const
 {
 	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pElement->getLocalName();
-	ComplexTypeSharedPtr pComplexType = pElement->getComplexType();
+	TypeSharedPtr pType = pElement->getType();
+	ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pType);
 	pComplexType->setLocalName(pElement->getLocalName());
 	pComplexType->setNamespace(pElement->getNamespace());
 	QString szNamespace = StringUtils::secureString(pElement->getNamespace().toUpper());
