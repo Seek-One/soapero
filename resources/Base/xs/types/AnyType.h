@@ -5,7 +5,7 @@
  *      Author: alavier
  */
 
-#ifndef XS_NYTYPE_H_
+#ifndef XS_ANYTYPE_H_
 #define XS_ANYTYPE_H_
 
 #include "String.h"
