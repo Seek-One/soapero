@@ -85,6 +85,9 @@ private:
 	void buildCppClassElement(QTextStream& os, const RequestResponseElementSharedPtr& pElement) const;
 	void buildCppClassService(QTextStream& os, const ServiceSharedPtr& pService) const;
 
+	void startCppClass(QTextStream& os, const QString& szClassName, const ComplexTypeSharedPtr& pComplexType) const;
+	void endCppClass(QTextStream& os) const;
+
 	TypeListSharedPtr m_pListType;
 	RequestResponseElementListSharedPtr m_pListElement;
 	ServiceSharedPtr m_pService;

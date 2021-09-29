@@ -621,36 +621,9 @@ void TypeListBuilder::buildHeaderClassType(QTextStream& os, const TypeSharedPtr&
 			}
 		}
 
-		if(pComplexType->getExtensionType().isNull()) {
-			os << "class " << szClassname << CRLF;
-		}else{
-			QString szExtendedClassname;
-			if(pComplexType->isExtensionTypeList()){
-				szExtendedClassname = "QList<";
-			}
-			if(pComplexType->getExtensionType()->getClassType() == Type::TypeSimple){
-				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pComplexType->getExtensionType());
-				szExtendedClassname += pSimpleType->getCPPTypeNameString();
-			}else{
-				QString szExtensionName = pComplexType->getExtensionType()->getNameWithNamespace();
-				szExtendedClassname += (!m_szPrefix.isEmpty() ? m_szPrefix : "") + szExtensionName;
-			}
-			if(pComplexType->isExtensionTypeList()){
-				szExtendedClassname += ">";
-			}
-
-			os << "class " << szClassname << " : public " << szExtendedClassname << CRLF;
-		}
-		os << "{" << CRLF;
-		os << "public:" << CRLF;
-		os << "\t" << szClassname << "();" << CRLF;
-		os << "\tvirtual ~" << szClassname << "();" << CRLF;
-		os << CRLF;
-
+		startCppClass(os, szClassname, pComplexType);
 		buildHeaderClassComplexType(os, pComplexType);
-
-		os << "};" << CRLF;
-		os << CRLF;
+		endCppClass(os);
 	}
 
 	if(!szNamespace.isEmpty()){
@@ -776,17 +749,9 @@ void TypeListBuilder::buildHeaderClassElement(QTextStream& os, const RequestResp
 	}
 	if(!pComplexType.isNull())
 	{
-		os << "class " << szClassname << CRLF;
-		os << "{" << CRLF;
-		os << "public:" << CRLF;
-		os << "\t" << szClassname << "();" << CRLF;
-		os << "\tvirtual ~" << szClassname << "();" << CRLF;
-		os << CRLF;
-
+		startCppClass(os, szClassname, pComplexType);
 		buildHeaderClassComplexType(os, pComplexType);
-
-		os << "};" << CRLF;
-		os << CRLF;
+		endCppClass(os);
 	}
 
 	if(!szNamespace.isEmpty()){
@@ -1283,4 +1248,40 @@ void TypeListBuilder::buildCppClassService(QTextStream& os, const ServiceSharedP
 	os << "\t}" CRLF;
 	os << "\treturn map;" CRLF;
 	os << "}" CRLF;
+}
+
+void TypeListBuilder::startCppClass(QTextStream& os, const QString& szClassName, const ComplexTypeSharedPtr& pComplexType) const
+{
+	os << "class " << szClassName;
+	if(!pComplexType->getExtensionType().isNull())
+	{
+		QString szExtendedClassname;
+		if(pComplexType->isExtensionTypeList()){
+			szExtendedClassname = "QList<";
+		}
+		if(pComplexType->getExtensionType()->getClassType() == Type::TypeSimple){
+			SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pComplexType->getExtensionType());
+			szExtendedClassname += pSimpleType->getCPPTypeNameString();
+		}else{
+			QString szExtensionName = pComplexType->getExtensionType()->getNameWithNamespace();
+			szExtendedClassname += (!m_szPrefix.isEmpty() ? m_szPrefix : "") + szExtensionName;
+		}
+		if(pComplexType->isExtensionTypeList()){
+			szExtendedClassname += ">";
+		}
+
+		os << " : public " << szExtendedClassname;
+	}
+	os << CRLF;
+	os << "{" << CRLF;
+	os << "public:" << CRLF;
+	os << "\t" << szClassName << "();" << CRLF;
+	os << "\tvirtual ~" << szClassName << "();" << CRLF;
+	os << CRLF;
+}
+
+void TypeListBuilder::endCppClass(QTextStream& os) const
+{
+	os << "};" << CRLF;
+	os << CRLF;
 }
