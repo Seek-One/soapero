@@ -178,7 +178,16 @@ QString TypeListBuilder::getDefine(const QString& szPrefix, const RequestRespons
 		szDefine += StringUtils::secureString(szPrefix).toUpper() + "_";
 	}
 
+#ifdef WITH_DIR_CREATION
+	if(!pElement->getNamespace().isEmpty()){
+		szDefine += StringUtils::secureString(pElement->getNamespace()).toUpper() + "_";
+	}
+	if(!pElement->getLocalName().isEmpty()){
+		szDefine += StringUtils::secureString(pElement->getLocalName()).toUpper() + "_";
+	}
+#else
 	szDefine += StringUtils::secureString(pElement->getQualifiedName()).toUpper() + "_";
+#endif
 
 	szDefine += "H_";
 
@@ -761,7 +770,10 @@ void TypeListBuilder::buildHeaderClassElement(QTextStream& os, const RequestResp
 		os << CRLF;
 	}
 
-	ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pType);
+	ComplexTypeSharedPtr pComplexType;
+	if(pType->getClassType() == Type::TypeComplex){
+		pComplexType = qSharedPointerCast<ComplexType>(pType);
+	}
 	if(!pComplexType.isNull())
 	{
 		os << "class " << szClassname << CRLF;
@@ -895,28 +907,37 @@ void TypeListBuilder::buildHeaderIncludeType(QTextStream& os, const TypeSharedPt
 void TypeListBuilder::buildHeaderIncludeElement(QTextStream& os, const RequestResponseElementSharedPtr& pRequestResponseElement) const
 {
 	TypeSharedPtr pType = pRequestResponseElement->getType();
-	ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pType);
+
+	ComplexTypeSharedPtr pComplexType;
+	if(pType->getClassType() == Type::TypeComplex){
+		pComplexType = qSharedPointerCast<ComplexType>(pType);
+	}
 
 	os << "#include <QDomElement>" << CRLF;
 	os << "#include <QList>" << CRLF;
 	os << "#include <QString>" << CRLF;
 	os << CRLF;
 
-	AttributeListSharedPtr pListAttributes = pComplexType->getAttributeList();
+	AttributeListSharedPtr pListAttributes;
 	AttributeList::const_iterator attr;
 	AttributeSharedPtr pAttribute;
 
-	ElementListSharedPtr pListElements = pComplexType->getElementList();
+	ElementListSharedPtr pListElements;
 	ElementList::const_iterator element;
 	ElementSharedPtr pElement;
 
-	if(!pComplexType->getExtensionType().isNull()) {
-		os << "#include \"" << getTypeHeaderPath(pComplexType->getExtensionType(), FileCategory_Type) << "\"" << CRLF;
-		os << CRLF;
+	if(pComplexType){
+		pListAttributes = pComplexType->getAttributeList();
+		pListElements = pComplexType->getElementList();
+
+		if(!pComplexType->getExtensionType().isNull()) {
+			os << "#include \"" << getTypeHeaderPath(pComplexType->getExtensionType(), FileCategory_Type) << "\"" << CRLF;
+			os << CRLF;
+		}
 	}
 
-	if(pListAttributes->count() > 0 || pListElements->count() > 0) {
-
+	if((pListAttributes && pListAttributes->count() > 0) || (pListElements && pListElements->count() > 0))
+	{
 		QStringList list;
 
 		for(attr = pListAttributes->constBegin(); attr != pListAttributes->constEnd(); ++attr) {
@@ -1181,9 +1202,14 @@ void TypeListBuilder::buildCppClassElement(QTextStream& os, const RequestRespons
 {
 	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pElement->getLocalName();
 	TypeSharedPtr pType = pElement->getType();
-	ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pType);
-	pComplexType->setLocalName(pElement->getLocalName());
-	pComplexType->setNamespace(pElement->getNamespace());
+	ComplexTypeSharedPtr pComplexType;
+	if(pType->getClassType() == Type::TypeComplex){
+		pComplexType = qSharedPointerCast<ComplexType>(pType);
+	}
+	if(pComplexType){
+		pComplexType->setLocalName(pElement->getLocalName());
+		pComplexType->setNamespace(pElement->getNamespace());
+	}
 	QString szNamespace = StringUtils::secureString(pElement->getNamespace().toUpper());
 
 	if(!szNamespace.isEmpty()){

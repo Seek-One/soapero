@@ -63,7 +63,9 @@ TypeSharedPtr TypeList::getByName(const QString& szLocalName, const QString& szN
 			continue;
 		}
 		if(pCurrentType->getNamespace() != szNamespace){
-			continue;
+			if(pCurrentType->getNamespaceUri() != szNamespace){
+				continue;
+			}
 		}
 		if(pListIgnoredTypes && pListIgnoredTypes->contains(pCurrentType)){
 			continue;
