@@ -154,9 +154,11 @@ class ComplexType : public Type
 {
 public:
 	ComplexType();
+	ComplexType(const ComplexType& other);
 	virtual ~ComplexType();
 
 	static ComplexTypeSharedPtr create();
+	ComplexTypeSharedPtr clone();
 
 	void setExtensionType(TypeSharedPtr pType, bool bIsList = false);
 	TypeSharedPtr getExtensionType() const;

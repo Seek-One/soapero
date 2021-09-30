@@ -734,7 +734,7 @@ void TypeListBuilder::buildHeaderClassComplexType(QTextStream& os, const Complex
 
 void TypeListBuilder::buildHeaderClassElement(QTextStream& os, const RequestResponseElementSharedPtr& pElement) const
 {
-	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pElement->getLocalName(true);
+	QString szClassName =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pElement->getLocalName(true);
 	TypeSharedPtr pType = pElement->getType();
 	QString szNamespace = StringUtils::secureString(pElement->getNamespace().toUpper());
 
@@ -749,7 +749,12 @@ void TypeListBuilder::buildHeaderClassElement(QTextStream& os, const RequestResp
 	}
 	if(!pComplexType.isNull())
 	{
-		startCppClass(os, szClassname, pComplexType);
+		// Write namespace
+		os << "const QString " << szClassName << "TargetNamespace = \"" << pElement->getNamespace() << "\";" CRLF;
+		os << "const QString " << szClassName << "TargetNamespaceUri = \"" << pElement->getNamespaceUri() << "\";" CRLF;
+		os << CRLF;
+
+		startCppClass(os, szClassName, pComplexType);
 		buildHeaderClassComplexType(os, pComplexType);
 		endCppClass(os);
 	}
@@ -1172,6 +1177,7 @@ void TypeListBuilder::buildCppClassElement(QTextStream& os, const RequestRespons
 		pComplexType = qSharedPointerCast<ComplexType>(pType);
 	}
 	if(pComplexType){
+		pComplexType = pComplexType->clone();
 		pComplexType->setLocalName(pElement->getLocalName());
 		pComplexType->setNamespace(pElement->getNamespace());
 	}

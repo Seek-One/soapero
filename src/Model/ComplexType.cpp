@@ -856,6 +856,18 @@ ComplexType::ComplexType()
 	m_bIsSoapEnvelopeFault = false;
 }
 
+ComplexType::ComplexType(const ComplexType& other)
+	: Type(other)
+{
+	m_pListAttribute = other.m_pListAttribute;
+	m_pListElement = other.m_pListElement;
+
+	m_pExtensionType = other.m_pExtensionType;
+	m_bIsListExtension = other.m_bIsListExtension;
+
+	m_bIsSoapEnvelopeFault = other.m_bIsSoapEnvelopeFault;
+}
+
 ComplexType::~ComplexType()
 {
 
@@ -864,6 +876,11 @@ ComplexType::~ComplexType()
 ComplexTypeSharedPtr ComplexType::create()
 {
 	return ComplexTypeSharedPtr(new ComplexType());
+}
+
+ComplexTypeSharedPtr ComplexType::clone()
+{
+	return ComplexTypeSharedPtr(new ComplexType(*this));
 }
 
 void ComplexType::setExtensionType(TypeSharedPtr pType, bool bIsList)

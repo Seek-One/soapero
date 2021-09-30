@@ -14,6 +14,7 @@ class Classname
 {
 public:
 	Classname();
+	Classname(const Classname& other);
 	virtual ~Classname();
 
 	void setQualifedName(const QString& szNamespace, const QString& szName);

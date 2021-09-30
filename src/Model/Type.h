@@ -46,6 +46,7 @@ public:
 
 protected:
 	Type(ClassType type);
+	Type(const Type& other);
 
 public:
 	virtual ~Type();

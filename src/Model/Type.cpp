@@ -9,10 +9,14 @@
 
 #include "Type.h"
 
-Type::Type(ClassType type)
-	:Classname()
+Type::Type(ClassType type) : Classname()
 {
 	m_classType = type;
+}
+
+Type::Type(const Type& other) : Classname(other)
+{
+	m_classType = other.m_classType;
 }
 
 Type::~Type()

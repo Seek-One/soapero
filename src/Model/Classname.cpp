@@ -15,6 +15,13 @@ Classname::Classname()
 
 }
 
+Classname::Classname(const Classname& other)
+{
+	m_szLocalName = other.m_szLocalName;
+	m_szNamespace = other.m_szNamespace;
+	m_szNamespaceUri = other.m_szNamespaceUri;
+}
+
 Classname::~Classname()
 {
 
@@ -100,4 +107,3 @@ QString Classname::getLocalName(bool bSafe) const
 	}
 	return m_szLocalName;
 }
-
