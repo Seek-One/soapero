@@ -18,6 +18,8 @@ public:
 	static QString buildPath(const QString& szBaseDirectory, const QString& szFileNamespace, const QString& szFileCategory, const QString& szFileName);
 	static bool createDirectoryForFile(const QString& szFilePath);
 
+	static QString buildFileName(const QString& szFileNamespace, const QString& szBaseName, const QString& szExtension);
+
 	static bool isFileTypes(const QString& szFilePath);
 	static bool isFileMessage(const QString& szFilePath);
 };

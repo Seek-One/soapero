@@ -50,6 +50,7 @@ QString FileHelper::buildPath(const QString& szBaseDirectory, const QString& szF
 	if(!szFileCategory.isEmpty()){
 		dir.setPath(dir.filePath(szFileCategory));
 	}
+
 #else
 	if(!szFileCategory.isEmpty()){
 		dir.setPath(dir.filePath(szFileCategory));
@@ -69,4 +70,20 @@ bool FileHelper::createDirectoryForFile(const QString& szFilePath)
 	}
 
 	return bRes;
+}
+
+QString FileHelper::buildFileName(const QString& szFileNamespace, const QString& szBaseName, const QString& szExtension)
+{
+	QString szFileName;
+
+#ifdef WITH_DIR_CREATION
+	// Mingw32 don't support the have the project with multiple same filename
+	if(!szFileNamespace.isEmpty()){
+		szFileName += (szFileNamespace.toUpper() + "-");
+	}
+#endif
+	szFileName += szBaseName;
+	szFileName += "." + szExtension;
+
+	return szFileName;
 }

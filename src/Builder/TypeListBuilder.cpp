@@ -94,12 +94,7 @@ QString TypeListBuilder::getTypeHeaderPath(const TypeSharedPtr& pType, FileCateg
 		return getComplexTypeHeaderPath(pComplexType, iOrigin);
 	}else{
 		qWarning("[TypeListBuilder] Unknown type: %s", qPrintable(pType->getLocalName()));
-		QString szFileName;
-#ifdef WITH_DIR_CREATION
-		szFileName = pType->getLocalName() + ".h";
-#else
-		szFileName = pType->getQualifiedName() + ".h";
-#endif
+		QString szFileName = getHeaderFileName(pType);
 		return getHeaderPath(pType->getNamespace(), "types", szFileName, iOrigin);
 	}
 }
@@ -109,15 +104,8 @@ QString TypeListBuilder::getSimpleTypeHeaderPath(const SimpleTypeSharedPtr& pSim
 	QString szFileName;
 	QString szNamespace;
 	if(pSimpleType->hasVariableType()){
-#ifdef WITH_DIR_CREATION
-		szFileName = pSimpleType->getExportedTypename() + ".h";
-		szNamespace = pSimpleType->getExportedNamespace();
-		if(szNamespace == "xsd" || szNamespace == "s"){
-			szNamespace = "xs";
-		}
-#else
-		szFileName = pSimpleType->getVariableTypeFilenameString() + ".h";
-#endif
+		szNamespace = getSimpleTypeNamespace(pSimpleType);
+		szFileName = getHeaderFileName(pSimpleType);
 		return getHeaderPath(szNamespace, "types", szFileName, iOrigin);
 	}
 	return QString();
@@ -125,24 +113,13 @@ QString TypeListBuilder::getSimpleTypeHeaderPath(const SimpleTypeSharedPtr& pSim
 
 QString TypeListBuilder::getComplexTypeHeaderPath(const ComplexTypeSharedPtr& pComplexType, FileCategory iOrigin)
 {
-	QString szFileName;
-#ifdef WITH_DIR_CREATION
-	szFileName = pComplexType->getLocalName() + ".h";
-#else
-	szFileName = pComplexType->getQualifiedName() + ".h";
-#endif
+	QString szFileName = getHeaderFileName((TypeSharedPtr)pComplexType);
 	return getHeaderPath( pComplexType->getNamespace(), "types", szFileName, iOrigin);
 }
 
 QString TypeListBuilder::getRequestResponseElementHeaderPath(const RequestResponseElementSharedPtr& pRequestResponseElement, FileCategory iOrigin)
 {
-	QString szFileName;
-
-#ifdef WITH_DIR_CREATION
-	szFileName = pRequestResponseElement->getLocalName() + ".h";
-#else
-	szFileName = pRequestResponseElement->getQualifiedName() + ".h";
-#endif
+	QString szFileName = getHeaderFileName(pRequestResponseElement);
 	return getHeaderPath( pRequestResponseElement->getNamespace(), "messages", szFileName, iOrigin);
 }
 
@@ -192,6 +169,78 @@ QString TypeListBuilder::getDefine(const QString& szPrefix, const RequestRespons
 	szDefine += "H_";
 
 	return szDefine;
+}
+
+QString TypeListBuilder::getHeaderFileName(const TypeSharedPtr& pType)
+{
+	QString szClassName;
+#ifdef WITH_DIR_CREATION
+	szClassName = pType->getLocalName();
+#else
+	szClassName = pType->getQualifiedName();
+#endif
+	return FileHelper::buildFileName(pType->getNamespace(), szClassName, "h");
+}
+
+QString TypeListBuilder::getCppFileName(const TypeSharedPtr& pType)
+{
+	QString szClassName;
+#ifdef WITH_DIR_CREATION
+	szClassName = pType->getLocalName();
+#else
+	szClassName = pType->getQualifiedName();
+#endif
+	return FileHelper::buildFileName(pType->getNamespace(), szClassName, "cpp");
+}
+
+QString TypeListBuilder::getHeaderFileName(const SimpleTypeSharedPtr& pSimpleType)
+{
+	QString szClassName;
+	QString szNamespace;
+#ifdef WITH_DIR_CREATION
+	szClassName = pSimpleType->getExportedTypename();
+	szNamespace = getSimpleTypeNamespace(pSimpleType);
+	if(szNamespace == "xs"){
+		szNamespace = ""; // Don't use prefix for simple type
+	}
+#else
+	szFileName = pSimpleType->getVariableTypeFilenameString();
+#endif
+	return FileHelper::buildFileName(szNamespace, szClassName, "h");
+}
+
+QString TypeListBuilder::getSimpleTypeNamespace(const SimpleTypeSharedPtr& pSimpleType)
+{
+	QString szNamespace;
+#ifdef WITH_DIR_CREATION
+	szNamespace = pSimpleType->getExportedNamespace();
+	if(szNamespace == "xsd" || szNamespace == "s"){
+		szNamespace = "xs";
+	}
+#endif
+	return szNamespace;
+}
+
+QString TypeListBuilder::getHeaderFileName(const RequestResponseElementSharedPtr& pElement)
+{
+	QString szClassName;
+#ifdef WITH_DIR_CREATION
+	szClassName = pElement->getLocalName();
+#else
+	szClassName = pElement->getQualifiedName();
+#endif
+	return FileHelper::buildFileName(pElement->getNamespace(), szClassName, "h");
+}
+
+QString TypeListBuilder::getCppFileName(const RequestResponseElementSharedPtr& pElement)
+{
+	QString szClassName;
+#ifdef WITH_DIR_CREATION
+	szClassName = pElement->getLocalName();
+#else
+	szClassName = pElement->getQualifiedName();
+#endif
+	return FileHelper::buildFileName(pElement->getNamespace(), szClassName, "cpp");
 }
 
 void TypeListBuilder::buildHeaderFiles()
@@ -252,11 +301,7 @@ void TypeListBuilder::buildFileDescription(QTextStream& os, const QString& szFil
 
 void TypeListBuilder::buildHeaderFile(const TypeSharedPtr& pType)
 {
-#ifdef WITH_DIR_CREATION
-	QString szHeaderFilename = pType->getLocalName() + ".h";
-#else
-	QString szHeaderFilename = pType->getQualifiedName() + ".h";
-#endif
+	QString szHeaderFilename = getHeaderFileName(pType);
 	QString szFullFilePath = FileHelper::buildPath(m_szDirname, pType->getNamespace(), "types", szHeaderFilename);
 	QString szShortFilePath = FileHelper::buildPath(QString(), pType->getNamespace(), "types", szHeaderFilename);
 
@@ -301,11 +346,7 @@ void TypeListBuilder::buildHeaderFile(const TypeSharedPtr& pType)
 
 void TypeListBuilder::buildHeaderFile(const RequestResponseElementSharedPtr& pElement)
 {
-#ifdef WITH_DIR_CREATION
-	QString szHeaderFilename = pElement->getLocalName() + ".h";
-#else
-	QString szHeaderFilename = pElement->getQualifiedName() + ".h";
-#endif
+	QString szHeaderFilename = getHeaderFileName(pElement);
 	QString szFullFilePath = FileHelper::buildPath(m_szDirname, pElement->getNamespace(), "messages", szHeaderFilename);
 	QString szShortFilePath = FileHelper::buildPath(QString(), pElement->getNamespace(), "messages", szHeaderFilename);
 
@@ -399,13 +440,8 @@ void TypeListBuilder::buildHeaderFileDescription(QTextStream& os, const QString&
 void TypeListBuilder::buildCppFile(const TypeSharedPtr& pType)
 {
 	bool bQStringListIncluded = false;
-#ifdef WITH_DIR_CREATION
-	QString szHeaderFilename = pType->getLocalName() + ".h";
-	QString szCppFilename = pType->getLocalName() + ".cpp";
-#else
-	QString szHeaderFilename = pType->getQualifiedName() + ".h";
-	QString szCppFilename = pType->getQualifiedName() + ".cpp";
-#endif
+	QString szHeaderFilename = getHeaderFileName(pType);
+	QString szCppFilename = getCppFileName(pType);
 	QString szFullFilePath = FileHelper::buildPath(m_szDirname, pType->getNamespace(), "types", szCppFilename);
 	QString szShortFilePath = FileHelper::buildPath(QString(), pType->getNamespace(), "types", szCppFilename);
 
@@ -468,13 +504,8 @@ void TypeListBuilder::buildCppFile(const TypeSharedPtr& pType)
 
 void TypeListBuilder::buildCppFile(const RequestResponseElementSharedPtr& pElement)
 {
-#ifdef WITH_DIR_CREATION
-	QString szHeaderFilename = pElement->getLocalName() + ".h";
-	QString szCppFilename = pElement->getLocalName() + ".cpp";
-#else
-	QString szHeaderFilename = pElement->getQualifiedName() + ".h";
-	QString szCppFilename = pElement->getQualifiedName() + ".cpp";
-#endif
+	QString szHeaderFilename = getHeaderFileName(pElement);
+	QString szCppFilename = getCppFileName(pElement);
 	QString szFullFilePath = FileHelper::buildPath(m_szDirname, pElement->getNamespace(), "messages", szCppFilename);
 	QString szShortFilePath = FileHelper::buildPath(QString(), pElement->getNamespace(), "messages", szCppFilename);
 
