@@ -439,7 +439,6 @@ void TypeListBuilder::buildHeaderFileDescription(QTextStream& os, const QString&
 
 void TypeListBuilder::buildCppFile(const TypeSharedPtr& pType)
 {
-	bool bQStringListIncluded = false;
 	QString szHeaderFilename = getHeaderFileName(pType);
 	QString szCppFilename = getCppFileName(pType);
 	QString szFullFilePath = FileHelper::buildPath(m_szDirname, pType->getNamespace(), "types", szCppFilename);
@@ -459,31 +458,9 @@ void TypeListBuilder::buildCppFile(const TypeSharedPtr& pType)
 
 		buildCppFileDescription(os, szCppFilename);
 
+		buildTypeIncludes(os, pType);
+
 		os << "#include \"" << szHeaderFilename << "\"" << CRLF;
-
-		if(pType->getClassType() == Type::TypeComplex){
-			ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pType);
-			if(pComplexType->getAttributeList()){
-				if(pComplexType->getAttributeList()->containsListAttribute()){
-					os << "#include <QStringList>" << CRLF;
-					bQStringListIncluded = true;
-				}
-			}
-			if(!bQStringListIncluded && pComplexType->getExtensionType() && pComplexType->isExtensionTypeList()){
-				os << "#include <QStringList>" << CRLF;
-				bQStringListIncluded = true;
-			}
-
-			if(pComplexType->getElementList()){
-				ElementList::const_iterator iter;
-				for(iter = pComplexType->getElementList()->constBegin(); iter != pComplexType->getElementList()->constEnd(); ++iter){
-					if((*iter)->getType() && (*iter)->isPointer()){
-						os << "#include \"" << getTypeHeaderPath((*iter)->getType(), FileCategory_Type) << "\"" << CRLF;
-					}
-				}
-			}
-		}
-
 		os << CRLF;
 
 		if(!m_szNamespace.isEmpty()) {
@@ -522,6 +499,8 @@ void TypeListBuilder::buildCppFile(const RequestResponseElementSharedPtr& pEleme
 		QTextStream os(&file);
 
 		buildCppFileDescription(os, szCppFilename);
+
+		buildTypeIncludes(os, pElement->getType());
 
 		os << "#include \"" << szHeaderFilename << "\"" << CRLF;
 		os << CRLF;
@@ -1321,4 +1300,47 @@ void TypeListBuilder::endCppClass(QTextStream& os) const
 {
 	os << "};" << CRLF;
 	os << CRLF;
+}
+
+void TypeListBuilder::buildTypeIncludes(QTextStream& os, const TypeSharedPtr& pType)
+{
+	bool bHasIncludes = false;
+	bool bQStringListIncluded = false;
+
+	if(!pType){
+		return;
+	}
+
+	if(pType->getClassType() == Type::TypeComplex)
+	{
+		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pType);
+		if(pComplexType->getAttributeList()){
+			if(pComplexType->getAttributeList()->containsListAttribute()){
+				os << "#include <QStringList>" << CRLF;
+				bQStringListIncluded = true;
+			}
+		}
+		if(!bQStringListIncluded && pComplexType->getExtensionType() && pComplexType->isExtensionTypeList())
+		{
+			os << "#include <QStringList>" << CRLF;
+			bQStringListIncluded = true;
+		}
+
+		bHasIncludes = bQStringListIncluded;
+
+		if(pComplexType->getElementList())
+		{
+			ElementList::const_iterator iter;
+			for(iter = pComplexType->getElementList()->constBegin(); iter != pComplexType->getElementList()->constEnd(); ++iter){
+				if((*iter)->getType() && (*iter)->isPointer()){
+					os << "#include \"" << getTypeHeaderPath((*iter)->getType(), FileCategory_Type) << "\"" << CRLF;
+					bHasIncludes = true;
+				}
+			}
+		}
+
+		if(bHasIncludes){
+			os << CRLF;
+		}
+	}
 }
