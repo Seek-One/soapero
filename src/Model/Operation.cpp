@@ -5,6 +5,8 @@
  *      Author: lgruber
  */
 
+#include <Utils/ModelUtils.h>
+
 #include "Operation.h"
 
 #ifndef CRLF
@@ -103,10 +105,13 @@ QString Operation::getOperationDeclaration() const
 
 QString Operation::getOperationDefinition(const QString& szClassname, const QString& szNamespace) const
 {
+	QString szInputName = ModelUtils::getUncapitalizedName(m_pInputMessage->getParameter()->getLocalName());
+	QString szOutputName = ModelUtils::getUncapitalizedName(m_pOutputMessage->getParameter()->getLocalName());
+
 	QString szDefinition;
 	szDefinition += "bool " + szClassname + "::" + m_szName + "(const " + m_pInputMessage->getParameter()->getNameWithNamespace() +
-			"& " + m_pInputMessage->getParameter()->getLocalName() + ", " + m_pOutputMessage->getParameter()->getNameWithNamespace() +
-			"& " + m_pOutputMessage->getParameter()->getLocalName();
+			"& " + szInputName + ", " + m_pOutputMessage->getParameter()->getNameWithNamespace() +
+			"& " + szOutputName;
 
 	if(m_pSoapEnvFaultType){
 		szDefinition += ", " + m_pSoapEnvFaultType->getNameWithNamespace() + "& " + m_pSoapEnvFaultType->getLocalName() + ")" CRLF;
@@ -121,7 +126,7 @@ QString Operation::getOperationDefinition(const QString& szClassname, const QStr
 	szDefinition += "\trequest.setRawHeader(QString(\"Accept-Encoding\").toLatin1(), QString(\"gzip, deflate\").toLatin1());" CRLF;
 	szDefinition += "\trequest.setRawHeader(QString(\"SoapAction\").toLatin1(), QString(\"" + m_szSoapAction + "\").toLatin1());" CRLF;
 	szDefinition += CRLF;
-	szDefinition += "\tQByteArray soapMessage = buildSoapMessage(" + m_pInputMessage->getParameter()->getLocalName() + ".serialize(), " + m_pInputMessage->getParameter()->getNameWithNamespace() + "::getNamespaceDeclaration());" CRLF;
+	szDefinition += "\tQByteArray soapMessage = buildSoapMessage(" + szInputName + ".serialize(), " + m_pInputMessage->getParameter()->getNameWithNamespace() + "::getNamespaceDeclaration());" CRLF;
 
 	// Debug request
 	szDefinition += "\tif(m_bDebug){" CRLF;
@@ -150,7 +155,7 @@ QString Operation::getOperationDefinition(const QString& szClassname, const QStr
 		szDefinition += "\t\t}else{" CRLF;
 	}
 	szDefinition += "\t\t" + QString(m_pSoapEnvFaultType ? "\t" : "") + "QDomElement root = doc.elementsByTagName(namespaceRoutingMap.value(SOAP_ENV_URI, DEFAULT_SOAP_ENV_NAMESPACE) + \":Body\").at(0).firstChildElement();" CRLF;
-	szDefinition += "\t\t" + QString(m_pSoapEnvFaultType ? "\t" : "") + m_pOutputMessage->getParameter()->getLocalName() + ".deserialize(root);" CRLF;
+	szDefinition += "\t\t" + QString(m_pSoapEnvFaultType ? "\t" : "") + szOutputName + ".deserialize(root);" CRLF;
 	if(m_pSoapEnvFaultType){
 		szDefinition += "\t\t}" CRLF;
 	}

@@ -55,6 +55,7 @@ private:
 	bool readTypes(QXmlStreamReader& xmlReader);
 	bool readMessage(QXmlStreamReader& xmlReader);
 	bool readPortType(QXmlStreamReader& xmlReader);
+	bool readBinding(QXmlStreamReader& xmlReader);
 	bool readPart(QXmlStreamReader& xmlReader);
 	bool readOperation(QXmlStreamReader& xmlReader);
 	bool readInput(QXmlStreamReader& xmlReader);

@@ -12,6 +12,7 @@
 #define TAG_TYPES "types"
 #define TAG_MESSAGE "message"
 #define TAG_PORTTYPE "portType"
+#define TAG_BINDING "binding"
 #define TAG_PART "part"
 #define TAG_OPERATION "operation"
 #define TAG_INPUT "input"

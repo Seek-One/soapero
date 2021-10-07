@@ -397,6 +397,8 @@ bool QWSDLParser::readDefinitions(QXmlStreamReader& xmlReader)
 			bRes = readMessage(xmlReader);
 		}else if (xmlReader.name() == TAG_PORTTYPE) {
 			bRes = readPortType(xmlReader);
+		}else if (xmlReader.name() == TAG_BINDING) {
+			bRes = readBinding(xmlReader);
 		}else{
 			xmlReader.skipCurrentElement();
 		}
@@ -487,6 +489,27 @@ bool QWSDLParser::readPortType(QXmlStreamReader& xmlReader)
 	return bRes;
 }
 
+bool QWSDLParser::readBinding(QXmlStreamReader& xmlReader)
+{
+	bool bRes = true;
+
+	// Read sub elements
+	incrLogIndent();
+	while (bRes && xmlReader.readNextStartElement())
+	{
+		logParser("processing: " + xmlReader.name().toString());
+
+		if (xmlReader.name() == TAG_OPERATION) {
+			bRes = readOperation(xmlReader);
+		}else{
+			xmlReader.skipCurrentElement();
+		}
+	}
+	decrLogIndent();
+
+	return bRes;
+}
+
 bool QWSDLParser::readPart(QXmlStreamReader& xmlReader)
 {
 	bool bRes = true;
@@ -553,6 +576,8 @@ bool QWSDLParser::readOperation(QXmlStreamReader& xmlReader)
 			bRes = readInput(xmlReader);
 		}else if (xmlReader.name() == TAG_OUTPUT) {
 			bRes = readOutput(xmlReader);
+		}else if (xmlReader.name() == TAG_OPERATION) {
+			bRes = readOperation(xmlReader);
 		}else{
 			xmlReader.skipCurrentElement();
 		}
