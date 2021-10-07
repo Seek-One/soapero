@@ -129,14 +129,16 @@ int main(int argc, char **argv)
 
 			// Check service
 			ServiceSharedPtr pService;
+			QString szCurrentServiceName;
 			if(bGoOn){
 				pService = parser.getService();
 				if(szServiceName.isNull()){
-					szServiceName = pService->getName();
+					szCurrentServiceName = pService->getName();
 				}else{
+					szCurrentServiceName = szServiceName;
 					pService->setName(szServiceName);
 				}
-				if(szServiceName.isNull()){
+				if(szCurrentServiceName.isNull()){
 					qDebug("[Main] Service name is not defined");
 					bGoOn = false;
 				}
