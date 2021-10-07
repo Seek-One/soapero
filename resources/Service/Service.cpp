@@ -108,11 +108,6 @@ void Service::setBaseUrl(const QUrl& url)
 	m_url = url;
 }
 
-void Service::setCompleteUrl(const QUrl& url)
-{
-	m_url = url;
-}
-
 void Service::setUseWSUsernameToken(bool bUseWSUsernameToken)
 {
 	m_bUseWSUsernameToken = bUseWSUsernameToken;

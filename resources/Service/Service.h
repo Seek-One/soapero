@@ -50,13 +50,12 @@ public:
 	virtual ~Service();
 
 	void setBaseUrl(const QUrl& url);
-    void setCompleteUrl(const QUrl& url);
 	void setUseWSUsernameToken(bool bUseWSUsernameToken);
 	void setCustomDateTime(const QDateTime& customDateTime);
 	void setQueryExecutor(IQueryExecutor* pExecutor);
 
-    int lastErrorCode() const;
-    const QString& lastError() const;
+	int lastErrorCode() const;
+	const QString& lastError() const;
 
 protected:
 	QNetworkRequest buildNetworkRequest() const;
