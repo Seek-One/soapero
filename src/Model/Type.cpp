@@ -9,14 +9,14 @@
 
 #include "Type.h"
 
-Type::Type(ClassType type) : Classname()
+Type::Type(ClassCategory iCategory, TypeMode iTypeMode) : Classname(iCategory)
 {
-	m_classType = type;
+	m_iTypeMode = iTypeMode;
 }
 
 Type::Type(const Type& other) : Classname(other)
 {
-	m_classType = other.m_classType;
+	m_iTypeMode = other.m_iTypeMode;
 }
 
 Type::~Type()
@@ -26,17 +26,17 @@ Type::~Type()
 
 TypeSharedPtr Type::create()
 {
-	return TypeSharedPtr(new Type(TypeUnknown));
+	return TypeSharedPtr(new Type(CategoryType, TypeUnknown));
 }
 
-void Type::setClassType(Type::ClassType type)
+void Type::setTypeMode(Type::TypeMode iTypeMode)
 {
-	m_classType = type;
+	m_iTypeMode = iTypeMode;
 }
 
-Type::ClassType Type::getClassType() const
+Type::TypeMode Type::getTypeMode() const
 {
-	return m_classType;
+	return m_iTypeMode;
 }
 
 TypeList::TypeList()
@@ -88,7 +88,7 @@ void TypeList::print()
 	for(iter_type = constBegin(); iter_type != constEnd(); ++iter_type)
 	{
 		pCurrentType = (*iter_type);
-		qDebug("  type: (%d) %s %s", pCurrentType->getClassType(), qPrintable(pCurrentType->getLocalName()), qPrintable(pCurrentType->getNamespace()));
+		qDebug("  type: (%d) %s %s", pCurrentType->getTypeMode(), qPrintable(pCurrentType->getLocalName()), qPrintable(pCurrentType->getNamespace()));
 	}
 }
 

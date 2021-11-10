@@ -8,7 +8,7 @@
 #include "RequestResponseElement.h"
 
 RequestResponseElement::RequestResponseElement()
-	:Classname()
+	: Classname(CategoryMessage)
 {
 
 }

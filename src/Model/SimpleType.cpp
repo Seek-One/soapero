@@ -14,8 +14,7 @@
 #define CRLF "\r\n"
 #endif
 
-SimpleType::SimpleType()
-	:Type(Type::TypeSimple)
+SimpleType::SimpleType() : Type(CategoryType, Type::TypeSimple)
 {
 	m_iVariableType = Unknown;
 	m_iMaxLength = -1;
@@ -143,7 +142,7 @@ QString SimpleType::getCPPTypeNameString() const
 		return getNameWithNamespace();
 	}else{
 		if(m_iVariableType == Custom){
-			return (m_szCustomNamespace + "::" + m_szCustomName);
+			return (m_szCustomNamespace + getCategoryNamespace() + "::" + m_szCustomName);
 		}else{
 			return "XS::" + getVariableTypeNameString(m_iVariableType);
 		}

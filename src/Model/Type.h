@@ -38,14 +38,14 @@ typedef QSharedPointer<ComplexTypeList> ComplexTypeListSharedPtr;
 class Type : public Classname
 {
 public:
-	enum ClassType {
+	enum TypeMode {
 		TypeUnknown,
 		TypeComplex,
 		TypeSimple,
 	};
 
 protected:
-	Type(ClassType type);
+	Type(ClassCategory iCategory, TypeMode iTypeMode);
 	Type(const Type& other);
 
 public:
@@ -53,11 +53,11 @@ public:
 
 	static TypeSharedPtr create();
 
-	void setClassType(ClassType type);
-	ClassType getClassType() const;
+	void setTypeMode(TypeMode iTypeMode);
+	TypeMode getTypeMode() const;
 
 protected:
-	ClassType m_classType;
+	TypeMode m_iTypeMode;
 };
 
 class TypeList : public QList<TypeSharedPtr>

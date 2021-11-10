@@ -157,7 +157,7 @@ QString Element::getSetterDeclaration() const
 	QString szParamType;
 	QString szParamName = ModelUtils::getUncapitalizedName(getName());
 
-	if(m_pType->getClassType() == Type::TypeSimple) {
+	if(m_pType->getTypeMode() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
 		szParamType = pSimpleType->getCPPTypeNameString();
 		szParamName = ModelUtils::getUncapitalizedName(getName());
@@ -199,7 +199,7 @@ QString Element::getGetterDeclaration() const
 
 	QString szMemberTypeName;
 
-	if(m_pType->getClassType() == Type::TypeSimple) {
+	if(m_pType->getTypeMode() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
 		szMemberTypeName = pSimpleType->getCPPTypeNameString();
 		if(m_iMaxOccurs > 1 || m_iMaxOccurs == -1) {
@@ -237,7 +237,7 @@ QString Element::getGetterDeclaration() const
 
 QString Element::getSerializerDeclaration() const
 {
-	if(m_pType->getClassType() == Type::TypeSimple) {
+	if(m_pType->getTypeMode() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
 		return pSimpleType->getSerializerDeclaration();
 	}else{
@@ -264,7 +264,7 @@ QString Element::getSetterDefinition(const QString& szClassname) const
 	QString szParamType;
 	QString szParamName = ModelUtils::getUncapitalizedName(getName());
 
-	if(m_pType->getClassType() == Type::TypeSimple)
+	if(m_pType->getTypeMode() == Type::TypeSimple)
 	{
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
 		szParamType = pSimpleType->getCPPTypeNameString();
@@ -347,7 +347,7 @@ QString Element::getGetterDefinition(const QString& szClassname) const
 	QString szMemberType;
 	QString szMemberName;
 
-	if(m_pType->getClassType() == Type::TypeSimple)
+	if(m_pType->getTypeMode() == Type::TypeSimple)
 	{
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
 		szMemberType = pSimpleType->getCPPTypeNameString();
@@ -411,7 +411,7 @@ QString Element::getGetterDefinition(const QString& szClassname) const
 
 QString Element::getSerializerDefinition(const QString& szClassname, const QString& szNamespace) const
 {
-	if(m_pType->getClassType() == Type::TypeSimple) {
+	if(m_pType->getTypeMode() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
 		return pSimpleType->getVariableDeclaration();
 
@@ -423,7 +423,7 @@ QString Element::getSerializerDefinition(const QString& szClassname, const QStri
 
 QString Element::getDeserializerDefinition(const QString& szClassname) const
 {
-	if(m_pType->getClassType() == Type::TypeSimple) {
+	if(m_pType->getTypeMode() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
 		return pSimpleType->getDeserializerDefinition(szClassname);
 
@@ -439,7 +439,7 @@ QString Element::getVariableDeclaration() const
 
 	QString szVariableName = getVariableName();
 
-	if(m_pType->getClassType() == Type::TypeSimple)
+	if(m_pType->getTypeMode() == Type::TypeSimple)
 	{
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
 
@@ -594,7 +594,7 @@ QString Attribute::getSetterDeclaration() const
 	QString szParamType;
 	QString szParamName = ModelUtils::getUncapitalizedName(getName());
 
-	if(m_pType->getClassType() == Type::TypeSimple) {
+	if(m_pType->getTypeMode() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
 
 		if(m_bIsList){
@@ -608,7 +608,7 @@ QString Attribute::getSetterDeclaration() const
 			szDeclaration += pSimpleType->getSetterDeclaration() + CRLF;
 		}
 
-	}else if(m_pType->getClassType() == Type::TypeComplex) {
+	}else if(m_pType->getTypeMode() == Type::TypeComplex) {
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(m_pType);
 
 		if(m_bIsList){
@@ -631,7 +631,7 @@ QString Attribute::getGetterDeclaration() const
 	QString szFuncName = ModelUtils::getCapitalizedName(getName());
 	QString szMemberType;
 
-	if(m_pType->getClassType() == Type::TypeSimple) {
+	if(m_pType->getTypeMode() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
 
 		if(m_bIsList){
@@ -644,7 +644,7 @@ QString Attribute::getGetterDeclaration() const
 			szDeclaration += pSimpleType->getGetterDeclaration() + CRLF;
 		}
 
-	}else if(m_pType->getClassType() == Type::TypeComplex) {
+	}else if(m_pType->getTypeMode() == Type::TypeComplex) {
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(m_pType);
 		if(m_bIsList){
 			szMemberType = pComplexType->getNameWithNamespace();
@@ -662,7 +662,7 @@ QString Attribute::getVariableDeclaration() const
 {
 	QString szDeclaration;
 
-	if(m_pType->getClassType() == Type::TypeSimple) {
+	if(m_pType->getTypeMode() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
 		if(m_bIsList){
 			szDeclaration += "QList<";
@@ -674,7 +674,7 @@ QString Attribute::getVariableDeclaration() const
 		}else{
 			szDeclaration += pSimpleType->getVariableDeclarationForComplexType() ;
 		}
-	}else if(m_pType->getClassType() == Type::TypeComplex) {
+	}else if(m_pType->getTypeMode() == Type::TypeComplex) {
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(m_pType);
 		if(m_bIsList){
 			szDeclaration += "QList<";
@@ -700,7 +700,7 @@ QString Attribute::getSetterDefinition(const QString& szClassname) const
 	QString szParamName = ModelUtils::getUncapitalizedName(getName());
 	QString szParamType;
 
-	if(m_pType->getClassType() == Type::TypeSimple) {
+	if(m_pType->getTypeMode() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
 		szParamType = pSimpleType->getCPPTypeNameString();
 
@@ -721,7 +721,7 @@ QString Attribute::getSetterDefinition(const QString& szClassname) const
 			szDefinition += pSimpleType->getSetterDefinitionForComplexType(szClassname) + CRLF;
 		}
 
-	}else if(m_pType->getClassType() == Type::TypeComplex) {
+	}else if(m_pType->getTypeMode() == Type::TypeComplex) {
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(m_pType);
 		szParamType = pComplexType->getNameWithNamespace();
 		if(m_bIsList){
@@ -751,7 +751,7 @@ QString Attribute::getGetterDefinition(const QString& szClassname) const
 	QString szMemberType;
 	QString szMemberName;
 
-	if(m_pType->getClassType() == Type::TypeSimple) {
+	if(m_pType->getTypeMode() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
 		if(m_bIsList){
 			szMemberType = pSimpleType->getCPPTypeNameString();
@@ -769,7 +769,7 @@ QString Attribute::getGetterDefinition(const QString& szClassname) const
 			szDefinition += pSimpleType->getGetterDefinitionForComplexType(szClassname);
 		}
 
-	}else if(m_pType->getClassType() == Type::TypeComplex) {
+	}else if(m_pType->getTypeMode() == Type::TypeComplex) {
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(m_pType);
 
 		if(m_bIsList){
@@ -845,8 +845,7 @@ bool AttributeList::containsListAttribute() const
  *  COMPLEX TYPE
  */
 
-ComplexType::ComplexType()
-	:Type(Type::TypeComplex)
+ComplexType::ComplexType() : Type(Type::CategoryType, Type::TypeComplex)
 {
 	m_pListAttribute = AttributeList::create();
 	m_pListElement = ElementList::create();
@@ -1020,7 +1019,7 @@ QString ComplexType::getSerializerDefinition(const QString& szClassname, const Q
 		}
 
 		if(pAttribute->getType()){
-			if(pAttribute->getType()->getClassType() == Type::TypeSimple) {
+			if(pAttribute->getType()->getTypeMode() == Type::TypeSimple) {
 				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pAttribute->getType());
 				if(pAttribute->isList()){
 					szIterator = "iter_" + QString::number(iIteratorCount++);
@@ -1039,7 +1038,7 @@ QString ComplexType::getSerializerDefinition(const QString& szClassname, const Q
 					szDefinition += "\t\tszValue += \" " + pAttribute->getName() + "=\\\"\" + " + pSimpleType->getVariableName() + ".serialize() + \"\\\"\";" CRLF;
 					szDefinition += "\t}" CRLF;
 				}
-			}else if(pAttribute->getType()->getClassType() == Type::TypeComplex){
+			}else if(pAttribute->getType()->getTypeMode() == Type::TypeComplex){
 				ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pAttribute->getType());
 				if(pAttribute->isList()){
 					szIterator = "iter_" + QString::number(iIteratorCount++);
@@ -1065,7 +1064,7 @@ QString ComplexType::getSerializerDefinition(const QString& szClassname, const Q
 
 	if(!getExtensionType().isNull()) {
 		QString szExtensionName;
-		if(getExtensionType()->getClassType() == Type::TypeSimple){
+		if(getExtensionType()->getTypeMode() == Type::TypeSimple){
 			SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(getExtensionType());
 			szExtensionName = pSimpleType->getCPPTypeNameString();
 		}else{
@@ -1077,7 +1076,7 @@ QString ComplexType::getSerializerDefinition(const QString& szClassname, const Q
 			szDefinition += "\tQList<" + szExtensionName + ">::const_iterator " + szIterator + " = constBegin();" CRLF;
 			szDefinition += "\twhile(" + szIterator + " != constEnd()){" CRLF;
 			szDefinition += "\t\tszValue += (*" + szIterator + ").serialize(" +
-					QString(((getExtensionType()->getClassType() == Type::TypeSimple) ? "" : "true")) +
+					QString(((getExtensionType()->getTypeMode() == Type::TypeSimple) ? "" : "true")) +
 					") + \" \";" CRLF;
 			szDefinition += "\t\t++" + szIterator + ";" CRLF;
 			szDefinition += "\t}" CRLF;
@@ -1085,7 +1084,7 @@ QString ComplexType::getSerializerDefinition(const QString& szClassname, const Q
 			szDefinition += "\tszValue += " +
 					szExtensionName +
 					"::serialize(" +
-					((getExtensionType()->getClassType() == Type::TypeSimple) ? "" : "true") +
+					((getExtensionType()->getTypeMode() == Type::TypeSimple) ? "" : "true") +
 					");" CRLF;
 		}
 	}else{
@@ -1103,7 +1102,7 @@ QString ComplexType::getSerializerDefinition(const QString& szClassname, const Q
 			continue;
 		}
 
-		if(pElement->getType()->getClassType() == Type::TypeSimple) {
+		if(pElement->getType()->getTypeMode() == Type::TypeSimple) {
 			SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pElement->getType());
 
 			if(pElement->getMaxOccurs() > 1 || pElement->getMaxOccurs() == -1) {
@@ -1124,7 +1123,7 @@ QString ComplexType::getSerializerDefinition(const QString& szClassname, const Q
 				szDefinition += "\t}" CRLF;
 			}
 
-		}else if(pElement->getType()->getClassType() == Type::TypeComplex) {
+		}else if(pElement->getType()->getTypeMode() == Type::TypeComplex) {
 			ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pElement->getType());
 
 			if(pElement->getMaxOccurs() > 1 || pElement->getMaxOccurs() == -1) {
@@ -1176,7 +1175,7 @@ QString ComplexType::getDeserializerDefinition(const QString& szClassname) const
 
 	if(!getExtensionType().isNull()) {
 		QString szExtensionName;
-		if(getExtensionType()->getClassType() == Type::TypeSimple){
+		if(getExtensionType()->getTypeMode() == Type::TypeSimple){
 			SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(getExtensionType());
 			szExtensionName = pSimpleType->getCPPTypeNameString();
 		}else{
@@ -1206,7 +1205,7 @@ QString ComplexType::getDeserializerDefinition(const QString& szClassname) const
 			pAttribute = *attr;
 		}
 
-		if( pAttribute->getType() && pAttribute->getType()->getClassType() == Type::TypeSimple) {
+		if( pAttribute->getType() && pAttribute->getType()->getTypeMode() == Type::TypeSimple) {
 			SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pAttribute->getType());
 			if(pAttribute->isList()){
 				szDefinition += "\tif(!element.attributeNode(\"" + pAttribute->getName() + "\").isNull()) {" CRLF;
@@ -1244,7 +1243,7 @@ QString ComplexType::getDeserializerDefinition(const QString& szClassname) const
 			continue;
 		}
 
-		if(pElement->getType()->getClassType() == Type::TypeSimple) {
+		if(pElement->getType()->getTypeMode() == Type::TypeSimple) {
 			SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pElement->getType());
 
 			if(pElement->getMaxOccurs() > 1 || pElement->getMaxOccurs() == -1) {
@@ -1266,7 +1265,7 @@ QString ComplexType::getDeserializerDefinition(const QString& szClassname) const
 				szDefinition += "\t\t}" CRLF;
 			}
 
-		}else if(pElement->getType()->getClassType() == Type::TypeComplex) {
+		}else if(pElement->getType()->getTypeMode() == Type::TypeComplex) {
 			ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pElement->getType());
 
 			if(pElement->getMaxOccurs() > 1 || pElement->getMaxOccurs() == -1) {
@@ -1319,7 +1318,7 @@ QString ComplexType::getIsNullDefinition(const QString& szClassname) const
 
 	if(!getExtensionType().isNull()) {
 		QString szExtensionName;
-		if(getExtensionType()->getClassType() == Type::TypeSimple){
+		if(getExtensionType()->getTypeMode() == Type::TypeSimple){
 			SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(getExtensionType());
 			szExtensionName = pSimpleType->getCPPTypeNameString();
 		}else{
@@ -1341,7 +1340,7 @@ QString ComplexType::getIsNullDefinition(const QString& szClassname) const
 		}
 
 		if(pAttribute->getType()){
-			if( pAttribute->getType()->getClassType() == Type::TypeSimple) {
+			if( pAttribute->getType()->getTypeMode() == Type::TypeSimple) {
 				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pAttribute->getType());
 				if(pAttribute->isList()){
 					szCond += "(_" + pAttribute->getName() + "List.size() > 0) && ";
@@ -1349,7 +1348,7 @@ QString ComplexType::getIsNullDefinition(const QString& szClassname) const
 					szCond += pSimpleType->getVariableName() + ".isNull() && ";
 				}
 
-			}else if( pAttribute->getType()->getClassType() == Type::TypeComplex) {
+			}else if( pAttribute->getType()->getTypeMode() == Type::TypeComplex) {
 				ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pAttribute->getType());
 				if(pAttribute->isList()){
 					szCond += "(_" + pAttribute->getName() + "List.size() > 0) && ";
@@ -1370,7 +1369,7 @@ QString ComplexType::getIsNullDefinition(const QString& szClassname) const
 		if( !pElement->getType()) {
 			continue;
 		}
-		if(pElement->getType()->getClassType() == Type::TypeSimple) {
+		if(pElement->getType()->getTypeMode() == Type::TypeSimple) {
 			SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pElement->getType());
 			if(pElement->getMaxOccurs() > 1 || pElement->getMaxOccurs() == -1) {
 				szCond += pElement->getVariableName() + "List.isEmpty() && ";
@@ -1378,7 +1377,7 @@ QString ComplexType::getIsNullDefinition(const QString& szClassname) const
 				szCond += pElement->getVariableName() + ".isNull() && ";
 			}
 
-		}else if(pElement->getType()->getClassType() == Type::TypeComplex) {
+		}else if(pElement->getType()->getTypeMode() == Type::TypeComplex) {
 			ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pElement->getType());
 			if(pElement->getMaxOccurs() > 1 || pElement->getMaxOccurs() == -1) {
 				szCond += pElement->getVariableName() + "List.isEmpty() && ";
@@ -1416,7 +1415,7 @@ QString ComplexType::getGetNamespaceDeclarationDefinition(const QString& szClass
 
 	if(!getExtensionType().isNull()){
 		QString szExtensionName;
-		if(getExtensionType()->getClassType() == Type::TypeComplex){
+		if(getExtensionType()->getTypeMode() == Type::TypeComplex){
 			szDefinition += "\tlistNamespaceDeclaration.append(" + getExtensionType()->getNameWithNamespace() + "::getNamespaceDeclaration());" CRLF;
 		}
 	}
@@ -1432,7 +1431,7 @@ QString ComplexType::getGetNamespaceDeclarationDefinition(const QString& szClass
 			continue;
 		}
 
-		if((pElement->getType()->getClassType() == Type::TypeComplex) &&
+		if((pElement->getType()->getTypeMode() == Type::TypeComplex) &&
 				(getLocalName(true) != pElement->getType()->getLocalName(true))){
 			ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pElement->getType());
 			szDefinition += "\tlistNamespaceDeclaration.append(" + pComplexType->getNameWithNamespace() + "::getNamespaceDeclaration());" CRLF;

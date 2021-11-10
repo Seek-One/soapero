@@ -82,29 +82,36 @@ QString Operation::getSoapAction() const
 QString Operation::getOperationDeclaration() const
 {
 	QString szDeclaration;
-	szDeclaration += "bool ";
-	szDeclaration += m_szName;
-	szDeclaration += "(const ";
-	szDeclaration += m_pInputMessage->getParameter()->getNameWithNamespace();
-	szDeclaration += "& ";
-	szDeclaration += m_pInputMessage->getParameter()->getLocalName();
-	szDeclaration += ", ";
-	szDeclaration += m_pOutputMessage->getParameter()->getNameWithNamespace();
-	szDeclaration += "& ";
-	szDeclaration += m_pOutputMessage->getParameter()->getLocalName();
-	if(m_pSoapEnvFaultType){
-		szDeclaration += ", ";
-		szDeclaration += m_pSoapEnvFaultType->getNameWithNamespace();
+	if(m_pInputMessage->getParameter() && m_pOutputMessage->getParameter())
+	{
+		szDeclaration += "bool ";
+		szDeclaration += m_szName;
+		szDeclaration += "(const ";
+		szDeclaration += m_pInputMessage->getParameter()->getNameWithNamespace();
 		szDeclaration += "& ";
-		szDeclaration += m_pSoapEnvFaultType->getLocalName();
+		szDeclaration += m_pInputMessage->getParameter()->getLocalName();
+		szDeclaration += ", ";
+		szDeclaration += m_pOutputMessage->getParameter()->getNameWithNamespace();
+		szDeclaration += "& ";
+		szDeclaration += m_pOutputMessage->getParameter()->getLocalName();
+		if(m_pSoapEnvFaultType){
+			szDeclaration += ", ";
+			szDeclaration += m_pSoapEnvFaultType->getNameWithNamespace();
+			szDeclaration += "& ";
+			szDeclaration += m_pSoapEnvFaultType->getLocalName();
+		}
+		szDeclaration += ");";
 	}
-	szDeclaration += ");";
 
 	return szDeclaration;
 }
 
 QString Operation::getOperationDefinition(const QString& szClassname, const QString& szNamespace) const
 {
+	if(!m_pInputMessage->getParameter() || !m_pOutputMessage->getParameter()){
+		return "";
+	}
+
 	QString szInputName = ModelUtils::getUncapitalizedName(m_pInputMessage->getParameter()->getLocalName());
 	QString szOutputName = ModelUtils::getUncapitalizedName(m_pOutputMessage->getParameter()->getLocalName());
 

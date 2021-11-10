@@ -7,8 +7,7 @@
 
 #include "Message.h"
 
-Message::Message()
-	:Classname()
+Message::Message() : Classname(CategoryMessage)
 {
 
 }

@@ -156,11 +156,11 @@ bool QWSDLParser::endDocument()
 	// Resolve types
 	for(type = m_pListTypes->constBegin(); type != m_pListTypes->constEnd(); ++type)
 	{
-		if((*type)->getClassType() == Type::TypeComplex)
+		if((*type)->getTypeMode() == Type::TypeComplex)
 		{
 			ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(*type);
 			if(pComplexType->getExtensionType()) {
-				if(pComplexType->getExtensionType()->getClassType() == Type::TypeUnknown) {
+				if(pComplexType->getExtensionType()->getTypeMode() == Type::TypeUnknown) {
 					pType = getTypeByName(pComplexType->getExtensionType()->getLocalName(), pComplexType->getExtensionType()->getNamespace());
 					pComplexType->setExtensionType(pType);
 				}
@@ -180,9 +180,9 @@ bool QWSDLParser::endDocument()
 					}
 
 					// Resolve element type
-					if(pElement->getType() && pElement->getType()->getClassType() == Type::TypeUnknown) {
+					if(pElement->getType() && pElement->getType()->getTypeMode() == Type::TypeUnknown) {
 						pType = getTypeByName(pElement->getType()->getLocalName(), pElement->getType()->getNamespace(), pListTypesToRemove);
-						while(pType && pType->getClassType() == Type::TypeUnknown) {
+						while(pType && pType->getTypeMode() == Type::TypeUnknown) {
 							pListTypesToRemove->append(pType);
 							pType = getTypeByName(pElement->getType()->getLocalName(), pElement->getType()->getNamespace(), pListTypesToRemove);
 						}
@@ -202,7 +202,7 @@ bool QWSDLParser::endDocument()
 						pAttribute = *attr;
 					}
 
-					if(pAttribute->getType() && pAttribute->getType()->getClassType() == Type::TypeUnknown){
+					if(pAttribute->getType() && pAttribute->getType()->getTypeMode() == Type::TypeUnknown){
 						pType = getTypeByName(pAttribute->getType()->getLocalName(), pAttribute->getType()->getNamespace());
 						pAttribute->setType(pType);
 					}
@@ -222,13 +222,13 @@ bool QWSDLParser::endDocument()
 
 		TypeSharedPtr pType = pRequestResponseElement->getType();
 		ComplexTypeSharedPtr pComplexType;
-		if(pType && pType->getClassType() == Type::TypeComplex){
+		if(pType && pType->getTypeMode() == Type::TypeComplex){
 			pComplexType = qSharedPointerCast<ComplexType>(pType);
 		}
-		if(pType->getClassType() == Type::TypeUnknown){
+		if(pType->getTypeMode() == Type::TypeUnknown){
 			if(pComplexType.isNull()){
 				TypeSharedPtr pTypeTmp = getTypeByName(pType->getLocalName(), pType->getNamespace());
-				if(pTypeTmp->getClassType() == Type::TypeComplex){
+				if(pTypeTmp->getTypeMode() == Type::TypeComplex){
 					pComplexType = qSharedPointerCast<ComplexType>(pTypeTmp);
 					pRequestResponseElement->setType(pTypeTmp);
 				}
@@ -237,7 +237,7 @@ bool QWSDLParser::endDocument()
 
 		if(pComplexType){
 			if(pComplexType->getExtensionType()) {
-				if(pComplexType->getExtensionType()->getClassType() == Type::TypeUnknown)
+				if(pComplexType->getExtensionType()->getTypeMode() == Type::TypeUnknown)
 				{
 					pType = getTypeByName(
 							pComplexType->getExtensionType()->getLocalName(),
@@ -259,7 +259,7 @@ bool QWSDLParser::endDocument()
 						pElement = pTmpElement;
 					}
 
-					if(pElement->getType() && pElement->getType()->getClassType() == Type::TypeUnknown) {
+					if(pElement->getType() && pElement->getType()->getTypeMode() == Type::TypeUnknown) {
 						pType = getTypeByName(pElement->getType()->getLocalName(),
 											  pElement->getType()->getNamespace());
 						pElement->setType(pType);
@@ -272,7 +272,7 @@ bool QWSDLParser::endDocument()
 				for(attr = pComplexType->getAttributeList()->begin();
 				attr != pComplexType->getAttributeList()->end(); ++attr) {
 
-					if( (*attr)->getType()->getClassType() == Type::TypeUnknown) {
+					if( (*attr)->getType()->getTypeMode() == Type::TypeUnknown) {
 						pType = getTypeByName((*attr)->getType()->getLocalName(),
 											  (*attr)->getType()->getNamespace());
 						(*attr)->setType(pType);
@@ -289,7 +289,7 @@ bool QWSDLParser::endDocument()
 	// TODO: check attributes type too.
 	for(type = m_pListTypes->constBegin(); type != m_pListTypes->constEnd(); ++type)
 	{
-		if((*type)->getClassType() == Type::TypeComplex) {
+		if((*type)->getTypeMode() == Type::TypeComplex) {
 			ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(*type);
 
 			// Add soap envelope default fault type if exists
@@ -310,7 +310,7 @@ bool QWSDLParser::endDocument()
 						pElement = pTmpElement;
 					}
 
-					if(pElement->getType() && pElement->getType()->getClassType() == Type::TypeComplex){
+					if(pElement->getType() && pElement->getType()->getTypeMode() == Type::TypeComplex){
 						ComplexTypeSharedPtr pComplexTypeElem = qSharedPointerCast<ComplexType>(pElement->getType());
 
 						if(pComplexTypeElem->getElementList() && pComplexTypeElem->getElementList()->count() > 0){
@@ -727,7 +727,7 @@ bool QWSDLParser::readComplexType(QXmlStreamReader& xmlReader, Section::Name iPa
 
 			pFoundType = getTypeByName(szName, m_szCurrentTargetNamespacePrefix);
 			if(!pFoundType.isNull()) {
-				if(pFoundType->getClassType() == Type::TypeUnknown) {
+				if(pFoundType->getTypeMode() == Type::TypeUnknown) {
 					pComplexType = ComplexType::create();
 					pComplexType->setLocalName(szName);
 					pComplexType->setNamespace(m_szCurrentTargetNamespacePrefix);
@@ -1483,7 +1483,7 @@ bool QWSDLParser::readSimpleType(QXmlStreamReader& xmlReader, Section::Name iPar
 	if(!szName.isEmpty()){
 		TypeSharedPtr pFoundType = getTypeByName(szName, m_szCurrentTargetNamespacePrefix);
 		if(!pFoundType.isNull()) {
-			if(pFoundType->getClassType() == Type::TypeUnknown) {
+			if(pFoundType->getTypeMode() == Type::TypeUnknown) {
 				pSimpleType = SimpleType::create();
 			}
 		}else{
@@ -1550,7 +1550,7 @@ bool QWSDLParser::readRestriction(QXmlStreamReader& xmlReader, Section::Name iPa
 	if((iParentSection == Section::SimpleType) &&
 	(pCurrentType || (m_pCurrentAttribute &&
 						  m_pCurrentAttribute->getType() &&
-						  (m_pCurrentAttribute->getType()->getClassType() == Type::TypeSimple))))
+						  (m_pCurrentAttribute->getType()->getTypeMode() == Type::TypeSimple))))
 	{
 		SimpleTypeSharedPtr pSimpleType;
 		if(pCurrentType){

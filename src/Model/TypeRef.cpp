@@ -24,10 +24,10 @@ const QString& TypeRef::getNamespace() const
 	return m_szNamespace;
 }
 
-Type::ClassType TypeRef::getClassType() const
+Type::TypeMode TypeRef::getTypeMode() const
 {
 	if(m_pType){
-		return m_pType->getClassType();
+		return m_pType->getTypeMode();
 	}
 	return Type::TypeUnknown;
 }
@@ -95,6 +95,6 @@ void TypeRefList::print()
 	for(iter_type = constBegin(); iter_type != constEnd(); ++iter_type)
 	{
 		pCurrentType = (*iter_type);
-		qDebug("  type: %s:%s (%d)", qPrintable(pCurrentType->getNamespace()), qPrintable(pCurrentType->getTypeName()), pCurrentType->getClassType());
+		qDebug("  type: %s:%s (%d)", qPrintable(pCurrentType->getNamespace()), qPrintable(pCurrentType->getTypeName()), pCurrentType->getTypeMode());
 	}
 }

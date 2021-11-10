@@ -10,13 +10,14 @@
 #include "../Utils/StringUtils.h"
 #include "Model/Classname.h"
 
-Classname::Classname()
+Classname::Classname(ClassCategory iCategory)
 {
-
+	m_iCategory = iCategory;
 }
 
 Classname::Classname(const Classname& other)
 {
+	m_iCategory = other.m_iCategory;
 	m_szLocalName = other.m_szLocalName;
 	m_szNamespace = other.m_szNamespace;
 	m_szNamespaceUri = other.m_szNamespaceUri;
@@ -74,7 +75,7 @@ QString Classname::getNameWithNamespace() const
 	if(m_szNamespace.isEmpty()) {
 		return szSafeLocalName;
 	}else{
-		return m_szNamespace.toUpper().replace("-", "_") + "::" + szSafeLocalName;
+		return m_szNamespace.toUpper().replace("-", "_") + getCategoryNamespace() + "::" + szSafeLocalName;
 	}
 }
 
@@ -85,7 +86,7 @@ QString Classname::getQualifiedName() const
 	if(m_szNamespace.isEmpty()) {
 		return m_szLocalName;
 	}else{
-		return m_szNamespace.toUpper().replace("-", "_") + szSafeLocalName;
+		return m_szNamespace.toUpper().replace("-", "_") + getCategoryNamespace() + "::" + szSafeLocalName;
 	}
 }
 
@@ -106,4 +107,20 @@ QString Classname::getLocalName(bool bSafe) const
 		return szSafeLocalName;
 	}
 	return m_szLocalName;
+}
+
+QString Classname::getCategoryNamespace() const
+{
+	if(m_iCategory == CategoryType){
+		return "::TYPES";
+	}
+	if(m_iCategory == CategoryMessage){
+		return "::MSG";
+	}
+	return "";
+}
+
+Classname::ClassCategory Classname::getClassCategory() const
+{
+	return m_iCategory;
 }

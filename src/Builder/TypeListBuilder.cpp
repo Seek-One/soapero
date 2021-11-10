@@ -86,10 +86,10 @@ QString TypeListBuilder::getHeaderPath(const QString& szNamespace, const QString
 
 QString TypeListBuilder::getTypeHeaderPath(const TypeSharedPtr& pType, FileCategory iOrigin)
 {
-	if(pType->getClassType() == Type::TypeSimple){
+	if(pType->getTypeMode() == Type::TypeSimple){
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pType);
 		return getSimpleTypeHeaderPath(pSimpleType, iOrigin);
-	}else if(pType->getClassType() == Type::TypeComplex){
+	}else if(pType->getTypeMode() == Type::TypeComplex){
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pType);
 		return getComplexTypeHeaderPath(pComplexType, iOrigin);
 	}else{
@@ -251,7 +251,7 @@ void TypeListBuilder::buildHeaderFiles()
 	QDir dir(m_szDirname);
 
 	for(type = m_pListType->constBegin(); type != m_pListType->constEnd(); ++type) {
-		if(!(*type)->getLocalName().isEmpty() && ((*type)->getClassType() != Type::TypeUnknown)) {
+		if(!(*type)->getLocalName().isEmpty() && ((*type)->getTypeMode() != Type::TypeUnknown)) {
 			buildHeaderFile(*type);
 		}
 	}
@@ -273,7 +273,7 @@ void TypeListBuilder::buildCppFiles()
 	RequestResponseElementList::const_iterator element;
 
 	for(type = m_pListType->constBegin(); type != m_pListType->constEnd(); ++type) {
-		if(!(*type)->getLocalName().isEmpty() == ((*type)->getClassType() != Type::TypeUnknown)) {
+		if(!(*type)->getLocalName().isEmpty() == ((*type)->getTypeMode() != Type::TypeUnknown)) {
 			buildCppFile(*type);
 		}
 	}
@@ -333,9 +333,10 @@ void TypeListBuilder::buildHeaderFile(const TypeSharedPtr& pType)
 		buildHeaderClassType(os, pType);
 
 		if(!m_szNamespace.isEmpty()) {
-			os << "}" << CRLF;
+			os << "} // " << m_szNamespace << CRLF;
 		}
 
+		os << CRLF;
 		os << "#endif" << CRLF;
 
 		m_pListGeneratedFiles->append(szShortFilePath);
@@ -376,9 +377,10 @@ void TypeListBuilder::buildHeaderFile(const RequestResponseElementSharedPtr& pEl
 		buildHeaderClassElement(os, pElement);
 
 		if(!m_szNamespace.isEmpty()) {
-			os << "}" << CRLF;
+			os << "} // " << m_szNamespace << CRLF;
 		}
 
+		os << CRLF;
 		os << "#endif" << CRLF;
 
 		m_pListGeneratedFiles->append(szShortFilePath);
@@ -417,7 +419,7 @@ void TypeListBuilder::buildHeaderFile(const ServiceSharedPtr& pService)
 		buildHeaderClassService(os, m_pService);
 
 		if(!m_szNamespace.isEmpty()) {
-			os << "}" << CRLF;
+			os << "} // " << m_szNamespace << CRLF;
 		}
 
 		os << "#endif" << CRLF;
@@ -470,7 +472,7 @@ void TypeListBuilder::buildCppFile(const TypeSharedPtr& pType)
 		buildCppClassType(os, pType);
 
 		if(!m_szNamespace.isEmpty()) {
-			os << "}" << CRLF;
+			os << "} // " << m_szNamespace << CRLF;
 		}
 
 		m_pListGeneratedFiles->append(szShortFilePath);
@@ -512,7 +514,7 @@ void TypeListBuilder::buildCppFile(const RequestResponseElementSharedPtr& pEleme
 		buildCppClassElement(os, pElement);
 
 		if(!m_szNamespace.isEmpty()) {
-			os << "}" << CRLF;
+			os << "} // " << m_szNamespace << CRLF;
 		}
 
 		m_pListGeneratedFiles->append(szShortFilePath);
@@ -587,10 +589,12 @@ void TypeListBuilder::buildHeaderClassType(QTextStream& os, const TypeSharedPtr&
 
 	if(!szNamespace.isEmpty()){
 		os << "namespace " << szNamespace << " {" << CRLF;
-		os << CRLF;
 	}
 
-	if(pType->getClassType() == Type::TypeSimple) {
+	os << "namespace TYPES {" << CRLF;
+	os << CRLF;
+
+	if(pType->getTypeMode() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pType);
 
 		os << "const QString " << pSimpleType->getLocalName(true) << "TargetNamespace = \"" << pSimpleType->getNamespace() << "\";" CRLF;
@@ -615,7 +619,7 @@ void TypeListBuilder::buildHeaderClassType(QTextStream& os, const TypeSharedPtr&
 		os << "};" << CRLF;
 		os << CRLF;
 
-	} else if(pType->getClassType() == Type::TypeComplex) {
+	} else if(pType->getTypeMode() == Type::TypeComplex) {
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pType);
 
 		os << "const QString " << pComplexType->getLocalName(true) << "TargetNamespace = \"" << pComplexType->getNamespace() << "\";" CRLF;
@@ -636,8 +640,10 @@ void TypeListBuilder::buildHeaderClassType(QTextStream& os, const TypeSharedPtr&
 		endCppClass(os);
 	}
 
+	os << "} // TYPES " << CRLF;
+
 	if(!szNamespace.isEmpty()){
-		os << "}" << CRLF;
+		os << "} // " << szNamespace << CRLF;
 	}
 }
 
@@ -750,11 +756,13 @@ void TypeListBuilder::buildHeaderClassElement(QTextStream& os, const RequestResp
 
 	if(!szNamespace.isEmpty()){
 		os << "namespace " << szNamespace << " {" << CRLF;
-		os << CRLF;
 	}
 
+	os << "namespace MSG {" << CRLF;
+	os << CRLF;
+
 	ComplexTypeSharedPtr pComplexType;
-	if(pType->getClassType() == Type::TypeComplex){
+	if(pType->getTypeMode() == Type::TypeComplex){
 		pComplexType = qSharedPointerCast<ComplexType>(pType);
 	}
 	if(!pComplexType.isNull())
@@ -769,8 +777,10 @@ void TypeListBuilder::buildHeaderClassElement(QTextStream& os, const RequestResp
 		endCppClass(os);
 	}
 
+	os << "} // MSG" << CRLF;
+
 	if(!szNamespace.isEmpty()){
-		os << "}" << CRLF;
+		os << "} // " << szNamespace << CRLF;
 	}
 }
 
@@ -814,12 +824,12 @@ void TypeListBuilder::buildHeaderIncludeType(QTextStream& os, const TypeSharedPt
 	os << "#include <QString>" << CRLF;
 	os << CRLF;
 
-	if(pType->getClassType() == Type::TypeSimple) {
+	if(pType->getTypeMode() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pType);
 		if(pSimpleType->hasVariableType()) {
 			os << "#include \"" << getSimpleTypeHeaderPath(pSimpleType, FileCategory_Type) << "\"" << CRLF;
 		}
-	}else if(pType->getClassType() == Type::TypeComplex){
+	}else if(pType->getTypeMode() == Type::TypeComplex){
 
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pType);
 
@@ -889,7 +899,7 @@ void TypeListBuilder::buildHeaderIncludeElement(QTextStream& os, const RequestRe
 	TypeSharedPtr pType = pRequestResponseElement->getType();
 
 	ComplexTypeSharedPtr pComplexType;
-	if(pType->getClassType() == Type::TypeComplex){
+	if(pType->getTypeMode() == Type::TypeComplex){
 		pComplexType = qSharedPointerCast<ComplexType>(pType);
 	}
 
@@ -994,7 +1004,7 @@ void TypeListBuilder::buildHeaderIncludeService(QTextStream& os, const ServiceSh
 		}
 
 		pMessage = pOperation->getInputMessage();
-		if(pMessage){
+		if(pMessage && pMessage->getParameter()){
 			szTmpFileName = getRequestResponseElementHeaderPath(pMessage->getParameter(), FileCategory_Service);
 			if(!list.contains(szTmpFileName)) {
 				os << "#include \"" << szTmpFileName << "\"" << CRLF;
@@ -1003,10 +1013,12 @@ void TypeListBuilder::buildHeaderIncludeService(QTextStream& os, const ServiceSh
 		}
 
 		pMessage = pOperation->getOutputMessage();
-		szTmpFileName = getRequestResponseElementHeaderPath(pMessage->getParameter(), FileCategory_Service);
-		if(!list.contains(szTmpFileName)) {
-			os << "#include \"" << szTmpFileName << "\"" << CRLF;
-			list.append(szTmpFileName);
+		if(pMessage && pMessage->getParameter()){
+			szTmpFileName = getRequestResponseElementHeaderPath(pMessage->getParameter(), FileCategory_Service);
+			if(!list.contains(szTmpFileName)) {
+				os << "#include \"" << szTmpFileName << "\"" << CRLF;
+				list.append(szTmpFileName);
+			}
 		}
 	}
 
@@ -1020,10 +1032,12 @@ void TypeListBuilder::buildCppClassType(QTextStream& os, const TypeSharedPtr& pT
 
 	if(!szNamespace.isEmpty()){
 		os << "namespace " << szNamespace << " {" << CRLF;
-		os << CRLF;
 	}
 
-	if(pType->getClassType() == Type::TypeSimple) {
+	os << "namespace TYPES {" << CRLF;
+	os << CRLF;
+
+	if(pType->getTypeMode() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pType);
 
 		if(pSimpleType->isEnumeration()) {
@@ -1043,7 +1057,7 @@ void TypeListBuilder::buildCppClassType(QTextStream& os, const TypeSharedPtr& pT
 
 		os << CRLF;
 
-	} else if(pType->getClassType() == Type::TypeComplex) {
+	} else if(pType->getTypeMode() == Type::TypeComplex) {
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pType);
 
 		if(pComplexType->getExtensionType().isNull()) {
@@ -1081,7 +1095,7 @@ void TypeListBuilder::buildCppClassType(QTextStream& os, const TypeSharedPtr& pT
 			if(pComplexType->isExtensionTypeList()){
 				szExtensionName = "QList<";
 			}
-			if(pComplexType->getExtensionType()->getClassType() == Type::TypeSimple){
+			if(pComplexType->getExtensionType()->getTypeMode() == Type::TypeSimple){
 				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pComplexType->getExtensionType());
 				szExtensionName += pSimpleType->getCPPTypeNameString();
 			}else{
@@ -1101,6 +1115,8 @@ void TypeListBuilder::buildCppClassType(QTextStream& os, const TypeSharedPtr& pT
 
 		os << CRLF;
 	}
+
+	os << "} // TYPES" << CRLF;
 
 	if(!szNamespace.isEmpty()){
 		os << "}" << CRLF;
@@ -1183,7 +1199,7 @@ void TypeListBuilder::buildCppClassElement(QTextStream& os, const RequestRespons
 	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pElement->getLocalName();
 	TypeSharedPtr pType = pElement->getType();
 	ComplexTypeSharedPtr pComplexType;
-	if(pType->getClassType() == Type::TypeComplex){
+	if(pType->getTypeMode() == Type::TypeComplex){
 		pComplexType = qSharedPointerCast<ComplexType>(pType);
 	}
 	if(pComplexType){
@@ -1195,8 +1211,10 @@ void TypeListBuilder::buildCppClassElement(QTextStream& os, const RequestRespons
 
 	if(!szNamespace.isEmpty()){
 		os << "namespace " << szNamespace << " {" << CRLF;
-		os << CRLF;
 	}
+
+	os << "namespace MSG {" << CRLF;
+	os << CRLF;
 
 	if(!pComplexType.isNull()) {
 		os << szClassname << "::" << szClassname << "() {}" << CRLF;
@@ -1207,6 +1225,8 @@ void TypeListBuilder::buildCppClassElement(QTextStream& os, const RequestRespons
 
 		os << CRLF;
 	}
+
+	os << "} // MSG" << CRLF;
 
 	if(!szNamespace.isEmpty()){
 		os << "}" << CRLF;
@@ -1275,7 +1295,7 @@ void TypeListBuilder::startCppClass(QTextStream& os, const QString& szClassName,
 		if(pComplexType->isExtensionTypeList()){
 			szExtendedClassname = "QList<";
 		}
-		if(pComplexType->getExtensionType()->getClassType() == Type::TypeSimple){
+		if(pComplexType->getExtensionType()->getTypeMode() == Type::TypeSimple){
 			SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pComplexType->getExtensionType());
 			szExtendedClassname += pSimpleType->getCPPTypeNameString();
 		}else{
@@ -1311,7 +1331,7 @@ void TypeListBuilder::buildTypeIncludes(QTextStream& os, const TypeSharedPtr& pT
 		return;
 	}
 
-	if(pType->getClassType() == Type::TypeComplex)
+	if(pType->getTypeMode() == Type::TypeComplex)
 	{
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pType);
 		if(pComplexType->getAttributeList()){

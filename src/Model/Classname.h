@@ -13,10 +13,18 @@
 class Classname
 {
 public:
-	Classname();
+	enum ClassCategory {
+		CategoryUnknown,
+		CategoryType,
+		CategoryMessage
+	};
+
+public:
+	Classname(ClassCategory iCategory);
 	Classname(const Classname& other);
 	virtual ~Classname();
 
+public:
 	void setQualifedName(const QString& szNamespace, const QString& szName);
 	void setNamespace(const QString& szNamespace);
 	void setNamespaceUri(const QString& szNamespaceUri);
@@ -30,7 +38,13 @@ public:
 	QString getLocalName(bool bSafe = false) const;
 	QString getName() const;
 
+	ClassCategory getClassCategory() const;
+
+protected:
+	QString getCategoryNamespace() const;
+
 private:
+	ClassCategory m_iCategory;
 	QString m_szLocalName;
 	QString m_szNamespace;
 	QString m_szNamespaceUri;

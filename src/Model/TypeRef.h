@@ -24,7 +24,7 @@ public:
 	const QString& getTypeName() const;
 	const QString& getNamespace() const;
 
-	Type::ClassType getClassType() const;
+	Type::TypeMode getTypeMode() const;
 
 	static TypeRefSharedPtr createSimpleType();
 	static TypeRefSharedPtr createComplexType();
