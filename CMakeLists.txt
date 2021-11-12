@@ -268,6 +268,7 @@ QT_WRAP_CPP(MOC_OUTFILES ${MOC_HEADERS})
 ####################
 
 set (I18N_FILES
+    src/main.cpp
 )
 
 set (TS_FILES
@@ -303,7 +304,7 @@ QT_ADD_RESOURCES(RCS_OUTFILES ${QRC_FILES})
 # Create Executable
 ####################
 
-SET (SOAPERO_MAIN_SRC 
+SET (SOAPERO_MAIN_SRC
     src/main.cpp
 )
 
@@ -319,7 +320,7 @@ add_executable (${APPLICATION_EXE_NAME}
 )
 target_link_libraries (
     ${APPLICATION_EXE_NAME}
-    ${QT_LIBRARIES} 
+    ${QT_LIBRARIES}
     ${QT_QTMAIN_LIBRARY}
 )
 install(TARGETS ${APPLICATION_EXE_NAME} DESTINATION ${INSTALL_PATH_BIN})
