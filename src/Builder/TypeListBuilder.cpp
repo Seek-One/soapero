@@ -135,6 +135,7 @@ QString TypeListBuilder::getDefine(const QString& szPrefix, const TypeSharedPtr&
 	if(!pType->getNamespace().isEmpty()){
 		szDefine += StringUtils::secureString(pType->getNamespace()).toUpper() + "_";
 	}
+	szDefine += "TYPES_";
 	if(!pType->getLocalName().isEmpty()){
 		szDefine += StringUtils::secureString(pType->getLocalName()).toUpper() + "_";
 	}
@@ -159,11 +160,33 @@ QString TypeListBuilder::getDefine(const QString& szPrefix, const RequestRespons
 	if(!pElement->getNamespace().isEmpty()){
 		szDefine += StringUtils::secureString(pElement->getNamespace()).toUpper() + "_";
 	}
+	szDefine += "MSG_";
 	if(!pElement->getLocalName().isEmpty()){
 		szDefine += StringUtils::secureString(pElement->getLocalName()).toUpper() + "_";
 	}
 #else
 	szDefine += StringUtils::secureString(pElement->getQualifiedName()).toUpper() + "_";
+#endif
+
+	szDefine += "H_";
+
+	return szDefine;
+}
+
+QString TypeListBuilder::getDefine(const QString& szPrefix, const ServiceSharedPtr& pService)
+{
+	QString szDefine;
+
+	if(!szPrefix.isEmpty()){
+		szDefine += StringUtils::secureString(szPrefix).toUpper() + "_";
+	}
+
+#ifdef WITH_DIR_CREATION
+	if(!pService->getName().isEmpty()){
+		szDefine += StringUtils::secureString(pService->getName()).toUpper() + "_";
+	}
+#else
+	szDefine += StringUtils::secureString(pService->getName()).toUpper() + "_";
 #endif
 
 	szDefine += "H_";
@@ -318,7 +341,7 @@ void TypeListBuilder::buildHeaderFile(const TypeSharedPtr& pType)
 	if(file.open(QFile::WriteOnly)) {
 
 		QTextStream os(&file);
-		QString szDefine = getDefine(m_szPrefix, pType);
+		QString szDefine = getDefine(m_szNamespace, pType);
 
 		buildHeaderFileDescription(os, szHeaderFilename, szDefine);
 
@@ -362,7 +385,7 @@ void TypeListBuilder::buildHeaderFile(const RequestResponseElementSharedPtr& pEl
 	if(file.open(QFile::WriteOnly)) {
 
 		QTextStream os(&file);
-		QString szDefine = getDefine(m_szPrefix, pElement);
+		QString szDefine = getDefine(m_szNamespace, pElement);
 
 		buildHeaderFileDescription(os, szHeaderFilename, szDefine);
 
@@ -406,7 +429,7 @@ void TypeListBuilder::buildHeaderFile(const ServiceSharedPtr& pService)
 	if(file.open(QFile::WriteOnly)) {
 
 		QTextStream os(&file);
-		QString szDefine = (!m_szPrefix.isEmpty() ? m_szPrefix.toUpper() + "_" : "") + pService->getName().toUpper() + "_H_";
+		QString szDefine = getDefine(m_szNamespace, pService);
 
 		buildHeaderFileDescription(os, szHeaderFilename, szDefine);
 
@@ -1119,8 +1142,7 @@ void TypeListBuilder::buildCppClassType(QTextStream& os, const TypeSharedPtr& pT
 	os << "} // TYPES" << CRLF;
 
 	if(!szNamespace.isEmpty()){
-		os << "}" << CRLF;
-		os << CRLF;
+		os << "} // " << szNamespace << CRLF;
 	}
 }
 
@@ -1229,8 +1251,7 @@ void TypeListBuilder::buildCppClassElement(QTextStream& os, const RequestRespons
 	os << "} // MSG" << CRLF;
 
 	if(!szNamespace.isEmpty()){
-		os << "}" << CRLF;
-		os << CRLF;
+		os << "} // " << szNamespace << CRLF;
 	}
 }
 

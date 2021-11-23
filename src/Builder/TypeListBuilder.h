@@ -53,6 +53,7 @@ public:
 
 	static QString getDefine(const QString& szPrefix, const TypeSharedPtr& pType);
 	static QString getDefine(const QString& szPrefix, const RequestResponseElementSharedPtr& pElement);
+	static QString getDefine(const QString& szPrefix, const ServiceSharedPtr& pService);
 
 	static QString getHeaderFileName(const TypeSharedPtr& pType);
 	static QString getCppFileName(const TypeSharedPtr& pType);
