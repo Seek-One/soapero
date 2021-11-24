@@ -111,9 +111,9 @@ public:
 			os << ")" << CRLF << CRLF;
 
 			os << "SET(" << m_szName.toUpper() << "_SRC" << CRLF;
-			os << "\t" << "${TYPES_SRC}" << CRLF;
-			os << "\t" << "${MESSAGES_SRC}" << CRLF;
 			os << "\t" << "${SERVICES_SRC}" << CRLF;
+			os << "\t" << "${MESSAGES_SRC}" << CRLF;
+			os << "\t" << "${TYPES_SRC}" << CRLF;
 			os << ")" << CRLF << CRLF;
 
 			os << "add_library (" << m_szName.toLower() << " ${" << m_szName.toUpper() << "_SRC})" << CRLF << CRLF;
