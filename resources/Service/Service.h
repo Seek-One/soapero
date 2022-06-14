@@ -15,6 +15,15 @@
 
 #include <QNetworkRequest>
 
+// Added in Qt 5.15.0
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
+#define USE_QRANDOMGENERATOR
+#endif
+
+#ifdef USE_QRANDOMGENERATOR
+#include <QRandomGenerator>
+#endif
+
 namespace SOAPERO {
 
 class IQueryExecutorResponse
@@ -73,6 +82,10 @@ protected:
 
 private:
 	QString buildNonce() const;
+
+#ifdef USE_QRANDOMGENERATOR
+	mutable QRandomGenerator m_rand;
+#endif
 };
 
 }

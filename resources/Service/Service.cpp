@@ -5,19 +5,17 @@
  *      Author: lgruber
  */
 
+/* This will define the timeval struct */
+#ifdef _MSC_VER
+#include <winsock.h>
+#else
+#include <sys/time.h>
+#endif
+
 #include <QCryptographicHash>
 #include <QEventLoop>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
-
-// Added in Qt 5.15.0
-#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
-#define USE_QRANDOMGENERATOR
-#endif
-
-#ifdef USE_QRANDOMGENERATOR
-#include <QRandomGenerator>
-#endif
 
 #include "Service.h"
 
@@ -87,12 +85,56 @@ public:
 	}
 };
 
+static int p_gettimeofday(struct timeval* p, void* tz)
+{
+#ifdef _MSC_VER
+	ULARGE_INTEGER ul; // As specified on MSDN.
+	FILETIME ft;
+
+	// Returns a 64-bit value representing the number of
+	// 100-nanosecond intervals since January 1, 1601 (UTC).
+	GetSystemTimeAsFileTime(&ft);
+
+	// Fill ULARGE_INTEGER low and high parts.
+	ul.LowPart = ft.dwLowDateTime;
+	ul.HighPart = ft.dwHighDateTime;
+	// Convert to microseconds.
+	ul.QuadPart /= 10ULL;
+	// Remove Windows to UNIX Epoch delta.
+	ul.QuadPart -= 11644473600000000ULL;
+	// Modulo to retrieve the microseconds.
+	p->tv_usec = (long) (ul.QuadPart % 1000000LL);
+	// Divide to retrieve the seconds.
+	p->tv_sec = (long) (ul.QuadPart / 1000000LL);
+	return 0;
+#else
+	return gettimeofday(p, tz);
+#endif
+}
+
 Service::Service()
 {
 	m_iLastErrorCode = -1;
 	m_pQueryExecutor = new CustomQueryExecutor();
 	m_bUseWSUsernameToken = false;
 	m_bUseCustomDateTime = false;
+#ifdef USE_QRANDOMGENERATOR
+	// Initialize random number based on time with nano second precision.
+	// This be be sure to don't have
+	struct timeval tvNow;
+	p_gettimeofday(&tvNow, NULL);
+	quint64 iSec = (quint64)tvNow.tv_sec;
+	quint64 iUSec = (quint64)tvNow.tv_usec;
+	quint32 listSeedValue[4];
+	listSeedValue[0] = (iSec >> 32);
+	listSeedValue[1] = (iSec & 0xFFFFFFFF);
+	listSeedValue[2] = (iUSec >> 32);
+	listSeedValue[3] = (iUSec & 0xFFFFFFFF);
+	m_rand = QRandomGenerator(listSeedValue, 4);
+#else
+	uint iSeed = (uint)(QDateTime::currentMSecsSinceEpoch() & 0xFFFFFFFF);
+	qsrand(iSeed);
+#endif
 }
 
 Service::~Service()
@@ -194,21 +236,20 @@ QByteArray Service::buildSoapMessage(const QString& szSerializedObject, const QL
 
 QString Service::buildNonce() const
 {
-	const QString possibleCharacters("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
-	const int randomStringLength = 20;
+	QString szPossibleCharacters("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
+	int iRandomStringLength = 20;
 
-	QString randomString;
-	for(int i=0; i<randomStringLength; ++i) {
+	QString szRandomString;
+	for(int i=0; i<iRandomStringLength; ++i) {
 #ifdef USE_QRANDOMGENERATOR
-		QRandomGenerator rand;
-		int index = (int)rand.generate();
+		int index = (int)(m_rand.generate() % szPossibleCharacters.length());
 #else
-		int index = qrand() % possibleCharacters.length();
+		int index = qrand() % szPossibleCharacters.length();
 #endif
-		QChar nextChar = possibleCharacters.at(index);
-		randomString.append(nextChar);
+		QChar nextChar = szPossibleCharacters.at(index);
+		szRandomString.append(nextChar);
 	}
-	return randomString;
+	return szRandomString;
 }
 
 }
