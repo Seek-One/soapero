@@ -391,13 +391,13 @@ bool QWSDLParser::readDefinitions(QXmlStreamReader& xmlReader)
 	{
 		logParser("processing: " + xmlReader.name().toString());
 
-		if (xmlReader.name() == TAG_TYPES) {
+		if (xmlReader.name().toString() == TAG_TYPES) {
 			bRes = readTypes(xmlReader);
-		}else if (xmlReader.name() == TAG_MESSAGE) {
+		}else if (xmlReader.name().toString() == TAG_MESSAGE) {
 			bRes = readMessage(xmlReader);
-		}else if (xmlReader.name() == TAG_PORTTYPE) {
+		}else if (xmlReader.name().toString() == TAG_PORTTYPE) {
 			bRes = readPortType(xmlReader);
-		}else if (xmlReader.name() == TAG_BINDING) {
+		}else if (xmlReader.name().toString() == TAG_BINDING) {
 			bRes = readBinding(xmlReader);
 		}else{
 			xmlReader.skipCurrentElement();
@@ -423,7 +423,7 @@ bool QWSDLParser::readTypes(QXmlStreamReader& xmlReader)
 	{
 		logParser("processing: " + xmlReader.name().toString());
 
-		if (xmlReader.name() == TAG_SCHEMA) {
+		if (xmlReader.name().toString() == TAG_SCHEMA) {
 			bRes = readSchema(xmlReader);
 		}else{
 			xmlReader.skipCurrentElement();
@@ -453,7 +453,7 @@ bool QWSDLParser::readMessage(QXmlStreamReader& xmlReader)
 	{
 		logParser("processing: " + xmlReader.name().toString());
 
-		if (xmlReader.name() == TAG_PART) {
+		if (xmlReader.name().toString() == TAG_PART) {
 			bRes = readPart(xmlReader);
 		}else{
 			xmlReader.skipCurrentElement();
@@ -478,7 +478,7 @@ bool QWSDLParser::readPortType(QXmlStreamReader& xmlReader)
 	{
 		logParser("processing: " + xmlReader.name().toString());
 
-		if (xmlReader.name() == TAG_OPERATION) {
+		if (xmlReader.name().toString() == TAG_OPERATION) {
 			bRes = readOperation(xmlReader);
 		}else{
 			xmlReader.skipCurrentElement();
@@ -499,7 +499,7 @@ bool QWSDLParser::readBinding(QXmlStreamReader& xmlReader)
 	{
 		logParser("processing: " + xmlReader.name().toString());
 
-		if (xmlReader.name() == TAG_OPERATION) {
+		if (xmlReader.name().toString() == TAG_OPERATION) {
 			bRes = readOperation(xmlReader);
 		}else{
 			xmlReader.skipCurrentElement();
@@ -572,11 +572,11 @@ bool QWSDLParser::readOperation(QXmlStreamReader& xmlReader)
 	{
 		logParser("processing: " + xmlReader.name().toString());
 
-		if (xmlReader.name() == TAG_INPUT) {
+		if (xmlReader.name().toString() == TAG_INPUT) {
 			bRes = readInput(xmlReader);
-		}else if (xmlReader.name() == TAG_OUTPUT) {
+		}else if (xmlReader.name().toString() == TAG_OUTPUT) {
 			bRes = readOutput(xmlReader);
-		}else if (xmlReader.name() == TAG_OPERATION) {
+		}else if (xmlReader.name().toString() == TAG_OPERATION) {
 			bRes = readOperation(xmlReader);
 		}else{
 			xmlReader.skipCurrentElement();
@@ -680,13 +680,13 @@ bool QWSDLParser::readSchema(QXmlStreamReader& xmlReader)
 
 		if(isComposition(szTagName)){
 			bRes = readComposition(xmlReader, szTagName);
-		}else if (xmlReader.name() == TAG_SIMPLE_TYPE) {
+		}else if (xmlReader.name().toString() == TAG_SIMPLE_TYPE) {
 			bRes = readSimpleType(xmlReader, Section::Schema);
-		}else if (xmlReader.name() == TAG_COMPLEX_TYPE) {
+		}else if (xmlReader.name().toString() == TAG_COMPLEX_TYPE) {
 			bRes = readComplexType(xmlReader, Section::Schema);
-		}else if (xmlReader.name() == TAG_ELEMENT) {
+		}else if (xmlReader.name().toString() == TAG_ELEMENT) {
 			bRes = readElement(xmlReader, Section::Schema);
-		}else if (xmlReader.name() == TAG_ATTRIBUTE) {
+		}else if (xmlReader.name().toString() == TAG_ATTRIBUTE) {
 			bRes = readAttribute(xmlReader, Section::Schema);
 		}else{
 			xmlReader.skipCurrentElement();
@@ -758,9 +758,9 @@ bool QWSDLParser::readComplexType(QXmlStreamReader& xmlReader, Section::Name iPa
 		QString szTagName = xmlReader.name().toString();
 		logParser("processing: " + szTagName);
 
-		if (xmlReader.name() == TAG_COMPLEX_CONTENT) {
+		if (xmlReader.name().toString() == TAG_COMPLEX_CONTENT) {
 			bRes = readComplexContent(xmlReader, Section::ComplexType);
-		}else if (xmlReader.name() == TAG_SIMPLE_CONTENT) {
+		}else if (xmlReader.name().toString() == TAG_SIMPLE_CONTENT) {
 			bRes = readSimpleContent(xmlReader, Section::ComplexType);
 		}else if(isParticleAndAttrs(szTagName)){
 			bRes = readParticleAndAttrs(xmlReader, szTagName, Section::ComplexType);
@@ -803,9 +803,9 @@ bool QWSDLParser::readComplexContent(QXmlStreamReader& xmlReader, Section::Name 
 		QString szTagName = xmlReader.name().toString();
 		logParser("processing: " + szTagName);
 
-		if (xmlReader.name() == TAG_RESTRICTION) {
+		if (xmlReader.name().toString() == TAG_RESTRICTION) {
 			bRes = readRestriction(xmlReader, iParentSection);
-		}else if (xmlReader.name() == TAG_EXTENSION) {
+		}else if (xmlReader.name().toString() == TAG_EXTENSION) {
 			bRes = readExtension(xmlReader, iParentSection);
 		}else{
 			xmlReader.skipCurrentElement();
@@ -827,9 +827,9 @@ bool QWSDLParser::readSimpleContent(QXmlStreamReader& xmlReader, Section::Name i
 		QString szTagName = xmlReader.name().toString();
 		logParser("processing: " + szTagName);
 
-		if (xmlReader.name() == TAG_RESTRICTION) {
+		if (xmlReader.name().toString() == TAG_RESTRICTION) {
 			bRes = readRestriction(xmlReader, iParentSection);
-		}else if (xmlReader.name() == TAG_EXTENSION) {
+		}else if (xmlReader.name().toString() == TAG_EXTENSION) {
 			bRes = readExtension(xmlReader, iParentSection);
 		}else{
 			xmlReader.skipCurrentElement();
@@ -1043,9 +1043,9 @@ bool QWSDLParser::readElement(QXmlStreamReader& xmlReader, Section::Name iParent
 		QString szTagName = xmlReader.name().toString();
 		logParser("processing: " + szTagName);
 
-		if (xmlReader.name() == TAG_SIMPLE_TYPE) {
+		if (xmlReader.name().toString() == TAG_SIMPLE_TYPE) {
 			bRes = readSimpleType(xmlReader, Section::Element);
-		}else if (xmlReader.name() == TAG_COMPLEX_TYPE) {
+		}else if (xmlReader.name().toString() == TAG_COMPLEX_TYPE) {
 			bRes = readComplexType(xmlReader, Section::Element);
 		}else{
 			xmlReader.skipCurrentElement();
@@ -1097,7 +1097,7 @@ bool QWSDLParser::readSequence(QXmlStreamReader& xmlReader, Section::Name iParen
 		QString szTagName = xmlReader.name().toString();
 		logParser("processing: " + szTagName);
 
-		if (xmlReader.name() == TAG_ELEMENT) {
+		if (xmlReader.name().toString() == TAG_ELEMENT) {
 			bRes = readElement(xmlReader, iParentSection);
 		}else{
 			xmlReader.skipCurrentElement();
@@ -1243,7 +1243,7 @@ bool QWSDLParser::readAttribute(QXmlStreamReader& xmlReader, Section::Name iPare
 		QString szTagName = xmlReader.name().toString();
 		logParser("processing: " + szTagName);
 
-		if (xmlReader.name() == TAG_SIMPLE_TYPE) {
+		if (xmlReader.name().toString() == TAG_SIMPLE_TYPE) {
 			bRes = readSimpleType(xmlReader, Section::Attribute);
 		}else{
 			xmlReader.skipCurrentElement();
@@ -1278,9 +1278,9 @@ bool QWSDLParser::readAttributeGroup(QXmlStreamReader& xmlReader, Section::Name 
 		QString szTagName = xmlReader.name().toString();
 		logParser("processing: " + szTagName);
 
-		if (xmlReader.name() == TAG_ATTRIBUTE) {
+		if (xmlReader.name().toString() == TAG_ATTRIBUTE) {
 			bRes = readAttribute(xmlReader, iParentSection);
-		}else if (xmlReader.name() == TAG_ATTRIBUTE_GROUP) {
+		}else if (xmlReader.name().toString() == TAG_ATTRIBUTE_GROUP) {
 			bRes = readAttributeGroup(xmlReader, iParentSection);
 		}else{
 			xmlReader.skipCurrentElement();
@@ -1508,12 +1508,12 @@ bool QWSDLParser::readSimpleType(QXmlStreamReader& xmlReader, Section::Name iPar
 		QString szTagName = xmlReader.name().toString();
 		logParser("processing: " + szTagName);
 
-		if (xmlReader.name() == TAG_RESTRICTION) {
+		if (xmlReader.name().toString() == TAG_RESTRICTION) {
 			bRes = readRestriction(xmlReader, Section::SimpleType);
-		}else if (xmlReader.name() == TAG_LIST) {
+		}else if (xmlReader.name().toString() == TAG_LIST) {
 			bList = true;
 			bRes = readList(xmlReader, (szName.isNull() ? iParentSection : Section::SimpleType));
-		}else if (xmlReader.name() == TAG_UNION) {
+		}else if (xmlReader.name().toString() == TAG_UNION) {
 			bRes = readUnion(xmlReader, Section::SimpleType);
 		}else{
 			xmlReader.skipCurrentElement();
@@ -1585,7 +1585,7 @@ bool QWSDLParser::readRestriction(QXmlStreamReader& xmlReader, Section::Name iPa
 		QString szTagName = xmlReader.name().toString();
 		logParser("processing: " + szTagName);
 
-		if (xmlReader.name() == TAG_SIMPLE_TYPE) {
+		if (xmlReader.name().toString() == TAG_SIMPLE_TYPE) {
 			bRes = readSimpleType(xmlReader, iParentSection);
 		}else if(isFacet(szTagName)){
 			bRes = readFacet(xmlReader, szTagName);
@@ -1665,7 +1665,7 @@ bool QWSDLParser::readList(QXmlStreamReader& xmlReader, Section::Name iParentSec
 		QString szTagName = xmlReader.name().toString();
 		logParser("processing: " + szTagName);
 
-		if (xmlReader.name() == TAG_SIMPLE_TYPE) {
+		if (xmlReader.name().toString() == TAG_SIMPLE_TYPE) {
 			bRes = readSimpleType(xmlReader, iParentSection);
 		}else{
 			xmlReader.skipCurrentElement();
@@ -1706,7 +1706,7 @@ bool QWSDLParser::readUnion(QXmlStreamReader& xmlReader, Section::Name iParentSe
 		QString szTagName = xmlReader.name().toString();
 		logParser("processing: " + szTagName);
 
-		if (xmlReader.name() == TAG_SIMPLE_TYPE) {
+		if (xmlReader.name().toString() == TAG_SIMPLE_TYPE) {
 			bRes = readSimpleType(xmlReader, iParentSection);
 		}else{
 			xmlReader.skipCurrentElement();

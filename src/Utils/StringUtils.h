@@ -8,9 +8,14 @@
 #ifndef SRC_UTILS_STRINGUTILS_H_
 #define SRC_UTILS_STRINGUTILS_H_
 
-#include <QRegExp>
 #include <QString>
 #include <QStringList>
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <QRegularExpression>
+#else
+#include <QRegExp>
+#endif
 
 class StringUtils {
 public:
@@ -18,7 +23,13 @@ public:
 	{
 		QString szRet = szString;
 		//QString szChars = "-`~!@#$%^&*()_—+=|:;<>«»,.?/{}\'\"\\\[\\\]\\\\";
-		szRet.remove(QRegExp("[^a-zA-Z\\d\\s]"));
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+		QRegularExpression re("[^a-zA-Z\\d\\s]");
+#else
+		QRegExp re("[^a-zA-Z\\d\\s]");
+#endif
+		szRet.remove(re);
 		szRet.replace(" ", "");
 		return szRet;
 	}
