@@ -90,7 +90,7 @@ void TypeRefList::print()
 {
 	TypeRefSharedPtr pCurrentType;
 
-	qDebug("type count: %d", count());
+	qDebug("type count: %d", (int)count());
 	TypeRefList::const_iterator iter_type;
 	for(iter_type = constBegin(); iter_type != constEnd(); ++iter_type)
 	{

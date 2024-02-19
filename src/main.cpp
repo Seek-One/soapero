@@ -91,7 +91,7 @@ int main(int argc, char **argv)
 	// Loading list of WSDL files
 	QSharedPointer<UniqueStringList> pListGeneratedFiles(new UniqueStringList());
 	QStringList listWSDLFileNames = getWSDLFileNames(szWSDLFilesDirectory);
-	qDebug("[Main] %d WSDL files have been found in directory '%s'", listWSDLFileNames.count(), szWSDLFilesDirectory);
+	qDebug("[Main] %d WSDL files have been found in directory '%s'", (int)listWSDLFileNames.count(), szWSDLFilesDirectory);
 
 	// Iterate over each WSDL files
 	QStringList::const_iterator iter;

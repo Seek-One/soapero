@@ -83,7 +83,7 @@ void TypeList::print()
 {
 	TypeSharedPtr pCurrentType;
 
-	qDebug("type count: %d", count());
+	qDebug("type count: %d", (int)count());
 	TypeList::const_iterator iter_type;
 	for(iter_type = constBegin(); iter_type != constEnd(); ++iter_type)
 	{
