@@ -1403,7 +1403,6 @@ QString ComplexType::getIsNullDefinition(const QString& szClassname) const
 
 QString ComplexType::getGetNamespaceDeclarationDefinition(const QString& szClassname) const
 {
-	AttributeList::const_iterator attr;
 	ElementList::const_iterator elem;
 	AttributeSharedPtr pAttribute;
 	ElementSharedPtr pElement;
