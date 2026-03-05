@@ -119,7 +119,6 @@ if(WITH_ALEAKD)
 	endif(ALeakD_FOUND)
 endif(WITH_ALEAKD)
 
-
 # Get libc6 dependencies on linux to check OS version
 if(UNIX AND NOT APPLE)
 	if(AUTONOMOUS_PACKAGE_BUILD)
@@ -132,7 +131,6 @@ if(UNIX AND NOT APPLE)
 		endif()
 	endif()
 endif()
-
 
 #####################
 ### Security
