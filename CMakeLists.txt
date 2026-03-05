@@ -89,6 +89,7 @@ include_directories (${PROJECT_BINARY_DIR})
 include_directories (${PROJECT_SOURCE_DIR}/src)
 
 set(APPLICATION_SOURCES
+	src/main.cpp
 	resources/Base/xs/types/AnySimpleType.cpp
 	resources/Base/xs/types/AnySimpleType.h
 	resources/Base/xs/types/AnyType.cpp
@@ -212,18 +213,28 @@ configure_file (
 	"${PROJECT_BINARY_DIR}/ts.qrc"
 )
 
+if (WIN32)
+	set (QT_TS_FILES
+		"${QT_TRANSLATIONS_DIR}/qt_fr.qm"
+	)
+	INSTALL(FILES ${QT_TS_FILES} DESTINATION ${INSTALL_PATH_SHARE}/translations)
+endif()
+
 # Resources
 set (QRC_TS_FILES
 	${PROJECT_BINARY_DIR}/ts.qrc
 )
-qtx_add_resources(RCS_OUTFILES ${QRC_FILES})
 qtx_add_resources(RCS_TS_OUTFILES ${QRC_TS_FILES})
 
 # Create a library for resources
 add_library(${APPLICATION_EXE_NAME}_rcs OBJECT
-	${RCS_OUTFILES}
 	${RCS_TS_OUTFILES}
 )
+
+####################
+# Application libs
+####################
+
 # Xcode "new build system" requires a strict ordering when the same lupdate stamp
 # is involved in multiple targets.
 add_dependencies(${APPLICATION_EXE_NAME}_rcs ${APPLICATION_EXE_NAME}_ts)
@@ -232,24 +243,15 @@ add_dependencies(${APPLICATION_EXE_NAME}_rcs ${APPLICATION_EXE_NAME}_ts)
 # Create Executable
 ####################
 
-set (SOAPERO_MAIN_SRC
-	src/main.cpp
-)
-
 # Build executable
 add_executable (${APPLICATION_EXE_NAME}
-	${GUI_TYPE}
-	${RC_FILES}
-	${SOAPERO_MAIN_SRC}
 	${APPLICATION_SOURCES}
 	${APPLICATION_MOC_OUTFILES}
-	${RCS_OUTFILES}
-	${RCS_TS_OUTFILES}
-	${qm_FILES}
+	$<TARGET_OBJECTS:${APPLICATION_EXE_NAME}_rcs>
+	$<TARGET_OBJECTS:${APPLICATION_EXE_NAME}_ts>
 )
 target_link_libraries (${APPLICATION_EXE_NAME}
 	${QT_LIBRARIES}
-	${QT_QTMAIN_LIBRARY}
 )
 install(TARGETS ${APPLICATION_EXE_NAME} DESTINATION ${INSTALL_PATH_BIN})
 
