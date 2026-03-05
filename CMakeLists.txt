@@ -240,7 +240,7 @@ add_library(${APPLICATION_EXE_NAME}_rcs OBJECT
 add_dependencies(${APPLICATION_EXE_NAME}_rcs ${APPLICATION_EXE_NAME}_ts)
 
 ####################
-# Create Executable
+# Create executable
 ####################
 
 # Build executable
