@@ -3,9 +3,9 @@ soapero
 
 soapero is a simple client generator for SOAP service from WSDL.
 
-- Github: https://github.com/Jet1oeil/soapero
-- Developer website: http://www.jet1oeil.com/
-- Bugs reporting: https://github.com/Jet1oeil/soapero/issues
+- Github: https://github.com/Seek-One/soapero
+- Developer website: http://www.seek-one.fr/
+- Bugs reporting: https://github.com/Seek-One/soapero/issues
 
 Features
 --------
@@ -25,19 +25,19 @@ Requirements
 ------------
 
 - CMake
-- Qt version 4 or Qt version 5
+- Qt version 5 or Qt version 6
 
 Compiling from source
 ---------------------
 
 Install dependencies:
-  * in debian OS (with Qt4) :
-```
-    apt-get install git cmake libqt4-dev
-```
   * in debian OS (with Qt5) :
 ```
     apt-get install git cmake qtbase5-dev qttools5-dev qttools5-dev-tools
+```
+  * in debian OS (with Qt6) :
+```
+    apt-get install git cmake qt6-base-dev qt6-base-private-dev qt6-tools-dev qt6-base-dev-tools
 ```
   * in fedora OS : 
 ```
@@ -45,7 +45,7 @@ Install dependencies:
 ```
 Get the code:
 
-    git clone https://github.com/Jet1oeil/soapero.git && cd soapero
+    git clone https://github.com/Seek-One/soapero.git && cd soapero
 
 Compile:
 
@@ -67,6 +67,6 @@ Options:
 Examples
 --------
 
-Check the Calculator example: https://github.com/Jet1oeil/soapero/tree/master/examples/CalculatorService
+Check the Calculator example: https://github.com/Seek-One/soapero/tree/master/examples/CalculatorService
 
 
