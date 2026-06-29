@@ -34,6 +34,26 @@ bool FileHelper::isFileMessage(const QString& szFilePath)
 #endif
 }
 
+QString FileHelper::buildPath(const QDir& dirBase, const QString& szFileNamespace, const QString& szFileCategory, const QString& szFileName)
+{
+	QDir dir;
+#ifdef WITH_DIR_CREATION
+	if(!szFileNamespace.isEmpty()){
+		dir.setPath(dirBase.filePath(szFileNamespace.toLower()));
+	}
+
+	if(!szFileCategory.isEmpty()){
+		dir.setPath(dirBase.filePath(szFileCategory));
+	}
+
+#else
+	if(!szFileCategory.isEmpty()){
+		dir.setPath(dirBase.filePath(szFileCategory));
+	}
+#endif
+	return dir.filePath(szFileName);
+}
+
 QString FileHelper::buildPath(const QString& szBaseDirectory, const QString& szFileNamespace, const QString& szFileCategory, const QString& szFileName)
 {
 	QDir dir;
@@ -42,21 +62,7 @@ QString FileHelper::buildPath(const QString& szBaseDirectory, const QString& szF
 		dir.setPath(szBaseDirectory);
 	}
 
-#ifdef WITH_DIR_CREATION
-	if(!szFileNamespace.isEmpty()){
-		dir.setPath(dir.filePath(szFileNamespace.toLower()));
-	}
-
-	if(!szFileCategory.isEmpty()){
-		dir.setPath(dir.filePath(szFileCategory));
-	}
-
-#else
-	if(!szFileCategory.isEmpty()){
-		dir.setPath(dir.filePath(szFileCategory));
-	}
-#endif
-	return dir.filePath(szFileName);
+	return buildPath(dir, szFileNamespace, szFileCategory, szFileName);
 }
 
 bool FileHelper::createDirectoryForFile(const QString& szFilePath)

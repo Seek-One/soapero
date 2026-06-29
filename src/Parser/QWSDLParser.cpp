@@ -46,14 +46,19 @@ QWSDLParser::~QWSDLParser()
 void QWSDLParser::initXMLAttributes()		// https://www.w3.org/2001/xml.xsd
 {
 	// https://www.w3.org/2001/xml.xsd#att_lang
-	AttributeSharedPtr pAttribute = Attribute::create();
-	pAttribute->setNamespace("xml");
-	pAttribute->setName("lang");
+
+	// Create xml::lang type
 	SimpleTypeSharedPtr pSimpleType = SimpleType::create();
 	pSimpleType->setVariableTypeFromString("xs", "xs:string");
 	pSimpleType->setNamespace("xml");
 	pSimpleType->setName("lang");
-	m_pListTypes->append(pSimpleType);
+	pSimpleType->setNamespaceUri("https://www.w3.org/2001/xml.xsd");
+	m_pListTypes->add(pSimpleType);
+
+	// Create xml::lang attribute
+	AttributeSharedPtr pAttribute = Attribute::create();
+	pAttribute->setNamespace("xml");
+	pAttribute->setName("lang");
 	pAttribute->setType(pSimpleType);
 	m_pListAttributes->append(pAttribute);
 }

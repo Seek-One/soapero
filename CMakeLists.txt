@@ -163,6 +163,13 @@ set(APPLICATION_SOURCES
 	src/Parser/WSDLAttributes.h
 	src/Parser/WSDLSections.h
 
+	src/TargetEngine/CppTargetEngine.cpp
+	src/TargetEngine/CppTargetEngine.h
+	src/TargetEngine/QtCppTargetEngine.cpp
+	src/TargetEngine/QtCppTargetEngine.h
+	src/TargetEngine/TargetEngine.cpp
+	src/TargetEngine/TargetEngine.h
+
 	src/Utils/ModelUtils.h
 	src/Utils/ModelUtils.cpp
 	src/Utils/StringUtils.h

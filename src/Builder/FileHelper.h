@@ -8,6 +8,7 @@
 #define WITH_DIR_CREATION
 
 #include <QString>
+#include <QDir>
 
 class FileHelper
 {
@@ -15,6 +16,7 @@ public:
 	FileHelper();
 	virtual ~FileHelper();
 
+	static QString buildPath(const QDir& dirBase, const QString& szFileNamespace, const QString& szFileCategory, const QString& szFileName);
 	static QString buildPath(const QString& szBaseDirectory, const QString& szFileNamespace, const QString& szFileCategory, const QString& szFileName);
 	static bool createDirectoryForFile(const QString& szFilePath);
 

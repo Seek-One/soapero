@@ -154,12 +154,15 @@ int main(int argc, char **argv)
 
 			// Build file for service
 			if(bGoOn){
-				TypeListBuilder builder(pService, parser.getTypeList(), parser.getRequestResponseElementList(), pListGeneratedFiles);
+				const auto& pServiceTypeList = parser.getTypeList();
+				qDebug("[Main] Build files for service: %s (types: %d)", qPrintable(pService->getName()), (int)pServiceTypeList->count());
+				//pServiceTypeList->print();
+
+				TypeListBuilder builder(pService, pServiceTypeList, parser.getRequestResponseElementList(), pListGeneratedFiles);
 				builder.setNamespace(szNamespace);
 				builder.setFilename("actionservice");
 				builder.setDirname(szOutputDirectory);
-				builder.buildHeaderFiles();
-				builder.buildCppFiles();
+				builder.build();
 
 				bFileGenerated = true;
 			}
