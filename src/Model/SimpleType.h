@@ -69,10 +69,6 @@ public:
 	QString getExportedNamespace() const;
 	QString getExportedTypename() const;
 
-	QString getSetterDeclaration() const;
-	QString getSetterDeclarationForComplexType() const;
-	QString getGetterDeclaration() const;
-	QString getGetterDeclarationForComplexType() const;
 	QString getSerializerDeclaration() const;
 	QString getDeserializerDeclaration() const;
 	QString getEnumConvertDeclaration() const;

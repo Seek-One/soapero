@@ -1694,11 +1694,11 @@ bool QWSDLParser::readUnion(QXmlStreamReader& xmlReader, Section::Name iParentSe
 	if((iParentSection == Section::SimpleType) && pCurrentType){
 		if(xmlAttrs.hasAttribute(ATTR_MEMBER_TYPES)){
 			QString szMemberTypes = xmlAttrs.value(ATTR_MEMBER_TYPES).toString();
-			QStringList szTypes = szMemberTypes.split(" ");
-			for(int i = 0; i < szTypes.size(); ++i){
-				if(szTypes[i].startsWith(m_szCurrentSchemaNamespacePrefix + ":")){
+			QStringList listTypes = szMemberTypes.split(" ");
+			for(int i = 0; i < listTypes.size(); ++i){
+				if(listTypes[i].startsWith(m_szCurrentSchemaNamespacePrefix + ":")){
 					SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pCurrentType);
-					pSimpleType->setVariableTypeFromString(m_szCurrentSchemaNamespacePrefix, szTypes[i]);
+					pSimpleType->setVariableTypeFromString(m_szCurrentSchemaNamespacePrefix, listTypes[i]);
 				}
 			}
 		}

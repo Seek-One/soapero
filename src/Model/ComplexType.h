@@ -118,8 +118,6 @@ public:
 	void setIsList(bool bIsList);
 	bool isList() const;
 
-	QString getSetterDeclaration() const;
-	QString getGetterDeclaration() const;
 	QString getVariableDeclaration() const;
 
 	QString getSetterDefinition(const QString& szClassname) const;

@@ -34,8 +34,11 @@ void CppTargetEngine::doWriteFileDescription(QTextStream& os, const QString& szF
 	os << "/*" << CRLF;
 	os << " * " << szFilename << CRLF;
 	os << " * " << CRLF;
+#ifndef USE_COMPAT_TEST
 	os << " * Created on: " << QDateTime::currentDateTime().toString("dd MMM yyyy") << CRLF;
-	//os << " * Created on: 16 sept. 2021" << CRLF;
+#else
+	os << " * Created on: 29 Jun 2026" << CRLF;
+#endif
 	os << " * Author: " << QCoreApplication::applicationName() << " v" << QCoreApplication::applicationVersion() << CRLF;
 	os << " * License: MIT License" << CRLF;
 	os << " */" << CRLF;
@@ -44,7 +47,6 @@ void CppTargetEngine::doWriteFileDescription(QTextStream& os, const QString& szF
 
 void CppTargetEngine::doWriteHeaderGuardStart(QTextStream& os, const QString& szHeaderGuard) const
 {
-	os << CRLF;
 	os << "#ifndef " << szHeaderGuard << CRLF;
 	os << "#define " << szHeaderGuard << CRLF;
 	os << CRLF;
@@ -52,8 +54,17 @@ void CppTargetEngine::doWriteHeaderGuardStart(QTextStream& os, const QString& sz
 
 void CppTargetEngine::doWriteHeaderGuardEnd(QTextStream& os, const QString& szHeaderGuard) const
 {
+#ifndef USE_COMPAT_TEST
 	os << CRLF;
 	os << "#endif //" << szHeaderGuard << CRLF;
+#else
+	os << "#endif" << CRLF;
+#endif
+}
+
+void CppTargetEngine::doWriteIncludeLocalFile(QTextStream& os, const QString& szIncludeFile) const
+{
+	os << "#include \"" << szIncludeFile << "\"" << CRLF;
 }
 
 void CppTargetEngine::doWriteNamespaceStart(QTextStream& os, const QString& szNamespace) const
@@ -73,8 +84,13 @@ void CppTargetEngine::doWriteNamespaceEnd(QTextStream& os, const QString& szName
 void CppTargetEngine::doWriteNamespaceTargetInfos(QTextStream& os, const QString& szPrefix, const QString& szNamespace, const QString& szNamespaceURI) const
 {
 	os << CRLF;
+#ifndef USE_COMPAT_TEST
 	os << "const char* " << szPrefix << "_TargetNamespace = \"" << szNamespace << "\";" CRLF;
 	os << "const char* " << szPrefix << "_TargetNamespaceUri = \"" << szNamespaceURI << "\";" CRLF;
+#else
+	os << "const char* " << szPrefix << "TargetNamespace = \"" << szNamespace << "\";" CRLF;
+	os << "const char* " << szPrefix << "TargetNamespaceUri = \"" << szNamespaceURI << "\";" CRLF;
+#endif
 	os << CRLF;
 }
 
@@ -99,12 +115,62 @@ void CppTargetEngine::doWriteHeaderClassEnd(QTextStream& os, const QString& szCl
 	os << CRLF;
 }
 
-void CppTargetEngine::doWriteHeaderClassInitializers(QTextStream& os, const QString& szClassName) const
+void CppTargetEngine::doWriteHeaderClassInitializers(QTextStream& os, const QString& szClassName, bool bEnumeration) const
 {
-	os << "public:" << CRLF;
+	if (!bEnumeration) {
+		os << "public:" << CRLF;
+	}
 	os << "\t" << szClassName << "();" << CRLF;
 	os << "\tvirtual ~" << szClassName << "();" << CRLF;
 	os << CRLF;
+}
+
+void CppTargetEngine::doWriteHeaderGetter(QTextStream& os, const QString& szFuncName, const QString& szMemberType, bool bParamConst) const
+{
+	QString szDeclaration;
+	if(bParamConst) {
+		szDeclaration = "const %0& get%1() const;";
+	}else{
+		szDeclaration = "%0 get%1() const;";
+	}
+	szDeclaration = szDeclaration.arg(szMemberType).arg(szFuncName);
+	os << "\t" << szDeclaration << CRLF;
+}
+
+void CppTargetEngine::doWriteHeaderGetterList(QTextStream& os, const QString& szFuncName, const QString& szMemberType) const
+{
+	QString szDeclaration;
+	szDeclaration = "const QList<%0>& get%1List() const;";
+	szDeclaration = szDeclaration.arg(szMemberType).arg(szFuncName);
+	os << "\t" << szDeclaration << CRLF;
+}
+
+void CppTargetEngine::doWriteHeaderSetter(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName, bool bParamConst) const
+{
+	QString szDeclaration;
+	if(bParamConst) {
+		szDeclaration = "void set%0(const %1& %2);";
+	}else{
+		szDeclaration = "void set%0(%1 %2);";
+	}
+	szDeclaration = szDeclaration.arg(szFuncName).arg(szParamType).arg(szParamName);
+	os << "\t" << szDeclaration << CRLF;
+}
+
+void CppTargetEngine::doWriteHeaderSetterList(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName) const
+{
+	QString szDeclaration;
+	szDeclaration = "void set%0List(const std::list<%1>& %2List);";
+	szDeclaration = szDeclaration.arg(szFuncName).arg(szParamType).arg(szParamName);
+	os << "\t" << szDeclaration << CRLF;
+}
+
+void CppTargetEngine::doWriteHeaderAddList(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName) const
+{
+	QString szDeclaration;
+	szDeclaration += "void add%0(const %1& %2);";
+	szDeclaration = szDeclaration.arg(szFuncName).arg(szParamType).arg(szParamName);
+	os << "\t" << szDeclaration << CRLF;
 }
 
 //////////////////
@@ -347,6 +413,9 @@ bool CppTargetEngine::doBuildHeaderFile(const RequestResponseElementSharedPtr& p
 		// Namespace end
 		doWriteNamespaceEnd(os, m_szNamespace);
 		// Header guard end
+#ifdef USE_COMPAT_TEST
+		os << CRLF;
+#endif
 		doWriteHeaderGuardEnd(os, szHeaderGuard);
 
 		m_pGeneratedFilesList->append(szShortFilePath);
@@ -515,6 +584,9 @@ bool CppTargetEngine::doBuildHeaderFile(const TypeSharedPtr& pType) {
 		// Namespace end
 		doWriteNamespaceEnd(os, m_szNamespace);
 		// Header guard end
+#ifdef USE_COMPAT_TEST
+		os << CRLF;
+#endif
 		doWriteHeaderGuardEnd(os, szHeaderGuard);
 
 		m_pGeneratedFilesList->append(szShortFilePath);

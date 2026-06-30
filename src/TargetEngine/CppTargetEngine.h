@@ -21,6 +21,7 @@ protected:
 	virtual void doWriteFileDescription(QTextStream& os, const QString& szFilename) const;
 	virtual void doWriteHeaderGuardStart(QTextStream& os, const QString& szHeaderGuard) const;
 	virtual void doWriteHeaderGuardEnd(QTextStream& os, const QString& szHeaderGuard) const;
+	virtual void doWriteIncludeLocalFile(QTextStream& os, const QString& szIncludeFile) const;
 	virtual void doWriteNamespaceStart(QTextStream& os, const QString& szNamespace) const;
 	virtual void doWriteNamespaceEnd(QTextStream& os, const QString& szNamespace) const;
 	virtual void doWriteNamespaceTargetInfos(QTextStream& os, const QString& szPrefix, const QString& szNamespace, const QString& szNamespaceURI) const;
@@ -29,7 +30,12 @@ protected:
 	void doWriteHeaderClassStart(QTextStream& os, const QString& szClassName) const;
 	virtual void doWriteHeaderClassStart(QTextStream& os, const QString& szClassName, const QString& szBaseClass) const;
 	virtual void doWriteHeaderClassEnd(QTextStream& os, const QString& szClassName) const;
-	virtual void doWriteHeaderClassInitializers(QTextStream& os, const QString& szClassName) const;
+	virtual void doWriteHeaderClassInitializers(QTextStream& os, const QString& szClassName, bool bEnumeration) const;
+	virtual void doWriteHeaderGetter(QTextStream& os, const QString& szFuncName, const QString& szMemberType, bool bParamConst) const;
+	virtual void doWriteHeaderGetterList(QTextStream& os, const QString& szFuncName, const QString& szMemberType) const;
+	virtual void doWriteHeaderSetter(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName, bool bParamConst) const;
+	virtual void doWriteHeaderSetterList(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName) const;
+	virtual void doWriteHeaderAddList(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName) const;
 
 	// Service files
 	static QString getHeaderGuard(const QString& szPrefix, const ServiceSharedPtr& pService);

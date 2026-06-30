@@ -17,6 +17,9 @@ private:
 	// CPP files creation
 	void doWriteNamespaceTargetInfos(QTextStream& os, const QString& szPrefix, const QString& szNamespace, const QString& szNamespaceURI) const override;
 
+	// CPP class creation
+	void doWriteHeaderSetterList(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName) const override;
+
 	// Service
 	void doWriteHeaderIncludes(QTextStream& os, const ServiceSharedPtr& pService) const override;
 	void doWriteHeaderClass(QTextStream& os, const ServiceSharedPtr& pService) const override;
@@ -35,11 +38,16 @@ private:
 
 	// Simple type
 	void doWriteHeaderClassContent(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const;
+	void doWriteHeaderGetterSetter(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const;
 	void doWriteCppClassContent(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const;
 
 	// Complex type
 	void doWriteHeaderClassContent(QTextStream& os, const ComplexTypeSharedPtr& pComplexType) const;
 	void doWriteCppClassContent(QTextStream& os, const ComplexTypeSharedPtr& pComplexType, const QString& szTargetNamespace = QString()) const;
+
+	// Attribute
+	void doWriteHeaderGetterSetter(QTextStream& os, const AttributeSharedPtr& pAttribute) const;
+
 
 	void startCppClass(QTextStream& os, const QString& szClassName, const ComplexTypeSharedPtr& pComplexType) const;
 	void endCppClass(QTextStream& os, const QString& szClassName) const;

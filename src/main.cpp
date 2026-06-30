@@ -154,8 +154,10 @@ int main(int argc, char **argv)
 
 			// Build file for service
 			if(bGoOn){
+				const auto& pRequestResponseElementList = parser.getRequestResponseElementList();
 				const auto& pServiceTypeList = parser.getTypeList();
-				qDebug("[Main] Build files for service: %s (types: %d)", qPrintable(pService->getName()), (int)pServiceTypeList->count());
+				qDebug("[Main] Build files for service: %s (elements: %d, types: %d)", qPrintable(pService->getName()), (int)pRequestResponseElementList->count(), (int)pServiceTypeList->count());
+				//pRequestResponseElementList->print();
 				//pServiceTypeList->print();
 
 				TypeListBuilder builder(pService, pServiceTypeList, parser.getRequestResponseElementList(), pListGeneratedFiles);
