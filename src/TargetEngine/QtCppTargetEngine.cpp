@@ -691,7 +691,6 @@ void QtCppTargetEngine::doWriteHeaderClassContent(QTextStream& os, const Complex
 				qWarning("[Builder] Attribute %s in %s has no type", qPrintable(pAttribute->getName()), qPrintable(pComplexType->getQualifiedName()));
 				continue;
 			}
-
 			doWriteHeaderGetterSetter(os, pAttribute);
 			os << CRLF;
 		}
@@ -885,6 +884,10 @@ void QtCppTargetEngine::doWriteHeaderGetterSetter(QTextStream& os, const Attribu
 			doWriteHeaderSetter(os, szFuncName, szParamType, szParamName, true);
 			doWriteHeaderGetter(os, szFuncName, szParamType, true);
 		}
+	}else {
+#ifdef USE_COMPAT_TEST
+		os << "\t\t";
+#endif
 	}
 }
 
