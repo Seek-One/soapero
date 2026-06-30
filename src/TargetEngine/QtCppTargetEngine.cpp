@@ -34,7 +34,7 @@ void QtCppTargetEngine::doWriteNamespaceTargetInfos(QTextStream& os, const QStri
 	os << CRLF;
 }
 
-void QtCppTargetEngine::doWriteHeaderSetterList(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName) const
+void QtCppTargetEngine::doWriteDeclarationSetterList(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName) const
 {
 	QString szDeclaration;
 	szDeclaration = "void set%0List(const QList<%1>& %2List);";
@@ -46,7 +46,7 @@ void QtCppTargetEngine::doWriteHeaderSetterList(QTextStream& os, const QString& 
 // Service files
 //////////////////
 
-void QtCppTargetEngine::doWriteHeaderIncludes(QTextStream& os, const ServiceSharedPtr& pService) const
+void QtCppTargetEngine::doWriteDeclarationIncludes(QTextStream& os, const ServiceSharedPtr& pService) const
 {
 	QStringList list;
 	bool bSoapEnvelopeFaultIncluded = false;
@@ -104,15 +104,15 @@ void QtCppTargetEngine::doWriteHeaderIncludes(QTextStream& os, const ServiceShar
 	os << CRLF;
 }
 
-void QtCppTargetEngine::doWriteHeaderClass(QTextStream& os, const ServiceSharedPtr& pService) const
+void QtCppTargetEngine::doWriteDeclarationClass(QTextStream& os, const ServiceSharedPtr& pService) const
 {
 	QString szClassname = pService->getName();
 
 	// Start class
 	//os << CRLF;
-	doWriteHeaderClassStart(os, szClassname, "Service");
+	doWriteDeclarationClassStart(os, szClassname, "Service");
 	// Constructor/destructor declaration
-	doWriteHeaderClassInitializers(os, szClassname, false);
+	doWriteDeclarationClassInitializers(os, szClassname, false);
 
 	OperationListSharedPtr pOperationList = pService->getOperationList();
 	OperationList::const_iterator operation;
@@ -136,7 +136,7 @@ void QtCppTargetEngine::doWriteHeaderClass(QTextStream& os, const ServiceSharedP
 	os << "};" << CRLF;
 }
 
-void QtCppTargetEngine::doWriteCppIncludes(QTextStream& os, const TypeSharedPtr& pType) const
+void QtCppTargetEngine::doWriteDefinitionIncludes(QTextStream& os, const TypeSharedPtr& pType) const
 {
 	bool bHasIncludes = false;
 	bool bQStringListIncluded = false;
@@ -180,7 +180,7 @@ void QtCppTargetEngine::doWriteCppIncludes(QTextStream& os, const TypeSharedPtr&
 	}
 }
 
-void QtCppTargetEngine::doWriteCppClass(QTextStream& os, const ServiceSharedPtr& pService) const
+void QtCppTargetEngine::doWriteDefinitionClass(QTextStream& os, const ServiceSharedPtr& pService) const
 {
 	QString szClassname = pService->getName();
 
@@ -236,7 +236,7 @@ void QtCppTargetEngine::doWriteCppClass(QTextStream& os, const ServiceSharedPtr&
 // Request response elements files
 //////////////////////////////////
 
-void QtCppTargetEngine::doWriteHeaderIncludes(QTextStream& os, const RequestResponseElementSharedPtr& pRequestResponseElement) const
+void QtCppTargetEngine::doWriteDeclarationIncludes(QTextStream& os, const RequestResponseElementSharedPtr& pRequestResponseElement) const
 {
 	TypeSharedPtr pType = pRequestResponseElement->getType();
 
@@ -313,7 +313,7 @@ void QtCppTargetEngine::doWriteHeaderIncludes(QTextStream& os, const RequestResp
 	os << CRLF;
 }
 
-void QtCppTargetEngine::doWriteHeaderClass(QTextStream& os, const RequestResponseElementSharedPtr& pElement) const
+void QtCppTargetEngine::doWriteDeclarationClass(QTextStream& os, const RequestResponseElementSharedPtr& pElement) const
 {
 	QString szClassName =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pElement->getLocalName(true);
 	TypeSharedPtr pType = pElement->getType();
@@ -333,7 +333,7 @@ void QtCppTargetEngine::doWriteHeaderClass(QTextStream& os, const RequestRespons
 		doWriteNamespaceTargetInfos(os, szClassName, pElement->getNamespace(), pElement->getNamespaceUri());
 
 		startCppClass(os, szClassName, pComplexType);
-		doWriteHeaderClassContent(os, pComplexType);
+		doWriteDeclarationClassContent(os, pComplexType);
 		endCppClass(os, szClassName);
 	}else {
 		os << CRLF;
@@ -344,7 +344,7 @@ void QtCppTargetEngine::doWriteHeaderClass(QTextStream& os, const RequestRespons
 	doWriteNamespaceEnd(os, szNamespace);
 }
 
-void QtCppTargetEngine::doWriteCppClass(QTextStream& os, const RequestResponseElementSharedPtr& pElement) const
+void QtCppTargetEngine::doWriteDefinitionClass(QTextStream& os, const RequestResponseElementSharedPtr& pElement) const
 {
 	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pElement->getLocalName();
 	TypeSharedPtr pType = pElement->getType();
@@ -369,7 +369,7 @@ void QtCppTargetEngine::doWriteCppClass(QTextStream& os, const RequestResponseEl
 		os << szClassname << "::~" << szClassname << "() {}" << CRLF;
 		os << CRLF;
 
-		doWriteCppClassContent(os, pComplexType, pComplexType->getNamespace());
+		doWriteDefinitionClassContent(os, pComplexType, pComplexType->getNamespace());
 
 		os << CRLF;
 	}
@@ -383,7 +383,7 @@ void QtCppTargetEngine::doWriteCppClass(QTextStream& os, const RequestResponseEl
 // Types files
 //////////////////////////////////
 
-void QtCppTargetEngine::doWriteHeaderIncludes(QTextStream& os, const TypeSharedPtr& pType) const
+void QtCppTargetEngine::doWriteDeclarationIncludes(QTextStream& os, const TypeSharedPtr& pType) const
 {
 	os << "#include <QDomElement>" << CRLF;
 	os << "#include <QList>" << CRLF;
@@ -476,7 +476,7 @@ void QtCppTargetEngine::doWriteHeaderIncludes(QTextStream& os, const TypeSharedP
 	}
 }
 
-void QtCppTargetEngine::doWriteHeaderClass(QTextStream& os, const TypeSharedPtr& pType) const
+void QtCppTargetEngine::doWriteDeclarationClass(QTextStream& os, const TypeSharedPtr& pType) const
 {
 	QString szClassname = (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pType->getLocalName(true);
 	QString szNamespace = StringUtils::secureString(pType->getNamespace().toUpper());
@@ -492,7 +492,7 @@ void QtCppTargetEngine::doWriteHeaderClass(QTextStream& os, const TypeSharedPtr&
 		doWriteNamespaceTargetInfos(os, pSimpleType->getLocalName(true), pSimpleType->getNamespace(), pSimpleType->getNamespaceUri());
 
 		// Start class
-		doWriteHeaderClassStart(os, szClassname);
+		doWriteDeclarationClassStart(os, szClassname);
 
 		if(pSimpleType->isEnumeration()) {
 			os << "public:" << CRLF;
@@ -501,12 +501,12 @@ void QtCppTargetEngine::doWriteHeaderClass(QTextStream& os, const TypeSharedPtr&
 		}
 
 		// Constructor/destructor declaration
-		doWriteHeaderClassInitializers(os, szClassname, pSimpleType->isEnumeration());
+		doWriteDeclarationClassInitializers(os, szClassname, pSimpleType->isEnumeration());
 
-		doWriteHeaderClassContent(os, pSimpleType);
+		doWriteDeclarationClassContent(os, pSimpleType);
 
 		// End class
-		doWriteHeaderClassEnd(os, szClassname);
+		doWriteDeclarationClassEnd(os, szClassname);
 
 	} else if(pType->getTypeMode() == Type::TypeComplex) {
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pType);
@@ -524,7 +524,7 @@ void QtCppTargetEngine::doWriteHeaderClass(QTextStream& os, const TypeSharedPtr&
 		}
 
 		startCppClass(os, szClassname, pComplexType);
-		doWriteHeaderClassContent(os, pComplexType);
+		doWriteDeclarationClassContent(os, pComplexType);
 		endCppClass(os, szClassname);
 	}
 
@@ -533,7 +533,7 @@ void QtCppTargetEngine::doWriteHeaderClass(QTextStream& os, const TypeSharedPtr&
 	doWriteNamespaceEnd(os, szNamespace);
 }
 
-void QtCppTargetEngine::doWriteHeaderSerializer(QTextStream& os, const TypeSharedPtr& pType) const
+void QtCppTargetEngine::doWriteDeclarationSerializer(QTextStream& os, const TypeSharedPtr& pType) const
 {
 	QString szDeclaration;
 	if (pType->getTypeMode() == Type::TypeSimple) {
@@ -546,7 +546,7 @@ void QtCppTargetEngine::doWriteHeaderSerializer(QTextStream& os, const TypeShare
 	}
 }
 
-void QtCppTargetEngine::doWriteHeaderDeserializer(QTextStream& os, const TypeSharedPtr& pType) const
+void QtCppTargetEngine::doWriteDeclarationDeserializer(QTextStream& os, const TypeSharedPtr& pType) const
 {
 	QString szDeclaration;
 	if (pType->getTypeMode() == Type::TypeSimple) {
@@ -571,7 +571,7 @@ void QtCppTargetEngine::doWriteHeaderDeserializer(QTextStream& os, const TypeSha
 	}
 }
 
-void QtCppTargetEngine::doWriteCppClass(QTextStream& os, const TypeSharedPtr& pType) const
+void QtCppTargetEngine::doWriteDefinitionClass(QTextStream& os, const TypeSharedPtr& pType) const
 {
 	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pType->getLocalName(true);
 	QString szNamespace = StringUtils::secureString(pType->getNamespace().toUpper());
@@ -597,7 +597,7 @@ void QtCppTargetEngine::doWriteCppClass(QTextStream& os, const TypeSharedPtr& pT
 		os << szClassname << "::~" << szClassname << "() {}" << CRLF;
 		os << CRLF;
 
-		doWriteCppClassContent(os, pSimpleType);
+		doWriteDefinitionClassContent(os, pSimpleType);
 
 		os << CRLF;
 
@@ -641,7 +641,7 @@ void QtCppTargetEngine::doWriteCppClass(QTextStream& os, const TypeSharedPtr& pT
 		}
 		os << CRLF;
 
-		doWriteCppClassContent(os, pComplexType, pComplexType->getNamespace());
+		doWriteDefinitionClassContent(os, pComplexType, pComplexType->getNamespace());
 
 		os << CRLF;
 	}
@@ -651,13 +651,13 @@ void QtCppTargetEngine::doWriteCppClass(QTextStream& os, const TypeSharedPtr& pT
 	doWriteNamespaceEnd(os, szNamespace);
 }
 
-void QtCppTargetEngine::doWriteHeaderClassContent(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const
+void QtCppTargetEngine::doWriteDeclarationClassContent(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const
 {
 	// Getter/setter
-	doWriteHeaderGetterSetter(os, pSimpleType);
+	doWriteDeclarationGetterSetter(os, pSimpleType);
 	// Serialization
-	doWriteHeaderSerializer(os, pSimpleType);
-	doWriteHeaderDeserializer(os, pSimpleType);
+	doWriteDeclarationSerializer(os, pSimpleType);
+	doWriteDeclarationDeserializer(os, pSimpleType);
 	// Enum conversion
 	os << "\t" << pSimpleType->getEnumConvertDeclaration() << CRLF;
 	// Null declaration
@@ -668,7 +668,7 @@ void QtCppTargetEngine::doWriteHeaderClassContent(QTextStream& os, const SimpleT
 	os << "\t" << pSimpleType->getVariableDeclaration() << CRLF;
 }
 
-void QtCppTargetEngine::doWriteHeaderGetterSetter(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const
+void QtCppTargetEngine::doWriteDeclarationGetterSetter(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const
 {
 	QString szFuncName = ModelUtils::getCapitalizedName(pSimpleType->getLocalName());
 	QString szParamType = pSimpleType->getCPPTypeNameValuesString();
@@ -694,11 +694,11 @@ void QtCppTargetEngine::doWriteHeaderGetterSetter(QTextStream& os, const SimpleT
 		return szDeclaration;;
 	}
 	}*/
-	doWriteHeaderSetter(os, szFuncName, szParamType, szParamName, !pSimpleType->isEnumeration());
-	doWriteHeaderGetter(os, szFuncName, szParamType, !pSimpleType->isEnumeration());
+	doWriteDeclarationSetter(os, szFuncName, szParamType, szParamName, !pSimpleType->isEnumeration());
+	doWriteDeclarationGetter(os, szFuncName, szParamType, !pSimpleType->isEnumeration());
 }
 
-void QtCppTargetEngine::doWriteCppClassContent(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const
+void QtCppTargetEngine::doWriteDefinitionClassContent(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const
 {
 	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pSimpleType->getLocalName();
 	szClassname = StringUtils::secureString(szClassname);
@@ -712,7 +712,7 @@ void QtCppTargetEngine::doWriteCppClassContent(QTextStream& os, const SimpleType
 	os << CRLF;
 }
 
-void QtCppTargetEngine::doWriteHeaderClassContent(QTextStream& os, const ComplexTypeSharedPtr& pComplexType) const
+void QtCppTargetEngine::doWriteDeclarationClassContent(QTextStream& os, const ComplexTypeSharedPtr& pComplexType) const
 {
 	AttributeListSharedPtr pListAttributes = pComplexType->getAttributeList();
 	AttributeList::const_iterator attr;
@@ -736,7 +736,7 @@ void QtCppTargetEngine::doWriteHeaderClassContent(QTextStream& os, const Complex
 				qWarning("[Builder] Attribute %s in %s has no type", qPrintable(pAttribute->getName()), qPrintable(pComplexType->getQualifiedName()));
 				continue;
 			}
-			doWriteHeaderGetterSetter(os, pAttribute);
+			doWriteDeclarationGetterSetter(os, pAttribute);
 			os << CRLF;
 		}
 
@@ -759,8 +759,8 @@ void QtCppTargetEngine::doWriteHeaderClassContent(QTextStream& os, const Complex
 		}
 	}
 
-	doWriteHeaderSerializer(os, pComplexType);
-	doWriteHeaderDeserializer(os, pComplexType);
+	doWriteDeclarationSerializer(os, pComplexType);
+	doWriteDeclarationDeserializer(os, pComplexType);
 	os << CRLF;
 	os << "\t" << pComplexType->getIsNullDeclaration() << CRLF;
 	os << CRLF;
@@ -798,7 +798,7 @@ void QtCppTargetEngine::doWriteHeaderClassContent(QTextStream& os, const Complex
 	}
 }
 
-void QtCppTargetEngine::doWriteCppClassContent(QTextStream& os, const ComplexTypeSharedPtr& pComplexType, const QString& szTargetNamespace) const
+void QtCppTargetEngine::doWriteDefinitionClassContent(QTextStream& os, const ComplexTypeSharedPtr& pComplexType, const QString& szTargetNamespace) const
 {
 	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pComplexType->getLocalName();
 
@@ -876,7 +876,7 @@ QString QtCppTargetEngine::getBaseClassName(const QString& szPrefix, const Compl
 	return szExtendedClassName;
 }
 
-void QtCppTargetEngine::doWriteHeaderGetterSetter(QTextStream& os, const AttributeSharedPtr& pAttribute) const
+void QtCppTargetEngine::doWriteDeclarationGetterSetter(QTextStream& os, const AttributeSharedPtr& pAttribute) const
 {
 	QString szDeclaration;
 
@@ -893,41 +893,41 @@ void QtCppTargetEngine::doWriteHeaderGetterSetter(QTextStream& os, const Attribu
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pType);
 		if(bIsList){
 			szParamType = pSimpleType->getCPPTypeNameString();
-			doWriteHeaderSetterList(os, szFuncName, szParamType, szParamName);
-			doWriteHeaderAddList(os, szFuncName, szParamType, szParamName);
-			doWriteHeaderGetterList(os, szFuncName, szParamType);
+			doWriteDeclarationSetterList(os, szFuncName, szParamType, szParamName);
+			doWriteDeclarationAddList(os, szFuncName, szParamType, szParamName);
+			doWriteDeclarationGetterList(os, szFuncName, szParamType);
 		}else if(pSimpleType->isEnumeration()) {
 			//os << "\t//simple enum" << CRLF;
 			QString szLocalName = pSimpleType->getLocalName();
 			szFuncName = ModelUtils::getCapitalizedName(szLocalName);
 			szParamType = pSimpleType->getCPPTypeNameString();
 			szParamName = ModelUtils::getUncapitalizedName(szLocalName);
-			doWriteHeaderSetter(os, szFuncName, szParamType, szParamName, true);
-			doWriteHeaderGetter(os, szFuncName, szParamType, true);
+			doWriteDeclarationSetter(os, szFuncName, szParamType, szParamName, true);
+			doWriteDeclarationGetter(os, szFuncName, szParamType, true);
 		} else {
 			//os << "\t//simple test" << CRLF;
 			QString szLocalName = pSimpleType->getLocalName();
 			szFuncName = ModelUtils::getCapitalizedName(szLocalName);
 			szParamType = pSimpleType->getCPPTypeNameValuesString();
 			szParamName = ModelUtils::getUncapitalizedName(szLocalName);
-			doWriteHeaderSetter(os, szFuncName, szParamType, szParamName, true);
-			doWriteHeaderGetter(os, szFuncName, szParamType, true);
+			doWriteDeclarationSetter(os, szFuncName, szParamType, szParamName, true);
+			doWriteDeclarationGetter(os, szFuncName, szParamType, true);
 		}
 	}else if(pType->getTypeMode() == Type::TypeComplex) {
 		//os << "\t//complex" << CRLF;
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pType);
 		if(bIsList){
 			szParamType = pComplexType->getNameWithNamespace();
-			doWriteHeaderSetterList(os, szFuncName, szParamType, szParamName);
-			doWriteHeaderAddList(os, szFuncName, szParamType, szParamName);
-			doWriteHeaderGetterList(os, szFuncName, szParamType);
+			doWriteDeclarationSetterList(os, szFuncName, szParamType, szParamName);
+			doWriteDeclarationAddList(os, szFuncName, szParamType, szParamName);
+			doWriteDeclarationGetterList(os, szFuncName, szParamType);
 		}else{
 			QString szLocalName = (szAttributeName.isEmpty() ? pComplexType->getLocalName() : szAttributeName);
 			szFuncName = ModelUtils::getCapitalizedName(szLocalName);
 			szParamType = pComplexType->getNameWithNamespace();
 			szParamName = ModelUtils::getUncapitalizedName(szLocalName);
-			doWriteHeaderSetter(os, szFuncName, szParamType, szParamName, true);
-			doWriteHeaderGetter(os, szFuncName, szParamType, true);
+			doWriteDeclarationSetter(os, szFuncName, szParamType, szParamName, true);
+			doWriteDeclarationGetter(os, szFuncName, szParamType, true);
 		}
 	}else {
 #ifdef USE_COMPAT_TEST
@@ -941,12 +941,12 @@ void QtCppTargetEngine::startCppClass(QTextStream& os, const QString& szClassNam
 	QString szExtendedClassName = getBaseClassName(m_szPrefix, pComplexType);
 
 	// Start class
-	doWriteHeaderClassStart(os, szClassName, szExtendedClassName);
+	doWriteDeclarationClassStart(os, szClassName, szExtendedClassName);
 	// Constructor/destructor declaration
-	doWriteHeaderClassInitializers(os, szClassName, false);
+	doWriteDeclarationClassInitializers(os, szClassName, false);
 }
 
 void QtCppTargetEngine::endCppClass(QTextStream& os, const QString& szClassName) const
 {
-	doWriteHeaderClassEnd(os, szClassName);
+	doWriteDeclarationClassEnd(os, szClassName);
 }

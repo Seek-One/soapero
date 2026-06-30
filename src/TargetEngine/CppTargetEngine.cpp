@@ -45,14 +45,14 @@ void CppTargetEngine::doWriteFileDescription(QTextStream& os, const QString& szF
 	os << CRLF;
 }
 
-void CppTargetEngine::doWriteHeaderGuardStart(QTextStream& os, const QString& szHeaderGuard) const
+void CppTargetEngine::doWriteDeclarationGuardStart(QTextStream& os, const QString& szHeaderGuard) const
 {
 	os << "#ifndef " << szHeaderGuard << CRLF;
 	os << "#define " << szHeaderGuard << CRLF;
 	os << CRLF;
 }
 
-void CppTargetEngine::doWriteHeaderGuardEnd(QTextStream& os, const QString& szHeaderGuard) const
+void CppTargetEngine::doWriteDeclarationGuardEnd(QTextStream& os, const QString& szHeaderGuard) const
 {
 #ifndef USE_COMPAT_TEST
 	os << CRLF;
@@ -94,12 +94,12 @@ void CppTargetEngine::doWriteNamespaceTargetInfos(QTextStream& os, const QString
 	os << CRLF;
 }
 
-void CppTargetEngine::doWriteHeaderClassStart(QTextStream& os, const QString& szClassName) const
+void CppTargetEngine::doWriteDeclarationClassStart(QTextStream& os, const QString& szClassName) const
 {
-	doWriteHeaderClassStart(os, szClassName, QString());
+	doWriteDeclarationClassStart(os, szClassName, QString());
 }
 
-void CppTargetEngine::doWriteHeaderClassStart(QTextStream& os, const QString& szClassName, const QString& szBaseClass) const
+void CppTargetEngine::doWriteDeclarationClassStart(QTextStream& os, const QString& szClassName, const QString& szBaseClass) const
 {
 	os << "class " << szClassName;
 	if (!szBaseClass.isEmpty()) {
@@ -109,13 +109,13 @@ void CppTargetEngine::doWriteHeaderClassStart(QTextStream& os, const QString& sz
 	os << "{" << CRLF;
 }
 
-void CppTargetEngine::doWriteHeaderClassEnd(QTextStream& os, const QString& szClassName) const
+void CppTargetEngine::doWriteDeclarationClassEnd(QTextStream& os, const QString& szClassName) const
 {
 	os << "};" << CRLF;
 	os << CRLF;
 }
 
-void CppTargetEngine::doWriteHeaderClassInitializers(QTextStream& os, const QString& szClassName, bool bEnumeration) const
+void CppTargetEngine::doWriteDeclarationClassInitializers(QTextStream& os, const QString& szClassName, bool bEnumeration) const
 {
 	if (!bEnumeration) {
 		os << "public:" << CRLF;
@@ -125,7 +125,7 @@ void CppTargetEngine::doWriteHeaderClassInitializers(QTextStream& os, const QStr
 	os << CRLF;
 }
 
-void CppTargetEngine::doWriteHeaderGetter(QTextStream& os, const QString& szFuncName, const QString& szMemberType, bool bParamConst) const
+void CppTargetEngine::doWriteDeclarationGetter(QTextStream& os, const QString& szFuncName, const QString& szMemberType, bool bParamConst) const
 {
 	QString szDeclaration;
 	if(bParamConst) {
@@ -137,7 +137,7 @@ void CppTargetEngine::doWriteHeaderGetter(QTextStream& os, const QString& szFunc
 	os << "\t" << szDeclaration << CRLF;
 }
 
-void CppTargetEngine::doWriteHeaderGetterList(QTextStream& os, const QString& szFuncName, const QString& szMemberType) const
+void CppTargetEngine::doWriteDeclarationGetterList(QTextStream& os, const QString& szFuncName, const QString& szMemberType) const
 {
 	QString szDeclaration;
 	szDeclaration = "const QList<%0>& get%1List() const;";
@@ -145,7 +145,7 @@ void CppTargetEngine::doWriteHeaderGetterList(QTextStream& os, const QString& sz
 	os << "\t" << szDeclaration << CRLF;
 }
 
-void CppTargetEngine::doWriteHeaderSetter(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName, bool bParamConst) const
+void CppTargetEngine::doWriteDeclarationSetter(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName, bool bParamConst) const
 {
 	QString szDeclaration;
 	if(bParamConst) {
@@ -157,7 +157,7 @@ void CppTargetEngine::doWriteHeaderSetter(QTextStream& os, const QString& szFunc
 	os << "\t" << szDeclaration << CRLF;
 }
 
-void CppTargetEngine::doWriteHeaderSetterList(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName) const
+void CppTargetEngine::doWriteDeclarationSetterList(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName) const
 {
 	QString szDeclaration;
 	szDeclaration = "void set%0List(const std::list<%1>& %2List);";
@@ -165,7 +165,7 @@ void CppTargetEngine::doWriteHeaderSetterList(QTextStream& os, const QString& sz
 	os << "\t" << szDeclaration << CRLF;
 }
 
-void CppTargetEngine::doWriteHeaderAddList(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName) const
+void CppTargetEngine::doWriteDeclarationAddList(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName) const
 {
 	QString szDeclaration;
 	szDeclaration += "void add%0(const %1& %2);";
@@ -228,17 +228,17 @@ bool CppTargetEngine::doBuildHeaderFile(const ServiceSharedPtr& pService)
 		doWriteFileDescription(os, szHeaderFilename);
 		// Header guard start
 		QString szHeaderGuard = getHeaderGuard(m_szNamespace, pService);
-		doWriteHeaderGuardStart(os, szHeaderGuard);
+		doWriteDeclarationGuardStart(os, szHeaderGuard);
 		// Includes
-		doWriteHeaderIncludes(os, m_pService);
+		doWriteDeclarationIncludes(os, m_pService);
 		// Namespace start
 		doWriteNamespaceStart(os, m_szNamespace);
 		// Class
-		doWriteHeaderClass(os, m_pService);
+		doWriteDeclarationClass(os, m_pService);
 		// Namespace end
 		doWriteNamespaceEnd(os, m_szNamespace);
 		// Header guard end
-		doWriteHeaderGuardEnd(os, szHeaderGuard);
+		doWriteDeclarationGuardEnd(os, szHeaderGuard);
 
 		m_pGeneratedFilesList->append(szShortFilePath);
 
@@ -289,7 +289,7 @@ bool CppTargetEngine::doBuildCppFile(const ServiceSharedPtr& pService)
 			os << "namespace " << m_szNamespace << " {" << CRLF;
 		}
 
-		doWriteCppClass(os, pService);
+		doWriteDefinitionClass(os, pService);
 
 		if(!m_szNamespace.isEmpty()) {
 			os << "}" << CRLF;
@@ -305,17 +305,17 @@ bool CppTargetEngine::doBuildCppFile(const ServiceSharedPtr& pService)
 	return bRes;
 }
 
-void CppTargetEngine::doWriteHeaderIncludes(QTextStream& os, const ServiceSharedPtr& pService) const
+void CppTargetEngine::doWriteDeclarationIncludes(QTextStream& os, const ServiceSharedPtr& pService) const
 {
 
 }
 
-void CppTargetEngine::doWriteHeaderClass(QTextStream& os, const ServiceSharedPtr& pService) const
+void CppTargetEngine::doWriteDeclarationClass(QTextStream& os, const ServiceSharedPtr& pService) const
 {
 
 }
 
-void CppTargetEngine::doWriteCppClass(QTextStream& os, const ServiceSharedPtr& pService) const
+void CppTargetEngine::doWriteDefinitionClass(QTextStream& os, const ServiceSharedPtr& pService) const
 {
 
 }
@@ -403,20 +403,20 @@ bool CppTargetEngine::doBuildHeaderFile(const RequestResponseElementSharedPtr& p
 		doWriteFileDescription(os, szHeaderFilename);
 		// Header guard start
 		QString szHeaderGuard = getHeaderGuard(m_szNamespace, pElement);
-		doWriteHeaderGuardStart(os, szHeaderGuard);
+		doWriteDeclarationGuardStart(os, szHeaderGuard);
 		// Includes
-		doWriteHeaderIncludes(os, pElement);
+		doWriteDeclarationIncludes(os, pElement);
 		// Namespace start
 		doWriteNamespaceStart(os, m_szNamespace);
 		// Class
-		doWriteHeaderClass(os, pElement);
+		doWriteDeclarationClass(os, pElement);
 		// Namespace end
 		doWriteNamespaceEnd(os, m_szNamespace);
 		// Header guard end
 #ifdef USE_COMPAT_TEST
 		os << CRLF;
 #endif
-		doWriteHeaderGuardEnd(os, szHeaderGuard);
+		doWriteDeclarationGuardEnd(os, szHeaderGuard);
 
 		m_pGeneratedFilesList->append(szShortFilePath);
 
@@ -447,14 +447,14 @@ bool CppTargetEngine::doBuildCppFile(const RequestResponseElementSharedPtr& pEle
 		// File description
 		doWriteFileDescription(os, szCppFilename);
 		// Includes
-		doWriteCppIncludes(os, pElement->getType());
+		doWriteDefinitionIncludes(os, pElement->getType());
 		// Add related header
 		os << "#include \"" << szHeaderFilename << "\"" << CRLF;
 		os << CRLF;
 		// Namespace start
 		doWriteNamespaceStart(os, m_szNamespace);
 		// Class
-		doWriteCppClass(os, pElement);
+		doWriteDefinitionClass(os, pElement);
 		// Namespace end
 		doWriteNamespaceEnd(os, m_szNamespace);
 
@@ -468,17 +468,17 @@ bool CppTargetEngine::doBuildCppFile(const RequestResponseElementSharedPtr& pEle
 	return bRes;
 }
 
-void CppTargetEngine::doWriteHeaderIncludes(QTextStream& os, const RequestResponseElementSharedPtr& pElement) const
+void CppTargetEngine::doWriteDeclarationIncludes(QTextStream& os, const RequestResponseElementSharedPtr& pElement) const
 {
 
 }
 
-void CppTargetEngine::doWriteHeaderClass(QTextStream& os, const RequestResponseElementSharedPtr& pElement) const
+void CppTargetEngine::doWriteDeclarationClass(QTextStream& os, const RequestResponseElementSharedPtr& pElement) const
 {
 
 }
 
-void CppTargetEngine::doWriteCppClass(QTextStream& os, const RequestResponseElementSharedPtr& pElement) const {
+void CppTargetEngine::doWriteDefinitionClass(QTextStream& os, const RequestResponseElementSharedPtr& pElement) const {
 
 }
 
@@ -574,20 +574,20 @@ bool CppTargetEngine::doBuildHeaderFile(const TypeSharedPtr& pType) {
 		doWriteFileDescription(os, szHeaderFilename);
 		// Header guard start
 		QString szHeaderGuard = getHeaderGuard(m_szNamespace, pType);
-		doWriteHeaderGuardStart(os, szHeaderGuard);
+		doWriteDeclarationGuardStart(os, szHeaderGuard);
 		// Includes
-		doWriteHeaderIncludes(os, pType);
+		doWriteDeclarationIncludes(os, pType);
 		// Namespace start
 		doWriteNamespaceStart(os, m_szNamespace);
 		// Class
-		doWriteHeaderClass(os, pType);
+		doWriteDeclarationClass(os, pType);
 		// Namespace end
 		doWriteNamespaceEnd(os, m_szNamespace);
 		// Header guard end
 #ifdef USE_COMPAT_TEST
 		os << CRLF;
 #endif
-		doWriteHeaderGuardEnd(os, szHeaderGuard);
+		doWriteDeclarationGuardEnd(os, szHeaderGuard);
 
 		m_pGeneratedFilesList->append(szShortFilePath);
 
@@ -616,14 +616,14 @@ bool CppTargetEngine::doBuildCppFile(const TypeSharedPtr& pType)
 		// File description
 		doWriteFileDescription(os, szCppFilename);
 		// Includes
-		doWriteCppIncludes(os, pType);
+		doWriteDefinitionIncludes(os, pType);
 		// Add related header
 		os << "#include \"" << szHeaderFilename << "\"" << CRLF;
 		os << CRLF;
 		// Namespace start
 		doWriteNamespaceStart(os, m_szNamespace);
 		// Class
-		doWriteCppClass(os, pType);
+		doWriteDefinitionClass(os, pType);
 		// Namespace end
 		doWriteNamespaceEnd(os, m_szNamespace);
 
@@ -637,22 +637,22 @@ bool CppTargetEngine::doBuildCppFile(const TypeSharedPtr& pType)
 	return bRes;
 }
 
-void CppTargetEngine::doWriteHeaderIncludes(QTextStream& os, const TypeSharedPtr& pType) const
+void CppTargetEngine::doWriteDeclarationIncludes(QTextStream& os, const TypeSharedPtr& pType) const
 {
 
 }
 
-void CppTargetEngine::doWriteHeaderClass(QTextStream& os, const TypeSharedPtr& pType) const
+void CppTargetEngine::doWriteDeclarationClass(QTextStream& os, const TypeSharedPtr& pType) const
 {
 
 }
 
-void CppTargetEngine::doWriteCppIncludes(QTextStream& os, const TypeSharedPtr& pType) const
+void CppTargetEngine::doWriteDefinitionIncludes(QTextStream& os, const TypeSharedPtr& pType) const
 {
 
 }
 
-void CppTargetEngine::doWriteCppClass(QTextStream& os, const TypeSharedPtr& pType) const
+void CppTargetEngine::doWriteDefinitionClass(QTextStream& os, const TypeSharedPtr& pType) const
 {
 
 }

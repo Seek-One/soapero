@@ -19,33 +19,33 @@ protected:
 	// CPP files creation
 	static QString getHeaderPath(const QString& szNamespace, const QString& szCategory, const QString& szFilename, FileCategory iOrigin);
 	virtual void doWriteFileDescription(QTextStream& os, const QString& szFilename) const;
-	virtual void doWriteHeaderGuardStart(QTextStream& os, const QString& szHeaderGuard) const;
-	virtual void doWriteHeaderGuardEnd(QTextStream& os, const QString& szHeaderGuard) const;
+	virtual void doWriteDeclarationGuardStart(QTextStream& os, const QString& szHeaderGuard) const;
+	virtual void doWriteDeclarationGuardEnd(QTextStream& os, const QString& szHeaderGuard) const;
 	virtual void doWriteIncludeLocalFile(QTextStream& os, const QString& szIncludeFile) const;
 	virtual void doWriteNamespaceStart(QTextStream& os, const QString& szNamespace) const;
 	virtual void doWriteNamespaceEnd(QTextStream& os, const QString& szNamespace) const;
 	virtual void doWriteNamespaceTargetInfos(QTextStream& os, const QString& szPrefix, const QString& szNamespace, const QString& szNamespaceURI) const;
 
 	// CPP class creation
-	void doWriteHeaderClassStart(QTextStream& os, const QString& szClassName) const;
-	virtual void doWriteHeaderClassStart(QTextStream& os, const QString& szClassName, const QString& szBaseClass) const;
-	virtual void doWriteHeaderClassEnd(QTextStream& os, const QString& szClassName) const;
-	virtual void doWriteHeaderClassInitializers(QTextStream& os, const QString& szClassName, bool bEnumeration) const;
-	virtual void doWriteHeaderGetter(QTextStream& os, const QString& szFuncName, const QString& szMemberType, bool bParamConst) const;
-	virtual void doWriteHeaderGetterList(QTextStream& os, const QString& szFuncName, const QString& szMemberType) const;
-	virtual void doWriteHeaderSetter(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName, bool bParamConst) const;
-	virtual void doWriteHeaderSetterList(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName) const;
-	virtual void doWriteHeaderAddList(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName) const;
+	void doWriteDeclarationClassStart(QTextStream& os, const QString& szClassName) const;
+	virtual void doWriteDeclarationClassStart(QTextStream& os, const QString& szClassName, const QString& szBaseClass) const;
+	virtual void doWriteDeclarationClassEnd(QTextStream& os, const QString& szClassName) const;
+	virtual void doWriteDeclarationClassInitializers(QTextStream& os, const QString& szClassName, bool bEnumeration) const;
+	virtual void doWriteDeclarationGetter(QTextStream& os, const QString& szFuncName, const QString& szMemberType, bool bParamConst) const;
+	virtual void doWriteDeclarationGetterList(QTextStream& os, const QString& szFuncName, const QString& szMemberType) const;
+	virtual void doWriteDeclarationSetter(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName, bool bParamConst) const;
+	virtual void doWriteDeclarationSetterList(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName) const;
+	virtual void doWriteDeclarationAddList(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName) const;
 
 	// Service files
 	static QString getHeaderGuard(const QString& szPrefix, const ServiceSharedPtr& pService);
 	bool doBuildService(const ServiceSharedPtr& pService) override;
 	virtual bool doBuildHeaderFile(const ServiceSharedPtr& pService);
 	virtual bool doBuildCppFile(const ServiceSharedPtr& pService);
-	virtual void doWriteHeaderIncludes(QTextStream& os, const ServiceSharedPtr& pService) const;
-	virtual void doWriteHeaderClass(QTextStream& os, const ServiceSharedPtr& pService) const;
-	virtual void doWriteCppIncludes(QTextStream& os, const TypeSharedPtr& pType) const;
-	virtual void doWriteCppClass(QTextStream& os, const ServiceSharedPtr& pService) const;
+	virtual void doWriteDeclarationIncludes(QTextStream& os, const ServiceSharedPtr& pService) const;
+	virtual void doWriteDeclarationClass(QTextStream& os, const ServiceSharedPtr& pService) const;
+	virtual void doWriteDefinitionIncludes(QTextStream& os, const TypeSharedPtr& pType) const;
+	virtual void doWriteDefinitionClass(QTextStream& os, const ServiceSharedPtr& pService) const;
 
 	// Request response elements files
 	static QString getHeaderFileName(const RequestResponseElementSharedPtr& pElement);
@@ -55,9 +55,9 @@ protected:
 	bool doBuildRequestResponseElement(const RequestResponseElementSharedPtr& pElement) override;
 	virtual bool doBuildHeaderFile(const RequestResponseElementSharedPtr& pElement);
 	virtual bool doBuildCppFile(const RequestResponseElementSharedPtr& pElement);
-	virtual void doWriteHeaderIncludes(QTextStream& os, const RequestResponseElementSharedPtr& pElement) const;
-	virtual void doWriteHeaderClass(QTextStream& os, const RequestResponseElementSharedPtr& pElement) const;
-	virtual void doWriteCppClass(QTextStream& os, const RequestResponseElementSharedPtr& pElement) const;
+	virtual void doWriteDeclarationIncludes(QTextStream& os, const RequestResponseElementSharedPtr& pElement) const;
+	virtual void doWriteDeclarationClass(QTextStream& os, const RequestResponseElementSharedPtr& pElement) const;
+	virtual void doWriteDefinitionClass(QTextStream& os, const RequestResponseElementSharedPtr& pElement) const;
 
 	// Types files
 	static QString getHeaderFileName(const TypeSharedPtr& pType);
@@ -67,9 +67,9 @@ protected:
 	bool doBuildType(const TypeSharedPtr& pType) override;
 	virtual bool doBuildHeaderFile(const TypeSharedPtr& pType);
 	virtual bool doBuildCppFile(const TypeSharedPtr& pType);
-	virtual void doWriteHeaderIncludes(QTextStream& os, const TypeSharedPtr& pType) const;
-	virtual void doWriteHeaderClass(QTextStream& os, const TypeSharedPtr& pType) const;
-	virtual void doWriteCppClass(QTextStream& os, const TypeSharedPtr& pType) const;
+	virtual void doWriteDeclarationIncludes(QTextStream& os, const TypeSharedPtr& pType) const;
+	virtual void doWriteDeclarationClass(QTextStream& os, const TypeSharedPtr& pType) const;
+	virtual void doWriteDefinitionClass(QTextStream& os, const TypeSharedPtr& pType) const;
 
 	// Simple types files
 	static QString getHeaderFileName(const SimpleTypeSharedPtr& pSimpleType);
