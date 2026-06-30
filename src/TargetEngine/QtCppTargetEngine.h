@@ -14,6 +14,9 @@ public:
 	virtual ~QtCppTargetEngine();
 
 private:
+	// CPP files creation
+	void doWriteNamespaceTargetInfos(QTextStream& os, const QString& szPrefix, const QString& szNamespace, const QString& szNamespaceURI) const override;
+
 	// Service
 	void doWriteHeaderIncludes(QTextStream& os, const ServiceSharedPtr& pService) const override;
 	void doWriteHeaderClass(QTextStream& os, const ServiceSharedPtr& pService) const override;
@@ -39,7 +42,9 @@ private:
 	void doWriteCppClassContent(QTextStream& os, const ComplexTypeSharedPtr& pComplexType, const QString& szTargetNamespace = QString()) const;
 
 	void startCppClass(QTextStream& os, const QString& szClassName, const ComplexTypeSharedPtr& pComplexType) const;
-	void endCppClass(QTextStream& os) const;
+	void endCppClass(QTextStream& os, const QString& szClassName) const;
+
+	static QString getBaseClassName(const QString& szPrefix, const ComplexTypeSharedPtr& pComplexType);
 };
 
 

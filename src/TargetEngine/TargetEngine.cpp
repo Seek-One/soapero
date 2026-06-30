@@ -2,6 +2,8 @@
 // Created by ebeuque on 29/06/2026.
 //
 
+#include "Builder/FileHelper.h"
+
 #include "TargetEngine.h"
 
 TargetEngine::TargetEngine()
@@ -111,4 +113,44 @@ TypeSharedPtr TargetEngine::findTypeByName(const QString& szLocalName, const QSt
 		return m_pTypeList->getByName(szLocalName, szNamespace, pListIgnoredTypes);
 	}
 	return TypeSharedPtr();
+}
+
+bool TargetEngine::openFile(QFile& file, bool bCleanFirst) const
+{
+	bool bRes = true;
+
+	QString szFilePath = file.fileName();
+
+	qDebug("[Builder] Creating file: %s", qPrintable(szFilePath));
+
+	// Remove existing file
+	if(file.exists()) {
+		bRes = file.remove();
+		if (!bRes) {
+			qCritical("[Builder] Error to remove file %s", qPrintable(szFilePath));
+		}
+	}
+
+	if (bRes) {
+		// Create directory for file
+		bRes = FileHelper::createDirectoryForFile(szFilePath);
+		if (!bRes) {
+			qCritical("[Builder] Error to create file directory %s", qPrintable(szFilePath));
+		}
+	}
+
+	if (bRes) {
+		// Write the file
+		bRes = file.open(QFile::WriteOnly);
+		if (!bRes) {
+			qWarning("[Builder] Cannot open file %s (error: %s)", qPrintable(szFilePath), qPrintable(file.errorString()));
+		}
+	}
+
+	return bRes;
+}
+
+void TargetEngine::closeFile(QFile& file) const
+{
+	file.close();
 }

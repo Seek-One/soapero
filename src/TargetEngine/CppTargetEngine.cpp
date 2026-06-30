@@ -29,7 +29,7 @@ QString CppTargetEngine::getHeaderPath(const QString& szNamespace, const QString
 	return FileHelper::buildPath(szRootPath, szNamespace, szCategory, szFilename);
 }
 
-void CppTargetEngine::doWriteFileDescription(QTextStream& os, const QString& szFilename)
+void CppTargetEngine::doWriteFileDescription(QTextStream& os, const QString& szFilename) const
 {
 	os << "/*" << CRLF;
 	os << " * " << szFilename << CRLF;
@@ -42,7 +42,7 @@ void CppTargetEngine::doWriteFileDescription(QTextStream& os, const QString& szF
 	os << CRLF;
 }
 
-void CppTargetEngine::doWriteHeaderGuardStart(QTextStream& os, const QString& szHeaderGuard)
+void CppTargetEngine::doWriteHeaderGuardStart(QTextStream& os, const QString& szHeaderGuard) const
 {
 	os << CRLF;
 	os << "#ifndef " << szHeaderGuard << CRLF;
@@ -50,23 +50,60 @@ void CppTargetEngine::doWriteHeaderGuardStart(QTextStream& os, const QString& sz
 	os << CRLF;
 }
 
-void CppTargetEngine::doWriteHeaderGuardEnd(QTextStream& os, const QString& szHeaderGuard)
+void CppTargetEngine::doWriteHeaderGuardEnd(QTextStream& os, const QString& szHeaderGuard) const
 {
+	os << CRLF;
 	os << "#endif //" << szHeaderGuard << CRLF;
 }
 
-void CppTargetEngine::doWriteNamespaceStart(QTextStream& os, const QString& szNamespace)
+void CppTargetEngine::doWriteNamespaceStart(QTextStream& os, const QString& szNamespace) const
 {
 	if(!szNamespace.isEmpty()) {
 		os << "namespace " << szNamespace << " {" << CRLF;
 	}
 }
 
-void CppTargetEngine::doWriteNamespaceEnd(QTextStream& os, const QString& szNamespace)
+void CppTargetEngine::doWriteNamespaceEnd(QTextStream& os, const QString& szNamespace) const
 {
 	if(!szNamespace.isEmpty()) {
 		os << "} // " << szNamespace << CRLF;
 	}
+}
+
+void CppTargetEngine::doWriteNamespaceTargetInfos(QTextStream& os, const QString& szPrefix, const QString& szNamespace, const QString& szNamespaceURI) const
+{
+	os << CRLF;
+	os << "const char* " << szPrefix << "_TargetNamespace = \"" << szNamespace << "\";" CRLF;
+	os << "const char* " << szPrefix << "_TargetNamespaceUri = \"" << szNamespaceURI << "\";" CRLF;
+	os << CRLF;
+}
+
+void CppTargetEngine::doWriteHeaderClassStart(QTextStream& os, const QString& szClassName) const
+{
+	doWriteHeaderClassStart(os, szClassName, QString());
+}
+
+void CppTargetEngine::doWriteHeaderClassStart(QTextStream& os, const QString& szClassName, const QString& szBaseClass) const
+{
+	os << "class " << szClassName;
+	if (!szBaseClass.isEmpty()) {
+		os << " : public " << szBaseClass;
+	}
+	os << CRLF;
+	os << "{" << CRLF;
+}
+
+void CppTargetEngine::doWriteHeaderClassEnd(QTextStream& os, const QString& szClassName) const
+{
+	os << "};" << CRLF;
+	os << CRLF;
+}
+
+void CppTargetEngine::doWriteHeaderClassInitializers(QTextStream& os, const QString& szClassName) const
+{
+	os << "public:" << CRLF;
+	os << "\t" << szClassName << "();" << CRLF;
+	os << "\tvirtual ~" << szClassName << "();" << CRLF;
 	os << CRLF;
 }
 
@@ -112,15 +149,11 @@ bool CppTargetEngine::doBuildHeaderFile(const ServiceSharedPtr& pService)
 	QString szFullFilePath = FileHelper::buildPath(m_outputDir, QString(), QString(), szHeaderFilename);
 	QString szShortFilePath = FileHelper::buildPath(QString(), QString(), QString(), szHeaderFilename);
 
+	qDebug("[Builder] Creating file: %s", qPrintable(szFullFilePath));
+
+	// Write the file
 	QFile file(szFullFilePath);
-	if(file.exists()) {
-		file.remove();
-	}
-
-	// Create directory for file
-	FileHelper::createDirectoryForFile(szFullFilePath);
-
-	bRes = file.open(QFile::WriteOnly);
+	bRes = openFile(file);
 	if(bRes) {
 
 		QTextStream os(&file);
@@ -142,8 +175,10 @@ bool CppTargetEngine::doBuildHeaderFile(const ServiceSharedPtr& pService)
 		doWriteHeaderGuardEnd(os, szHeaderGuard);
 
 		m_pGeneratedFilesList->append(szShortFilePath);
+
+		closeFile(file);
 	}else{
-		qWarning("[TypeListBuilder] Cannot open file %s (error: %s)", qPrintable(szHeaderFilename), qPrintable(file.errorString()));
+		qWarning("[Builder] Cannot open file %s (error: %s)", qPrintable(szHeaderFilename), qPrintable(file.errorString()));
 	}
 
 	return bRes;
@@ -158,15 +193,9 @@ bool CppTargetEngine::doBuildCppFile(const ServiceSharedPtr& pService)
 	QString szFullFilePath = FileHelper::buildPath(m_outputDir, QString(), QString(), szCppFilename);
 	QString szShortFilePath = FileHelper::buildPath(QString(), QString(), QString(), szCppFilename);
 
+	// Write the file
 	QFile file(szFullFilePath);
-	if(file.exists()) {
-		file.remove();
-	}
-
-	// Create directory for file
-	FileHelper::createDirectoryForFile(szFullFilePath);
-
-	bRes = file.open(QFile::WriteOnly);
+	bRes = openFile(file);
 	if(bRes) {
 
 		QTextStream os(&file);
@@ -201,8 +230,10 @@ bool CppTargetEngine::doBuildCppFile(const ServiceSharedPtr& pService)
 		}
 
 		m_pGeneratedFilesList->append(szShortFilePath);
+
+		closeFile(file);
 	}else{
-		qWarning("[TypeListBuilder] Cannot open file %s (error: %s)", qPrintable(szCppFilename), qPrintable(file.errorString()));
+		qWarning("[Builder] Cannot open file %s (error: %s)", qPrintable(szCppFilename), qPrintable(file.errorString()));
 	}
 
 	return bRes;
@@ -296,15 +327,9 @@ bool CppTargetEngine::doBuildHeaderFile(const RequestResponseElementSharedPtr& p
 	QString szFullFilePath = FileHelper::buildPath(m_outputDir, pElement->getNamespace(), "messages", szHeaderFilename);
 	QString szShortFilePath = FileHelper::buildPath(QString(), pElement->getNamespace(), "messages", szHeaderFilename);
 
+	// Write the file
 	QFile file(szFullFilePath);
-	if(file.exists()) {
-		file.remove();
-	}
-
-	// Create directory for file
-	FileHelper::createDirectoryForFile(szFullFilePath);
-
-	bRes = file.open(QFile::WriteOnly);
+	bRes = openFile(file);
 	if(bRes) {
 		QTextStream os(&file);
 
@@ -325,8 +350,10 @@ bool CppTargetEngine::doBuildHeaderFile(const RequestResponseElementSharedPtr& p
 		doWriteHeaderGuardEnd(os, szHeaderGuard);
 
 		m_pGeneratedFilesList->append(szShortFilePath);
+
+		closeFile(file);
 	}else{
-		qWarning("[TypeListBuilder] Cannot open file %s (error: %s)", qPrintable(szHeaderFilename), qPrintable(file.errorString()));
+		qWarning("[Builder] Cannot open file %s (error: %s)", qPrintable(szHeaderFilename), qPrintable(file.errorString()));
 	}
 
 	return bRes;
@@ -341,15 +368,9 @@ bool CppTargetEngine::doBuildCppFile(const RequestResponseElementSharedPtr& pEle
 	QString szFullFilePath = FileHelper::buildPath(m_outputDir, pElement->getNamespace(), "messages", szCppFilename);
 	QString szShortFilePath = FileHelper::buildPath(QString(), pElement->getNamespace(), "messages", szCppFilename);
 
+	// Write the file
 	QFile file(szFullFilePath);
-	if(file.exists()) {
-		file.remove();
-	}
-
-	// Create directory for file
-	FileHelper::createDirectoryForFile(szFullFilePath);
-
-	bRes = file.open(QFile::WriteOnly);
+	bRes = openFile(file);
 	if(bRes) {
 
 		QTextStream os(&file);
@@ -369,8 +390,10 @@ bool CppTargetEngine::doBuildCppFile(const RequestResponseElementSharedPtr& pEle
 		doWriteNamespaceEnd(os, m_szNamespace);
 
 		m_pGeneratedFilesList->append(szShortFilePath);
+
+		closeFile(file);
 	}else{
-		qWarning("[TypeListBuilder] Cannot open file %s (error: %s)", qPrintable(szCppFilename), qPrintable(file.errorString()));
+		qWarning("[Builder] Cannot open file %s (error: %s)", qPrintable(szCppFilename), qPrintable(file.errorString()));
 	}
 
 	return bRes;
@@ -414,7 +437,7 @@ QString CppTargetEngine::getHeaderFilePath(const TypeSharedPtr& pType, FileCateg
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pType);
 		return getComplexTypeHeaderPath(pComplexType, iOrigin);
 	}else{
-		qWarning("[TypeListBuilder] Unknown type: %s", qPrintable(pType->getLocalName()));
+		qWarning("[Builder] Unknown type: %s", qPrintable(pType->getLocalName()));
 		QString szFileName = getHeaderFileName(pType);
 		return getHeaderPath(pType->getNamespace(), "types", szFileName, iOrigin);
 	}
@@ -471,17 +494,9 @@ bool CppTargetEngine::doBuildHeaderFile(const TypeSharedPtr& pType) {
 	QString szFullFilePath = FileHelper::buildPath(m_outputDir, pType->getNamespace(), "types", szHeaderFilename);
 	QString szShortFilePath = FileHelper::buildPath(QString(), pType->getNamespace(), "types", szHeaderFilename);
 
-	// Remove existing file
-	QFile file(szFullFilePath);
-	if(file.exists()) {
-		file.remove();
-	}
-
-	// Create directory for file
-	FileHelper::createDirectoryForFile(szFullFilePath);
-
 	// Write the file
-	bRes = file.open(QFile::WriteOnly);
+	QFile file(szFullFilePath);
+	bRes = openFile(file);
 	if(bRes) {
 
 		QTextStream os(&file);
@@ -503,8 +518,8 @@ bool CppTargetEngine::doBuildHeaderFile(const TypeSharedPtr& pType) {
 		doWriteHeaderGuardEnd(os, szHeaderGuard);
 
 		m_pGeneratedFilesList->append(szShortFilePath);
-	}else{
-		qWarning("[TypeListBuilder] Cannot open file %s (error: %s)", qPrintable(szHeaderFilename), qPrintable(file.errorString()));
+
+		closeFile(file);
 	}
 
 	return bRes;
@@ -519,15 +534,9 @@ bool CppTargetEngine::doBuildCppFile(const TypeSharedPtr& pType)
 	QString szFullFilePath = FileHelper::buildPath(m_outputDir, pType->getNamespace(), "types", szCppFilename);
 	QString szShortFilePath = FileHelper::buildPath(QString(), pType->getNamespace(), "types", szCppFilename);
 
+	// Write the file
 	QFile file(szFullFilePath);
-	if(file.exists()) {
-		file.remove();
-	}
-
-	// Create directory for file
-	FileHelper::createDirectoryForFile(szFullFilePath);
-
-	bRes = file.open(QFile::WriteOnly);
+	bRes = openFile(file);
 	if(bRes) {
 
 		QTextStream os(&file);
@@ -547,8 +556,10 @@ bool CppTargetEngine::doBuildCppFile(const TypeSharedPtr& pType)
 		doWriteNamespaceEnd(os, m_szNamespace);
 
 		m_pGeneratedFilesList->append(szShortFilePath);
+
+		closeFile(file);
 	}else{
-		qWarning("[TypeListBuilder] Cannot open file %s (error: %s)", qPrintable(szCppFilename), qPrintable(file.errorString()));
+		qWarning("[Builder] Cannot open file %s (error: %s)", qPrintable(szCppFilename), qPrintable(file.errorString()));
 	}
 
 	return bRes;

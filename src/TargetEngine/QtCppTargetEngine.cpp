@@ -16,6 +16,15 @@ QtCppTargetEngine::~QtCppTargetEngine()
 
 }
 
+
+void QtCppTargetEngine::doWriteNamespaceTargetInfos(QTextStream& os, const QString& szPrefix, const QString& szNamespace, const QString& szNamespaceURI) const
+{
+	os << CRLF;
+	os << "const QString " << szPrefix << "_TargetNamespace = \"" << szNamespace << "\";" CRLF;
+	os << "const QString " << szPrefix << "_TargetNamespaceUri = \"" << szNamespaceURI << "\";" CRLF;
+	os << CRLF;
+}
+
 //////////////////
 // Service files
 //////////////////
@@ -81,12 +90,10 @@ void QtCppTargetEngine::doWriteHeaderClass(QTextStream& os, const ServiceSharedP
 {
 	QString szClassname = pService->getName();
 
-	os << "class " << szClassname << " : public Service" CRLF;
-	os << "{" << CRLF;
-	os << "public:" << CRLF;
-	os << "\t" << szClassname << "();" << CRLF;
-	os << "\tvirtual ~" << szClassname << "();" << CRLF;
-	os << CRLF;
+	// Start class
+	doWriteHeaderClassStart(os, szClassname, "Service");
+	// Constructor/destructor declaration
+	doWriteHeaderClassInitializers(os, szClassname);
 
 	OperationListSharedPtr pOperationList = pService->getOperationList();
 	OperationList::const_iterator operation;
@@ -290,12 +297,9 @@ void QtCppTargetEngine::doWriteHeaderClass(QTextStream& os, const RequestRespons
 	TypeSharedPtr pType = pElement->getType();
 	QString szNamespace = StringUtils::secureString(pElement->getNamespace().toUpper());
 
-	if(!szNamespace.isEmpty()){
-		os << "namespace " << szNamespace << " {" << CRLF;
-	}
-
-	os << "namespace MSG {" << CRLF;
-	os << CRLF;
+	// Namespaces start
+	doWriteNamespaceStart(os, szNamespace);
+	doWriteNamespaceStart(os, "MSG");
 
 	ComplexTypeSharedPtr pComplexType;
 	if(pType->getTypeMode() == Type::TypeComplex){
@@ -303,21 +307,17 @@ void QtCppTargetEngine::doWriteHeaderClass(QTextStream& os, const RequestRespons
 	}
 	if(!pComplexType.isNull())
 	{
-		// Write namespace
-		os << "const QString " << szClassName << "TargetNamespace = \"" << pElement->getNamespace() << "\";" CRLF;
-		os << "const QString " << szClassName << "TargetNamespaceUri = \"" << pElement->getNamespaceUri() << "\";" CRLF;
-		os << CRLF;
+		// Write namespace infos
+		doWriteNamespaceTargetInfos(os, szClassName, pElement->getNamespace(), pElement->getNamespaceUri());
 
 		startCppClass(os, szClassName, pComplexType);
 		doWriteHeaderClassContent(os, pComplexType);
-		endCppClass(os);
+		endCppClass(os, szClassName);
 	}
 
-	os << "} // MSG" << CRLF;
-
-	if(!szNamespace.isEmpty()){
-		os << "} // " << szNamespace << CRLF;
-	}
+	// Namespaces end
+	doWriteNamespaceEnd(os, "MSG");
+	doWriteNamespaceEnd(os, szNamespace);
 }
 
 void QtCppTargetEngine::doWriteCppClass(QTextStream& os, const RequestResponseElementSharedPtr& pElement) const
@@ -335,12 +335,9 @@ void QtCppTargetEngine::doWriteCppClass(QTextStream& os, const RequestResponseEl
 	}
 	QString szNamespace = StringUtils::secureString(pElement->getNamespace().toUpper());
 
-	if(!szNamespace.isEmpty()){
-		os << "namespace " << szNamespace << " {" << CRLF;
-	}
-
-	os << "namespace MSG {" << CRLF;
-	os << CRLF;
+	// Namespaces start
+	doWriteNamespaceStart(os, szNamespace);
+	doWriteNamespaceStart(os, "MSG");
 
 	if(!pComplexType.isNull()) {
 		os << szClassname << "::" << szClassname << "() {}" << CRLF;
@@ -352,11 +349,9 @@ void QtCppTargetEngine::doWriteCppClass(QTextStream& os, const RequestResponseEl
 		os << CRLF;
 	}
 
-	os << "} // MSG" << CRLF;
-
-	if(!szNamespace.isEmpty()){
-		os << "} // " << szNamespace << CRLF;
-	}
+	// Namespaces end
+	doWriteNamespaceEnd(os, "MSG");
+	doWriteNamespaceEnd(os, szNamespace);
 }
 
 //////////////////////////////////
@@ -379,13 +374,14 @@ void QtCppTargetEngine::doWriteHeaderIncludes(QTextStream& os, const TypeSharedP
 				if (pUnionType) {
 					os << "#include \"" << getHeaderFilePath(pUnionType, FileCategory_Type) << "\"" << CRLF;
 				}else {
-					qWarning("[TypeListBuilder] Union type not found: %s:%s", qPrintable(pUnionTypeRef->getNamespace()), qPrintable(pUnionTypeRef->getTypeName()));
+					qWarning("[Builder] Union type not found: %s:%s", qPrintable(pUnionTypeRef->getNamespace()), qPrintable(pUnionTypeRef->getTypeName()));
 				}
 			}
 		}
 		if(pSimpleType->hasVariableType()) {
 			os << "#include \"" << getHeaderFilePath(pSimpleType, FileCategory_Type) << "\"" << CRLF;
 		}
+		os << CRLF;
 	}else if(pType->getTypeMode() == Type::TypeComplex){
 
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pType);
@@ -448,6 +444,7 @@ void QtCppTargetEngine::doWriteHeaderIncludes(QTextStream& os, const TypeSharedP
 				}
 			}
 		}
+		os << CRLF;
 	}
 }
 
@@ -456,44 +453,38 @@ void QtCppTargetEngine::doWriteHeaderClass(QTextStream& os, const TypeSharedPtr&
 	QString szClassname = (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pType->getLocalName(true);
 	QString szNamespace = StringUtils::secureString(pType->getNamespace().toUpper());
 
-	if(!szNamespace.isEmpty()){
-		os << "namespace " << szNamespace << " {" << CRLF;
-	}
-
-	os << "namespace TYPES {" << CRLF;
-	os << CRLF;
+	// Namespaces start
+	doWriteNamespaceStart(os, szNamespace);
+	doWriteNamespaceStart(os, "TYPES");
 
 	if(pType->getTypeMode() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pType);
 
-		os << "const QString " << pSimpleType->getLocalName(true) << "TargetNamespace = \"" << pSimpleType->getNamespace() << "\";" CRLF;
-		os << "const QString " << pSimpleType->getLocalName(true) << "TargetNamespaceUri = \"" << pSimpleType->getNamespaceUri() << "\";" CRLF;
-		os << CRLF;
+		// Write namespace infos
+		doWriteNamespaceTargetInfos(os, pSimpleType->getLocalName(true), pSimpleType->getNamespace(), pSimpleType->getNamespaceUri());
 
-		os << "class " << szClassname << CRLF;
-		os << "{" << CRLF;
-		os << "public:" << CRLF;
+		// Start class
+		doWriteHeaderClassStart(os, szClassname);
 
 		if(pSimpleType->isEnumeration()) {
+			os << "public:" << CRLF;
 			os << "\t" << pSimpleType->getEnumerationDeclaration() << CRLF;
 			os << CRLF;
 		}
 
-		os << "\t" << szClassname << "();" << CRLF;
-		os << "\tvirtual ~" << szClassname << "();" << CRLF;
-		os << CRLF;
+		// Constructor/destructor declaration
+		doWriteHeaderClassInitializers(os, szClassname);
 
 		doWriteHeaderClassContent(os, pSimpleType);
 
-		os << "};" << CRLF;
-		os << CRLF;
+		// End class
+		doWriteHeaderClassEnd(os, szClassname);
 
 	} else if(pType->getTypeMode() == Type::TypeComplex) {
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pType);
 
-		os << "const QString " << pComplexType->getLocalName(true) << "TargetNamespace = \"" << pComplexType->getNamespace() << "\";" CRLF;
-		os << "const QString " << pComplexType->getLocalName(true) << "TargetNamespaceUri = \"" << pComplexType->getNamespaceUri() << "\";" CRLF;
-		os << CRLF;
+		// Write namespace infos
+		doWriteNamespaceTargetInfos(os, pComplexType->getLocalName(true), pComplexType->getNamespace(), pComplexType->getNamespaceUri());
 
 		if(pComplexType->getElementList()){
 			ElementList::const_iterator iter;
@@ -506,14 +497,12 @@ void QtCppTargetEngine::doWriteHeaderClass(QTextStream& os, const TypeSharedPtr&
 
 		startCppClass(os, szClassname, pComplexType);
 		doWriteHeaderClassContent(os, pComplexType);
-		endCppClass(os);
+		endCppClass(os, szClassname);
 	}
 
-	os << "} // TYPES " << CRLF;
-
-	if(!szNamespace.isEmpty()){
-		os << "} // " << szNamespace << CRLF;
-	}
+	// Namespaces end
+	doWriteNamespaceEnd(os, "TYPES");
+	doWriteNamespaceEnd(os, szNamespace);
 }
 
 void QtCppTargetEngine::doWriteCppClass(QTextStream& os, const TypeSharedPtr& pType) const
@@ -521,16 +510,14 @@ void QtCppTargetEngine::doWriteCppClass(QTextStream& os, const TypeSharedPtr& pT
 	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pType->getLocalName(true);
 	QString szNamespace = StringUtils::secureString(pType->getNamespace().toUpper());
 
-	if(!szNamespace.isEmpty()){
-		os << "namespace " << szNamespace << " {" << CRLF;
-	}
-
-	os << "namespace TYPES {" << CRLF;
-	os << CRLF;
+	// Namespaces start
+	doWriteNamespaceStart(os, szNamespace);
+	doWriteNamespaceStart(os, "TYPES");
 
 	if(pType->getTypeMode() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pType);
 
+		// Constructor
 		if(pSimpleType->isEnumeration()) {
 			os << szClassname << "::" << szClassname << "()" << CRLF;
 			os << "{" << CRLF;
@@ -543,7 +530,7 @@ void QtCppTargetEngine::doWriteCppClass(QTextStream& os, const TypeSharedPtr& pT
 		os << szClassname << "::~" << szClassname << "() {}" << CRLF;
 		os << CRLF;
 
-		doWriteCppClass(os, pSimpleType);
+		doWriteCppClassContent(os, pSimpleType);
 
 		os << CRLF;
 
@@ -581,22 +568,8 @@ void QtCppTargetEngine::doWriteCppClass(QTextStream& os, const TypeSharedPtr& pT
 			os << "}" << CRLF;
 			os << CRLF;
 		}else{
-			QString szExtensionName;
-			if(pComplexType->isExtensionTypeList()){
-				szExtensionName = "QList<";
-			}
-			if(pComplexType->getExtensionType()->getTypeMode() == Type::TypeSimple){
-				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pComplexType->getExtensionType());
-				szExtensionName += pSimpleType->getCPPTypeNameString();
-			}else{
-				szExtensionName += pComplexType->getExtensionType()->getNameWithNamespace();
-			}
-			if(pComplexType->isExtensionTypeList()){
-				szExtensionName += ">";
-			}
-			QString szExtendedClassname = (!m_szPrefix.isEmpty() ? m_szPrefix : "") + szExtensionName;
-
-			os << szClassname << "::" << szClassname << "() : " << szExtendedClassname << "() {}" << CRLF;
+			QString szExtendedClassName = getBaseClassName(m_szPrefix, pComplexType);
+			os << szClassname << "::" << szClassname << "() : " << szExtendedClassName << "() {}" << CRLF;
 			os << szClassname << "::~" << szClassname << "() {}" << CRLF;
 		}
 		os << CRLF;
@@ -606,11 +579,9 @@ void QtCppTargetEngine::doWriteCppClass(QTextStream& os, const TypeSharedPtr& pT
 		os << CRLF;
 	}
 
-	os << "} // TYPES" << CRLF;
-
-	if(!szNamespace.isEmpty()){
-		os << "} // " << szNamespace << CRLF;
-	}
+	// Namespaces end
+	doWriteNamespaceEnd(os, "TYPES");
+	doWriteNamespaceEnd(os, szNamespace);
 }
 
 void QtCppTargetEngine::doWriteHeaderClassContent(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const
@@ -665,7 +636,7 @@ void QtCppTargetEngine::doWriteHeaderClassContent(QTextStream& os, const Complex
 			}
 
 			if(!pAttribute->getType()) {
-				qWarning("[TypeListBuilder] Attribute %s in %s has no type", qPrintable(pAttribute->getName()), qPrintable(pComplexType->getQualifiedName()));
+				qWarning("[Builder] Attribute %s in %s has no type", qPrintable(pAttribute->getName()), qPrintable(pComplexType->getQualifiedName()));
 				continue;
 			}
 
@@ -682,7 +653,7 @@ void QtCppTargetEngine::doWriteHeaderClassContent(QTextStream& os, const Complex
 			}
 
 			if(!pElement->getType()) {
-				qWarning("[TypeListBuilder] Element %s in %s has no type", qPrintable(pElement->getName()), qPrintable(pComplexType->getQualifiedName()));
+				qWarning("[Builder] Element %s in %s has no type", qPrintable(pElement->getName()), qPrintable(pComplexType->getQualifiedName()));
 				continue;
 			}
 
@@ -754,7 +725,7 @@ void QtCppTargetEngine::doWriteCppClassContent(QTextStream& os, const ComplexTyp
 			}
 
 			if(!pAttribute->getType()) {
-				qWarning("[TypeListBuilder] Attribute %s in %s has no type", qPrintable(pAttribute->getName()), qPrintable(pComplexType->getQualifiedName()));
+				qWarning("[Builder] Attribute %s in %s has no type", qPrintable(pAttribute->getName()), qPrintable(pComplexType->getQualifiedName()));
 				continue;
 			}
 
@@ -772,7 +743,7 @@ void QtCppTargetEngine::doWriteCppClassContent(QTextStream& os, const ComplexTyp
 			ComplexTypeSharedPtr pType = qSharedPointerCast<ComplexType>(pElement->getType());
 
 			if(!pElement->getType()) {
-				qWarning("[TypeListBuilder] Element %s in %s has no type", qPrintable(pElement->getName()), qPrintable(pComplexType->getQualifiedName()));
+				qWarning("[Builder] Element %s in %s has no type", qPrintable(pElement->getName()), qPrintable(pComplexType->getQualifiedName()));
 				continue;
 			}
 
@@ -788,38 +759,39 @@ void QtCppTargetEngine::doWriteCppClassContent(QTextStream& os, const ComplexTyp
 	os << pComplexType->getGetNamespaceDeclarationDefinition(szClassname) << CRLF;
 }
 
-void QtCppTargetEngine::startCppClass(QTextStream& os, const QString& szClassName, const ComplexTypeSharedPtr& pComplexType) const
+QString QtCppTargetEngine::getBaseClassName(const QString& szPrefix, const ComplexTypeSharedPtr& pComplexType)
 {
-	os << "class " << szClassName;
+	QString szExtendedClassName;
 	if(!pComplexType->getExtensionType().isNull())
 	{
-		QString szExtendedClassname;
 		if(pComplexType->isExtensionTypeList()){
-			szExtendedClassname = "QList<";
+			szExtendedClassName = "QList<";
 		}
 		if(pComplexType->getExtensionType()->getTypeMode() == Type::TypeSimple){
 			SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pComplexType->getExtensionType());
-			szExtendedClassname += pSimpleType->getCPPTypeNameString();
+			szExtendedClassName += pSimpleType->getCPPTypeNameString();
 		}else{
 			QString szExtensionName = pComplexType->getExtensionType()->getNameWithNamespace();
-			szExtendedClassname += (!m_szPrefix.isEmpty() ? m_szPrefix : "") + szExtensionName;
+			szExtendedClassName += (!szPrefix.isEmpty() ? szPrefix : "") + szExtensionName;
 		}
 		if(pComplexType->isExtensionTypeList()){
-			szExtendedClassname += ">";
+			szExtendedClassName += ">";
 		}
-
-		os << " : public " << szExtendedClassname;
 	}
-	os << CRLF;
-	os << "{" << CRLF;
-	os << "public:" << CRLF;
-	os << "\t" << szClassName << "();" << CRLF;
-	os << "\tvirtual ~" << szClassName << "();" << CRLF;
-	os << CRLF;
+	return szExtendedClassName;
 }
 
-void QtCppTargetEngine::endCppClass(QTextStream& os) const
+void QtCppTargetEngine::startCppClass(QTextStream& os, const QString& szClassName, const ComplexTypeSharedPtr& pComplexType) const
 {
-	os << "};" << CRLF;
-	os << CRLF;
+	QString szExtendedClassName = getBaseClassName(m_szPrefix, pComplexType);
+
+	// Start class
+	doWriteHeaderClassStart(os, szClassName, szExtendedClassName);
+	// Constructor/destructor declaration
+	doWriteHeaderClassInitializers(os, szClassName);
+}
+
+void QtCppTargetEngine::endCppClass(QTextStream& os, const QString& szClassName) const
+{
+	doWriteHeaderClassEnd(os, szClassName);
 }

@@ -18,11 +18,18 @@ public:
 protected:
 	// CPP files creation
 	static QString getHeaderPath(const QString& szNamespace, const QString& szCategory, const QString& szFilename, FileCategory iOrigin);
-	virtual void doWriteFileDescription(QTextStream& os, const QString& szFilename);
-	virtual void doWriteHeaderGuardStart(QTextStream& os, const QString& szHeaderGuard);
-	virtual void doWriteHeaderGuardEnd(QTextStream& os, const QString& szHeaderGuard);
-	virtual void doWriteNamespaceStart(QTextStream& os, const QString& szNamespace);
-	virtual void doWriteNamespaceEnd(QTextStream& os, const QString& szNamespace);
+	virtual void doWriteFileDescription(QTextStream& os, const QString& szFilename) const;
+	virtual void doWriteHeaderGuardStart(QTextStream& os, const QString& szHeaderGuard) const;
+	virtual void doWriteHeaderGuardEnd(QTextStream& os, const QString& szHeaderGuard) const;
+	virtual void doWriteNamespaceStart(QTextStream& os, const QString& szNamespace) const;
+	virtual void doWriteNamespaceEnd(QTextStream& os, const QString& szNamespace) const;
+	virtual void doWriteNamespaceTargetInfos(QTextStream& os, const QString& szPrefix, const QString& szNamespace, const QString& szNamespaceURI) const;
+
+	// CPP class creation
+	void doWriteHeaderClassStart(QTextStream& os, const QString& szClassName) const;
+	virtual void doWriteHeaderClassStart(QTextStream& os, const QString& szClassName, const QString& szBaseClass) const;
+	virtual void doWriteHeaderClassEnd(QTextStream& os, const QString& szClassName) const;
+	virtual void doWriteHeaderClassInitializers(QTextStream& os, const QString& szClassName) const;
 
 	// Service files
 	static QString getHeaderGuard(const QString& szPrefix, const ServiceSharedPtr& pService);

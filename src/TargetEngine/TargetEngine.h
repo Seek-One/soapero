@@ -55,6 +55,9 @@ protected:
 
 	TypeSharedPtr findTypeByName(const QString& szLocalName, const QString& szNamespace, const TypeListSharedPtr& pListIgnoredTypes = TypeListSharedPtr()) const;
 
+	bool openFile(QFile& file, bool bCleanFirst = true) const;
+	void closeFile(QFile& file) const;
+
 protected:
 	QDir m_outputDir;
 
