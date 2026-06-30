@@ -309,7 +309,7 @@ void QtCppTargetEngine::doWriteHeaderClass(QTextStream& os, const RequestRespons
 		os << CRLF;
 
 		startCppClass(os, szClassName, pComplexType);
-		doWriteHeaderClass(os, pComplexType);
+		doWriteHeaderClassContent(os, pComplexType);
 		endCppClass(os);
 	}
 
@@ -483,7 +483,7 @@ void QtCppTargetEngine::doWriteHeaderClass(QTextStream& os, const TypeSharedPtr&
 		os << "\tvirtual ~" << szClassname << "();" << CRLF;
 		os << CRLF;
 
-		doWriteHeaderClass(os, pSimpleType);
+		doWriteHeaderClassContent(os, pSimpleType);
 
 		os << "};" << CRLF;
 		os << CRLF;
@@ -505,7 +505,7 @@ void QtCppTargetEngine::doWriteHeaderClass(QTextStream& os, const TypeSharedPtr&
 		}
 
 		startCppClass(os, szClassname, pComplexType);
-		doWriteHeaderClass(os, pComplexType);
+		doWriteHeaderClassContent(os, pComplexType);
 		endCppClass(os);
 	}
 
