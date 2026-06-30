@@ -84,11 +84,14 @@ void TypeList::print()
 	TypeSharedPtr pCurrentType;
 
 	qDebug("type count: %d", (int)count());
-	TypeList::const_iterator iter_type;
-	for(iter_type = constBegin(); iter_type != constEnd(); ++iter_type)
+	int idx = 0;
+	for(const auto& pCurrentType : *this)
 	{
-		pCurrentType = (*iter_type);
-		qDebug("  type: (%d) %s %s", pCurrentType->getTypeMode(), qPrintable(pCurrentType->getLocalName()), qPrintable(pCurrentType->getNamespace()));
+		qDebug("  [%d] => %s::%s (mode=%d, uri: %s)", idx,
+			qPrintable(pCurrentType->getNamespace()), qPrintable(pCurrentType->getLocalName()), pCurrentType->getTypeMode(),
+			qPrintable(pCurrentType->getNamespaceUri())
+		);
+		idx++;
 	}
 }
 

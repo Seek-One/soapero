@@ -2,13 +2,14 @@
 // Created by ebeuque on 15/09/2021.
 //
 
-#ifndef COM_JET1OEIL_SOAPERO_TYPEREF_H
-#define COM_JET1OEIL_SOAPERO_TYPEREF_H
+#ifndef SOAPERO_MODEL_TYPEREF_H
+#define SOAPERO_MODEL_TYPEREF_H
 
 #include <QSharedPointer>
+#include <QList>
+#include <QString>
 
 #include "Type.h"
-#include "SimpleType.h"
 
 class TypeRef;
 typedef QSharedPointer<TypeRef> TypeRefSharedPtr;
@@ -21,21 +22,17 @@ public:
 	TypeRef();
 	virtual ~TypeRef();
 
+	static TypeRefSharedPtr create();
+
+	void setTypeName(const QString& szTypeName);
 	const QString& getTypeName() const;
+
+	void setNamespace(const QString& szNamespace);
 	const QString& getNamespace() const;
-
-	Type::TypeMode getTypeMode() const;
-
-	static TypeRefSharedPtr createSimpleType();
-	static TypeRefSharedPtr createComplexType();
-
-	QSharedPointer<SimpleType> getSimpleType() const;
 
 private:
 	QString m_szTypeName;
 	QString m_szNamespace;
-
-	QSharedPointer<Type> m_pType;
 };
 
 class TypeRefList : public QList<TypeRefSharedPtr>
@@ -52,4 +49,4 @@ public:
 };
 
 
-#endif //COM_JET1OEIL_SOAPERO_TYPEREF_H
+#endif //SOAPERO_MODEL_TYPEREF_H

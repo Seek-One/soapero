@@ -13,6 +13,8 @@
 #include <QString>
 #include <QStringList>
 
+#include "TypeRef.h"
+
 #include "Type.h"
 
 class SimpleType : public Type
@@ -66,6 +68,9 @@ public:
 
 	bool isEnumeration() const;
 
+	void setIsUnion(bool bIsUnion);
+	bool isUnion() const;
+
 	QString getExportedNamespace() const;
 	QString getExportedTypename() const;
 
@@ -104,6 +109,9 @@ public:
 	void setMinInclusive(int iMinInclusive);
 	int getMinInclusive()const;
 
+	void addUnionType(const TypeRefSharedPtr& pTypeRef);
+	const TypeRefList& getUnionTypes() const;
+
 private:
 	QString m_szVariableTypeNamespace;
 	VariableType m_iVariableType;
@@ -121,6 +129,9 @@ private:
 	bool m_bRestricted;
 	QStringList m_listEnumerationValues;
 
+	// For union
+	bool m_bIsUnion;
+	TypeRefList m_listUnionTypeRef;
 };
 
 class SimpleTypeList : public QList<SimpleTypeSharedPtr>
@@ -131,8 +142,5 @@ public:
 
 	static SimpleTypeListSharedPtr create();
 };
-
-
-
 
 #endif /* SIMPLETYPE_H_ */

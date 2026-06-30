@@ -52,8 +52,9 @@ void Classname::setLocalName(const QString& szLocalName)
 void Classname::setName(const QString& szName)
 {
 	if(szName.contains(":")) {
-		m_szNamespace = szName.split(":")[0];
-		m_szLocalName = szName.split(":")[1];
+		const QStringList listParts = szName.split(":");
+		m_szNamespace = listParts[0];
+		m_szLocalName = listParts[1];
 	}else{
 		m_szLocalName = szName;
 	}

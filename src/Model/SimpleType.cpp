@@ -21,6 +21,7 @@ SimpleType::SimpleType() : Type(CategoryType, Type::TypeSimple)
 	m_iMinLength = -1;
 	m_iMinInclusive = -1;
 	m_bRestricted = false;
+	m_bIsUnion = false;
 }
 
 SimpleType::~SimpleType() {}
@@ -258,6 +259,17 @@ bool SimpleType::isEnumeration() const
 					(m_iVariableType == NCName) ||
 					(m_iVariableType == Token)) &&
 			(m_listEnumerationValues.count() > 0);
+}
+
+
+void SimpleType::setIsUnion(bool bIsUnion)
+{
+	m_bIsUnion = bIsUnion;
+}
+
+bool SimpleType::isUnion() const
+{
+	return (m_bIsUnion);
 }
 
 QString SimpleType::getExportedNamespace() const
@@ -639,6 +651,16 @@ void SimpleType::setMinInclusive(int iMinInclusive)
 int SimpleType::getMinInclusive() const
 {
 	return m_iMinInclusive;
+}
+
+void SimpleType::addUnionType(const TypeRefSharedPtr& pTypeRef)
+{
+	m_listUnionTypeRef.append(pTypeRef);
+}
+
+const TypeRefList& SimpleType::getUnionTypes() const
+{
+	return m_listUnionTypeRef;
 }
 
 SimpleTypeList::SimpleTypeList()

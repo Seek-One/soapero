@@ -14,41 +14,29 @@ TypeRef::~TypeRef()
 
 }
 
+TypeRefSharedPtr TypeRef::create()
+{
+	return TypeRefSharedPtr(new TypeRef());
+}
+
+void TypeRef::setTypeName(const QString& szTypeName)
+{
+	m_szTypeName = szTypeName;
+}
+
 const QString& TypeRef::getTypeName() const
 {
 	return m_szTypeName;
 }
 
+void TypeRef::setNamespace(const QString& szNamespace)
+{
+	m_szNamespace = szNamespace;
+}
+
 const QString& TypeRef::getNamespace() const
 {
 	return m_szNamespace;
-}
-
-Type::TypeMode TypeRef::getTypeMode() const
-{
-	if(m_pType){
-		return m_pType->getTypeMode();
-	}
-	return Type::TypeUnknown;
-}
-
-TypeRefSharedPtr TypeRef::createSimpleType()
-{
-	TypeRefSharedPtr pTypeRef = TypeRefSharedPtr(new TypeRef());
-	pTypeRef->m_pType = SimpleType::create();
-	return pTypeRef;
-}
-
-TypeRefSharedPtr TypeRef::createComplexType()
-{
-	TypeRefSharedPtr pTypeRef = TypeRefSharedPtr(new TypeRef());
-	return pTypeRef;
-}
-
-QSharedPointer<SimpleType> TypeRef::getSimpleType() const
-{
-	QSharedPointer<SimpleType> pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
-	return pSimpleType;
 }
 
 TypeRefList::TypeRefList()
@@ -95,6 +83,6 @@ void TypeRefList::print()
 	for(iter_type = constBegin(); iter_type != constEnd(); ++iter_type)
 	{
 		pCurrentType = (*iter_type);
-		qDebug("  type: %s:%s (%d)", qPrintable(pCurrentType->getNamespace()), qPrintable(pCurrentType->getTypeName()), pCurrentType->getTypeMode());
+		qDebug("  type: %s:%s", qPrintable(pCurrentType->getNamespace()), qPrintable(pCurrentType->getTypeName()));
 	}
 }

@@ -36,7 +36,6 @@ public:
 	const QString& getNamespace() const;
 	const QString& getNamespaceUri() const;
 	QString getLocalName(bool bSafe = false) const;
-	QString getName() const;
 
 	ClassCategory getClassCategory() const;
 
