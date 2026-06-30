@@ -137,10 +137,14 @@ set(APPLICATION_SOURCES
 	src/Builder/TypeListBuilder.cpp
 	src/Builder/TypeListBuilder.h
 
+	src/Model/Attribute.h
+	src/Model/Attribute.cpp
 	src/Model/Classname.h
 	src/Model/Classname.cpp
 	src/Model/ComplexType.h
 	src/Model/ComplexType.cpp
+	src/Model/Element.h
+	src/Model/Element.cpp
 	src/Model/Message.h
 	src/Model/Message.cpp
 	src/Model/Operation.h

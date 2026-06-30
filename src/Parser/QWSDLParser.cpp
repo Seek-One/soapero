@@ -14,6 +14,8 @@
 #include "Model/ComplexType.h"
 #include "Model/SimpleType.h"
 #include "Model/Type.h"
+#include "Model/Element.h"
+#include "Model/Attribute.h"
 
 #include "WSDLAttributes.h"
 

@@ -3,6 +3,8 @@
 //
 
 #include "Model/Type.h"
+#include "Model/Element.h"
+#include "Model/Attribute.h"
 
 #include "Utils/StringUtils.h"
 #include "Utils/ModelUtils.h"
