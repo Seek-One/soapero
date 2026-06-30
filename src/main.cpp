@@ -28,6 +28,165 @@ QStringList getWSDLFileNames(const char* szPathSrc);
 void copyPath(QString src, QString dst);
 bool removeDir(const QString & dirName);
 
+bool processWSDLFile(const QString& szFilename, const QString& szFilePath, const QString& szParamServiceName, const QString& szOutputDirectory, const QString& szResourcePath, const QString& szNamespace, bool& bFileGenerated, QSharedPointer<UniqueStringList>& pListGeneratedFiles)
+{
+	bool bRes;
+
+	QString szServiceName;
+
+	// Open current WSDL file
+	qDebug("[Main] Processing file '%s'", qPrintable(szFilename));
+
+	QFile file(szFilePath);
+	bRes = file.open(QFile::ReadOnly);
+	if(bRes) {
+		// Read all file
+		QByteArray bytes = file.readAll();
+		QBuffer buffer;
+		if(bytes.size() != 0){
+			buffer.setData(bytes);
+		}else{
+			bRes = false;
+			qWarning("[Main] File has no data");
+		}
+
+		// Parse WSDL file in XML format
+		QWSDLParser parser;
+		if(bRes){
+			QXmlStreamReader xmlReader;
+			xmlReader.addData(bytes);
+			bRes = parser.parse(xmlReader);
+			if(!bRes){
+				qWarning("[Main] Error to parse data (error: %s)", qPrintable(xmlReader.errorString()));
+			}
+		}
+
+		// Check service
+		ServiceSharedPtr pService;
+		QString szCurrentServiceName;
+		if(bRes){
+			pService = parser.getService();
+			if(szParamServiceName.isNull()){
+				szCurrentServiceName = pService->getName();
+			}else{
+				szCurrentServiceName = szParamServiceName;
+				pService->setName(szServiceName);
+			}
+			if(szCurrentServiceName.isNull()){
+				qDebug("[Main] Service name is not defined");
+				bRes = false;
+			}
+		}
+
+		// Create directory output if not existing
+		if(bRes){
+			if(!QDir(szOutputDirectory).exists()) {
+				qDebug("[Main] Creating non-existing directory '%s'", qPrintable(szOutputDirectory));
+				bRes = QDir().mkdir(szOutputDirectory);
+			}
+		}
+
+		// Build file for service
+		if(bRes){
+			const auto& pRequestResponseElementList = parser.getRequestResponseElementList();
+			const auto& pServiceTypeList = parser.getTypeList();
+			qDebug("[Main] Build files for service: %s (elements: %d, types: %d)", qPrintable(pService->getName()), (int)pRequestResponseElementList->count(), (int)pServiceTypeList->count());
+			//pRequestResponseElementList->print();
+			//pServiceTypeList->print();
+
+			TypeListBuilder builder(pService, pServiceTypeList, parser.getRequestResponseElementList(), pListGeneratedFiles);
+			builder.setNamespace(szNamespace);
+			builder.setFilename("actionservice");
+			builder.setDirname(szOutputDirectory);
+			builder.build();
+
+			bFileGenerated = true;
+		}
+
+		// Add class for base type
+		if(bRes){
+			QString szResourcesBasePath = QDir(szResourcePath).filePath("Base/xs/types");
+			QDir dir(szResourcesBasePath);
+			if(dir.exists()){
+				foreach (QString f, dir.entryList(QDir::Files))
+				{
+					QString szSrcPath = QDir(szResourcesBasePath).filePath(f);
+					QString szDstFullPath = FileHelper::buildPath(szOutputDirectory, "xs", "types", f);
+					QString szDstShortPath = FileHelper::buildPath(QString(), "xs", "types", f);
+
+					// Remove the path
+					QFile::remove(szDstFullPath);
+
+					// Create directory for file
+					FileHelper::createDirectoryForFile(szDstFullPath);
+
+					// Copy the path
+					QFile::copy(szSrcPath, szDstFullPath);
+
+					pListGeneratedFiles->append(szDstShortPath);
+				}
+			}else{
+				qDebug("[Main] Base files directory not found %s", qPrintable(szResourcesBasePath));
+			}
+		}
+
+		if(bRes){
+			QString szResourcesServicePath = QDir(szResourcePath).filePath("Service");
+			QDir dir = QDir(szResourcesServicePath);
+			if(dir.exists()){
+				// Copy services files
+				foreach (QString f, dir.entryList(QDir::Files))
+				{
+					QString szSrcPath = QDir(szResourcesServicePath).filePath(f);
+					QString szDstPath = QDir(szOutputDirectory).filePath(f);
+
+					// Remove old file
+					QFile::remove(szDstPath);
+
+					bool bCopyOnly = true;
+					if(f.endsWith(".h") || f.endsWith(".cpp")){
+						bCopyOnly = false;
+					}
+
+					if(bCopyOnly){
+						// Copy the file
+						QFile::copy(szSrcPath, szDstPath);
+					}else{
+						// Update namespace
+						QByteArray fileData;
+						QFile fileSrc(szSrcPath);
+						bRes = fileSrc.open(QIODevice::ReadOnly);
+						if(bRes){
+							// Load content and replace namespace
+							fileData = fileSrc.readAll();
+							QString text(fileData);
+							text.replace(QString("namespace SOAPERO"), QString("namespace %0").arg(szNamespace));
+
+							QFile fileDst(szDstPath);
+							bRes = fileDst.open(QIODevice::ReadWrite);
+							if(bRes){
+								fileDst.write(text.toUtf8());
+								fileDst.close();
+							}
+							fileSrc.close();
+						}
+					}
+
+					file.close(); // close the file handle.
+
+					pListGeneratedFiles->append(f);
+				}
+			}else{
+				qDebug("[Main] Service files directory not found %s", qPrintable(szResourcesServicePath));
+			}
+		}
+	}else{
+		qWarning("[Main] Error for opening file %s", qPrintable(file.errorString()));
+	}
+
+	return bRes;
+}
+
 int main(int argc, char **argv)
 {
 	int iRes = 0;
@@ -86,7 +245,7 @@ int main(int argc, char **argv)
 
 	bool bFileGenerated = false;
 
-	bool bGoOn;
+	bool bGoOn = true;
 
 	// Loading list of WSDL files
 	QSharedPointer<UniqueStringList> pListGeneratedFiles(new UniqueStringList());
@@ -95,160 +254,16 @@ int main(int argc, char **argv)
 
 	// Iterate over each WSDL files
 	QStringList::const_iterator iter;
+	int iSuccessCount = 0;
 	for(iter = listWSDLFileNames.constBegin(); iter != listWSDLFileNames.constEnd(); ++iter)
 	{
-		// Open current WSDL file
 		QString szFilename = *iter;
 		QString szFilePath = dirWDSLFiles.filePath(szFilename);
-		qDebug("[Main] Processing file '%s'", qPrintable(szFilename));
-
-		QFile file(szFilePath);
-		if(file.open(QFile::ReadOnly)) {
-			bGoOn = true;
-
-			// Read all file
-			QByteArray bytes = file.readAll();
-			QBuffer buffer;
-			if(bytes.size() != 0){
-				buffer.setData(bytes);
-			}else{
-				bGoOn = false;
-				qWarning("[Main] File has no data");
-			}
-
-			// Parse WSDL file in XML format
-			QWSDLParser parser;
-			if(bGoOn){
-				QXmlStreamReader xmlReader;
-				xmlReader.addData(bytes);
-				bGoOn = parser.parse(xmlReader);
-				if(!bGoOn){
-					qWarning("[Main] Error to parse data (error: %s)", qPrintable(xmlReader.errorString()));
-				}
-			}
-
-			// Check service
-			ServiceSharedPtr pService;
-			QString szCurrentServiceName;
-			if(bGoOn){
-				pService = parser.getService();
-				if(szServiceName.isNull()){
-					szCurrentServiceName = pService->getName();
-				}else{
-					szCurrentServiceName = szServiceName;
-					pService->setName(szServiceName);
-				}
-				if(szCurrentServiceName.isNull()){
-					qDebug("[Main] Service name is not defined");
-					bGoOn = false;
-				}
-			}
-			
-			// Create directory output if not existing
-			if(bGoOn){
-				if(!QDir(szOutputDirectory).exists()) {
-					qDebug("[Main] Creating non-existing directory '%s'", qPrintable(szOutputDirectory));
-					bGoOn = QDir().mkdir(szOutputDirectory);
-				}
-			}
-
-			// Build file for service
-			if(bGoOn){
-				const auto& pRequestResponseElementList = parser.getRequestResponseElementList();
-				const auto& pServiceTypeList = parser.getTypeList();
-				qDebug("[Main] Build files for service: %s (elements: %d, types: %d)", qPrintable(pService->getName()), (int)pRequestResponseElementList->count(), (int)pServiceTypeList->count());
-				//pRequestResponseElementList->print();
-				//pServiceTypeList->print();
-
-				TypeListBuilder builder(pService, pServiceTypeList, parser.getRequestResponseElementList(), pListGeneratedFiles);
-				builder.setNamespace(szNamespace);
-				builder.setFilename("actionservice");
-				builder.setDirname(szOutputDirectory);
-				builder.build();
-
-				bFileGenerated = true;
-			}
-
-			// Add class for base type
-			if(bGoOn){
-				QString szResourcesBasePath = QDir(szResourcePath).filePath("Base/xs/types");
-				QDir dir(szResourcesBasePath);
-				if(dir.exists()){
-					foreach (QString f, dir.entryList(QDir::Files))
-					{
-						QString szSrcPath = QDir(szResourcesBasePath).filePath(f);
-						QString szDstFullPath = FileHelper::buildPath(szOutputDirectory, "xs", "types", f);
-						QString szDstShortPath = FileHelper::buildPath(QString(), "xs", "types", f);
-
-						// Remove the path
-						QFile::remove(szDstFullPath);
-
-						// Create directory for file
-						FileHelper::createDirectoryForFile(szDstFullPath);
-
-						// Copy the path
-						QFile::copy(szSrcPath, szDstFullPath);
-
-						pListGeneratedFiles->append(szDstShortPath);
-					}
-				}else{
-					qDebug("[Main] Base files directory not found %s", qPrintable(szResourcesBasePath));
-				}
-			}
-
-			if(bGoOn){
-				QString szResourcesServicePath = QDir(szResourcePath).filePath("Service");
-				QDir dir = QDir(szResourcesServicePath);
-				if(dir.exists()){
-					// Copy services files
-					foreach (QString f, dir.entryList(QDir::Files))
-					{
-						QString szSrcPath = QDir(szResourcesServicePath).filePath(f);
-						QString szDstPath = QDir(szOutputDirectory).filePath(f);
-
-						// Remove old file
-						QFile::remove(szDstPath);
-
-						bool bCopyOnly = true;
-						if(f.endsWith(".h") || f.endsWith(".cpp")){
-							bCopyOnly = false;
-						}
-
-						if(bCopyOnly){
-							// Copy the file
-							QFile::copy(szSrcPath, szDstPath);
-						}else{
-							// Update namespace
-							QByteArray fileData;
-							QFile fileSrc(szSrcPath);
-							bGoOn = fileSrc.open(QIODevice::ReadOnly);
-							if(bGoOn){
-								// Load content and replace namespace
-								fileData = fileSrc.readAll();
-								QString text(fileData);
-								text.replace(QString("namespace SOAPERO"), QString("namespace %0").arg(szNamespace));
-
-								QFile fileDst(szDstPath);
-								bGoOn = fileDst.open(QIODevice::ReadWrite);
-								if(bGoOn){
-									fileDst.write(text.toUtf8());
-									fileDst.close();
-								}
-								fileSrc.close();
-							}
-						}
-
-						file.close(); // close the file handle.
-
-
-						pListGeneratedFiles->append(f);
-					}
-				}else{
-					qDebug("[Main] Service files directory not found %s", qPrintable(szResourcesServicePath));
-				}
-			}
+		bGoOn = processWSDLFile(szFilename, szFilePath, szServiceName, szOutputDirectory, szResourcePath, szNamespace, bFileGenerated, pListGeneratedFiles);
+		if (bGoOn) {
+			iSuccessCount++;
 		}else{
-			qWarning("[Main] Error for opening file %s", qPrintable(file.errorString()));
+			qDebug("[Main] Error to process: %s", qPrintable(szFilename));
 		}
 	}
 
@@ -262,6 +277,8 @@ int main(int argc, char **argv)
 			pFileBuilder->generateFile();
 		}
 	}
+
+	qDebug("[Main] %d/%d WSDL files have been processed successfully '%s'", iSuccessCount, (int)listWSDLFileNames.count(), szWSDLFilesDirectory);
 
 	return iRes;
 }
