@@ -51,8 +51,6 @@ public:
 	QString getVariableNameList() const;
 	QString getTagQualifiedName() const;
 
-	QString getSetterDeclaration() const;
-	QString getGetterDeclaration() const;
 	QString getVariableDeclaration() const;
 
 	QString getSetterDefinition(const QString& szClassname) const;

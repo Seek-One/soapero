@@ -18,7 +18,8 @@ private:
 	void doWriteNamespaceTargetInfos(QTextStream& os, const QString& szPrefix, const QString& szNamespace, const QString& szNamespaceURI) const override;
 
 	// CPP class creation
-	void doWriteDeclarationSetterList(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName) const override;
+	void doWriteDeclarationSetterList(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName, SetterParamMode iParamMode) const override;
+	void doWriteDeclarationGetterList(QTextStream& os, const QString& szFuncName, const QString& szMemberType, GetterReturnMode iReturnMode) const override;
 
 	// Service
 	void doWriteDeclarationIncludes(QTextStream& os, const ServiceSharedPtr& pService) const override;
@@ -46,6 +47,9 @@ private:
 	// Complex type
 	void doWriteDeclarationClassContent(QTextStream& os, const ComplexTypeSharedPtr& pComplexType) const;
 	void doWriteDefinitionClassContent(QTextStream& os, const ComplexTypeSharedPtr& pComplexType, const QString& szTargetNamespace = QString()) const;
+
+	// Element
+	void doWriteDeclarationGetterSetter(QTextStream& os, const ElementSharedPtr& pElement) const;
 
 	// Attribute
 	void doWriteDeclarationGetterSetter(QTextStream& os, const AttributeSharedPtr& pAttribute) const;

@@ -101,27 +101,6 @@ ElementListSharedPtr ComplexType::getElementList() const
 	return m_pListElement;
 }
 
-QString ComplexType::getSetterDeclaration(const QString& szName) const
-{
-	QString szLocalName = (szName.isEmpty() ? getLocalName() : szName);
-	QString szFuncName = ModelUtils::getCapitalizedName(szLocalName);
-	QString szParamName = ModelUtils::getUncapitalizedName(szLocalName);
-	QString szParamType = getNameWithNamespace();
-
-	QString szDeclaration = "void set%0(const %1& %2);";
-	return szDeclaration.arg(szFuncName).arg(szParamType).arg(szParamName);
-}
-
-QString ComplexType::getGetterDeclaration(const QString& szName) const
-{
-	QString szLocalName = (szName.isEmpty() ? getLocalName() : szName);
-	QString szFuncName = ModelUtils::getCapitalizedName(szLocalName);
-	QString szMemberType = getNameWithNamespace();
-
-	QString szDeclaration = "const %0& get%1() const;";
-	return szDeclaration.arg(szMemberType).arg(szFuncName);
-}
-
 QString ComplexType::getSetterDefinition(const QString& szClassname, const QString& szName) const
 {
 	QString szLocalName = (szName.isEmpty() ? getLocalName() : szName);

@@ -34,11 +34,29 @@ void QtCppTargetEngine::doWriteNamespaceTargetInfos(QTextStream& os, const QStri
 	os << CRLF;
 }
 
-void QtCppTargetEngine::doWriteDeclarationSetterList(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName) const
+void QtCppTargetEngine::doWriteDeclarationSetterList(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName, SetterParamMode iParamMode) const
 {
 	QString szDeclaration;
-	szDeclaration = "void set%0List(const QList<%1>& %2List);";
+	if (iParamMode == SetterParamModePointer) {
+		szDeclaration = "void set%0List(const QList<%1*>& %2List);";
+	}else if (iParamMode == SetterParamModeConst2) {
+		szDeclaration = "void set%0List(const QList<%1>& %2);";
+	}else{
+		szDeclaration = "void set%0List(const QList<%1>& %2List);";
+	}
 	szDeclaration = szDeclaration.arg(szFuncName).arg(szParamType).arg(szParamName);
+	os << "\t" << szDeclaration << CRLF;
+}
+
+void QtCppTargetEngine::doWriteDeclarationGetterList(QTextStream& os, const QString& szFuncName, const QString& szMemberType, GetterReturnMode iReturnMode) const
+{
+	QString szDeclaration;
+	if (iReturnMode == GetterReturnModePointer) {
+		szDeclaration += "const QList<%0*>& get%1List() const;";
+	}else{
+		szDeclaration = "const QList<%0>& get%1List() const;";
+	}
+	szDeclaration = szDeclaration.arg(szMemberType).arg(szFuncName);
 	os << "\t" << szDeclaration << CRLF;
 }
 
@@ -694,8 +712,8 @@ void QtCppTargetEngine::doWriteDeclarationGetterSetter(QTextStream& os, const Si
 		return szDeclaration;;
 	}
 	}*/
-	doWriteDeclarationSetter(os, szFuncName, szParamType, szParamName, !pSimpleType->isEnumeration());
-	doWriteDeclarationGetter(os, szFuncName, szParamType, !pSimpleType->isEnumeration());
+	doWriteDeclarationSetter(os, szFuncName, szParamType, szParamName, (pSimpleType->isEnumeration() ? SetterParamModeDefault : SetterParamModeConst));
+	doWriteDeclarationGetter(os, szFuncName, szParamType, (pSimpleType->isEnumeration() ? GetterReturnModeDefault : GetterReturnModeConst));
 }
 
 void QtCppTargetEngine::doWriteDefinitionClassContent(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const
@@ -752,8 +770,7 @@ void QtCppTargetEngine::doWriteDeclarationClassContent(QTextStream& os, const Co
 				continue;
 			}
 
-			os << "\t" << pElement->getSetterDeclaration() << CRLF ;
-			os << "\t" << pElement->getGetterDeclaration() << CRLF ;
+			doWriteDeclarationGetterSetter(os, pElement);
 			os << CRLF;
 
 		}
@@ -876,6 +893,86 @@ QString QtCppTargetEngine::getBaseClassName(const QString& szPrefix, const Compl
 	return szExtendedClassName;
 }
 
+void QtCppTargetEngine::doWriteDeclarationGetterSetter(QTextStream& os, const ElementSharedPtr& pElement) const
+{
+	QString szDeclaration;
+
+	QString szName = pElement->getName();
+	QString szFuncName = ModelUtils::getCapitalizedName(szName);
+	QString szParamType;
+	QString szParamName = ModelUtils::getUncapitalizedName(szName);
+
+	const auto& pType = pElement->getType();
+	const int iMaxOccurs = pElement->getMaxOccurs();
+	const bool bIsNested = pElement->isNested();
+	const bool bIsPointer = pElement->isPointer();
+
+	if(pType->getTypeMode() == Type::TypeSimple) {
+		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pType);
+		szParamType = pSimpleType->getCPPTypeNameString();
+		szParamName = ModelUtils::getUncapitalizedName(szName);
+		if(iMaxOccurs > 1 || iMaxOccurs == -1) {
+			doWriteDeclarationSetterList(os, szFuncName, szParamType, szParamName, SetterParamModeConst);
+			doWriteDeclarationAddList(os, szFuncName, szParamType, szParamName, SetterParamModeConst);
+			doWriteDeclarationGetterList(os, szFuncName, szParamType, GetterReturnModeConst);
+		}else{
+			doWriteDeclarationSetter(os, szFuncName, szParamType, szParamName, SetterParamModeConst);
+			if (pSimpleType->isEnumeration()) {
+				doWriteDeclarationGetter(os, szFuncName, szParamType, GetterReturnModeDefault);
+			}else{
+				doWriteDeclarationGetter(os, szFuncName, szParamType, GetterReturnModeConst);
+			}
+		}
+	}else {
+		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pType);
+		if(iMaxOccurs > 1 || iMaxOccurs == -1) {
+			szParamType = pComplexType->getNameWithNamespace();
+			if(bIsPointer){
+				doWriteDeclarationSetterList(os, szFuncName, szParamType, szParamName, SetterParamModePointer);
+				doWriteDeclarationAddList(os, szFuncName, szParamType, szParamName, SetterParamModePointer);
+				doWriteDeclarationGetterList(os, szFuncName, szParamType, GetterReturnModePointer);
+			}else{
+				//szDeclaration = "void set%0List(const QList<%1>& %2);" CRLF;
+				//szDeclaration += "\tvoid add%0(const %1& %2);";
+				//szDeclaration += "const QList<%0>& get%1List() const;";
+				doWriteDeclarationSetterList(os, szFuncName, szParamType, szParamName, SetterParamModeConst2);
+				doWriteDeclarationAddList(os, szFuncName, szParamType, szParamName, SetterParamModeConst);
+				doWriteDeclarationGetterList(os, szFuncName, szParamType, GetterReturnModeConst);
+			}
+		}else{
+			if(bIsNested || bIsPointer){
+				szParamType = pComplexType->getLocalName();
+				doWriteDeclarationSetter(os, szFuncName, szParamType, szParamName, SetterParamModePointer);
+				doWriteDeclarationGetter(os, szFuncName, szParamType, GetterReturnModePointer);
+			}else{
+				szParamType = pComplexType->getNameWithNamespace();
+				doWriteDeclarationSetter(os, szFuncName, szParamType, szParamName, SetterParamModeConst);
+				doWriteDeclarationGetter(os, szFuncName, szParamType, GetterReturnModeConst);
+			}
+		}
+	}
+
+	/*
+	QString szName = pElement->getName();
+
+	QString szLocalName = (szName.isEmpty() ? getLocalName() : szName);
+	QString szFuncName = ModelUtils::getCapitalizedName(szLocalName);
+	QString szParamName = ModelUtils::getUncapitalizedName(szLocalName);
+	QString szParamType = pElement->getNameWithNamespace();
+
+	QString szDeclaration = "void set%0(const %1& %2);";
+	return szDeclaration.arg(szFuncName).arg(szParamType).arg(szParamName);
+
+	QString szLocalName = (szName.isEmpty() ? getLocalName() : szName);
+	QString szFuncName = ModelUtils::getCapitalizedName(szLocalName);
+	QString szMemberType = getNameWithNamespace();
+
+	QString szDeclaration = "const %0& get%1() const;";
+	return szDeclaration.arg(szMemberType).arg(szFuncName);
+	*/
+}
+
+
 void QtCppTargetEngine::doWriteDeclarationGetterSetter(QTextStream& os, const AttributeSharedPtr& pAttribute) const
 {
 	QString szDeclaration;
@@ -893,41 +990,41 @@ void QtCppTargetEngine::doWriteDeclarationGetterSetter(QTextStream& os, const At
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pType);
 		if(bIsList){
 			szParamType = pSimpleType->getCPPTypeNameString();
-			doWriteDeclarationSetterList(os, szFuncName, szParamType, szParamName);
-			doWriteDeclarationAddList(os, szFuncName, szParamType, szParamName);
-			doWriteDeclarationGetterList(os, szFuncName, szParamType);
+			doWriteDeclarationSetterList(os, szFuncName, szParamType, szParamName, SetterParamModeConst);
+			doWriteDeclarationAddList(os, szFuncName, szParamType, szParamName, SetterParamModeConst);
+			doWriteDeclarationGetterList(os, szFuncName, szParamType, GetterReturnModeConst);
 		}else if(pSimpleType->isEnumeration()) {
 			//os << "\t//simple enum" << CRLF;
 			QString szLocalName = pSimpleType->getLocalName();
 			szFuncName = ModelUtils::getCapitalizedName(szLocalName);
 			szParamType = pSimpleType->getCPPTypeNameString();
 			szParamName = ModelUtils::getUncapitalizedName(szLocalName);
-			doWriteDeclarationSetter(os, szFuncName, szParamType, szParamName, true);
-			doWriteDeclarationGetter(os, szFuncName, szParamType, true);
+			doWriteDeclarationSetter(os, szFuncName, szParamType, szParamName, SetterParamModeConst);
+			doWriteDeclarationGetter(os, szFuncName, szParamType, GetterReturnModeConst);
 		} else {
 			//os << "\t//simple test" << CRLF;
 			QString szLocalName = pSimpleType->getLocalName();
 			szFuncName = ModelUtils::getCapitalizedName(szLocalName);
 			szParamType = pSimpleType->getCPPTypeNameValuesString();
 			szParamName = ModelUtils::getUncapitalizedName(szLocalName);
-			doWriteDeclarationSetter(os, szFuncName, szParamType, szParamName, true);
-			doWriteDeclarationGetter(os, szFuncName, szParamType, true);
+			doWriteDeclarationSetter(os, szFuncName, szParamType, szParamName, SetterParamModeConst);
+			doWriteDeclarationGetter(os, szFuncName, szParamType, GetterReturnModeConst);
 		}
 	}else if(pType->getTypeMode() == Type::TypeComplex) {
 		//os << "\t//complex" << CRLF;
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pType);
 		if(bIsList){
 			szParamType = pComplexType->getNameWithNamespace();
-			doWriteDeclarationSetterList(os, szFuncName, szParamType, szParamName);
-			doWriteDeclarationAddList(os, szFuncName, szParamType, szParamName);
-			doWriteDeclarationGetterList(os, szFuncName, szParamType);
+			doWriteDeclarationSetterList(os, szFuncName, szParamType, szParamName, SetterParamModeConst);
+			doWriteDeclarationAddList(os, szFuncName, szParamType, szParamName, SetterParamModeConst);
+			doWriteDeclarationGetterList(os, szFuncName, szParamType, GetterReturnModeConst);
 		}else{
 			QString szLocalName = (szAttributeName.isEmpty() ? pComplexType->getLocalName() : szAttributeName);
 			szFuncName = ModelUtils::getCapitalizedName(szLocalName);
 			szParamType = pComplexType->getNameWithNamespace();
 			szParamName = ModelUtils::getUncapitalizedName(szLocalName);
-			doWriteDeclarationSetter(os, szFuncName, szParamType, szParamName, true);
-			doWriteDeclarationGetter(os, szFuncName, szParamType, true);
+			doWriteDeclarationSetter(os, szFuncName, szParamType, szParamName, SetterParamModeConst);
+			doWriteDeclarationGetter(os, szFuncName, szParamType, GetterReturnModeConst);
 		}
 	}else {
 #ifdef USE_COMPAT_TEST

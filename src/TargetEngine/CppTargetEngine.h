@@ -16,6 +16,23 @@ public:
 	virtual ~CppTargetEngine();
 
 protected:
+	enum GetterReturnMode {
+		GetterReturnModeDefault = 0x00,
+		GetterReturnModeConst = 0x01,
+		GetterReturnModePointer = 0x02,
+		GetterReturnModeReference = 0x04,
+	};
+
+	enum SetterParamMode {
+		SetterParamModeDefault = 0x00,
+		SetterParamModeConst = 0x01,
+		SetterParamModePointer = 0x02,
+		SetterParamModeReference = 0x04,
+
+		SetterParamModeConst2 = 0x03, // Compat
+	};
+
+protected:
 	// CPP files creation
 	static QString getHeaderPath(const QString& szNamespace, const QString& szCategory, const QString& szFilename, FileCategory iOrigin);
 	virtual void doWriteFileDescription(QTextStream& os, const QString& szFilename) const;
@@ -31,11 +48,11 @@ protected:
 	virtual void doWriteDeclarationClassStart(QTextStream& os, const QString& szClassName, const QString& szBaseClass) const;
 	virtual void doWriteDeclarationClassEnd(QTextStream& os, const QString& szClassName) const;
 	virtual void doWriteDeclarationClassInitializers(QTextStream& os, const QString& szClassName, bool bEnumeration) const;
-	virtual void doWriteDeclarationGetter(QTextStream& os, const QString& szFuncName, const QString& szMemberType, bool bParamConst) const;
-	virtual void doWriteDeclarationGetterList(QTextStream& os, const QString& szFuncName, const QString& szMemberType) const;
-	virtual void doWriteDeclarationSetter(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName, bool bParamConst) const;
-	virtual void doWriteDeclarationSetterList(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName) const;
-	virtual void doWriteDeclarationAddList(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName) const;
+	virtual void doWriteDeclarationGetter(QTextStream& os, const QString& szFuncName, const QString& szMemberType, GetterReturnMode iReturnMode) const;
+	virtual void doWriteDeclarationGetterList(QTextStream& os, const QString& szFuncName, const QString& szMemberType, GetterReturnMode iReturnMode) const;
+	virtual void doWriteDeclarationSetter(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName, SetterParamMode iParamMode) const;
+	virtual void doWriteDeclarationSetterList(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName, SetterParamMode iParamMode) const;
+	virtual void doWriteDeclarationAddList(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName, SetterParamMode iParamMode) const;
 
 	// Service files
 	static QString getHeaderGuard(const QString& szPrefix, const ServiceSharedPtr& pService);

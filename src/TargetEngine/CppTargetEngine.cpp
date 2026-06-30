@@ -125,10 +125,12 @@ void CppTargetEngine::doWriteDeclarationClassInitializers(QTextStream& os, const
 	os << CRLF;
 }
 
-void CppTargetEngine::doWriteDeclarationGetter(QTextStream& os, const QString& szFuncName, const QString& szMemberType, bool bParamConst) const
+void CppTargetEngine::doWriteDeclarationGetter(QTextStream& os, const QString& szFuncName, const QString& szMemberType, GetterReturnMode iReturnMode) const
 {
 	QString szDeclaration;
-	if(bParamConst) {
+	if(iReturnMode == GetterReturnModePointer) {
+		szDeclaration = "%0* get%1() const;";
+	}else if(iReturnMode == GetterReturnModeConst) {
 		szDeclaration = "const %0& get%1() const;";
 	}else{
 		szDeclaration = "%0 get%1() const;";
@@ -137,19 +139,21 @@ void CppTargetEngine::doWriteDeclarationGetter(QTextStream& os, const QString& s
 	os << "\t" << szDeclaration << CRLF;
 }
 
-void CppTargetEngine::doWriteDeclarationGetterList(QTextStream& os, const QString& szFuncName, const QString& szMemberType) const
+void CppTargetEngine::doWriteDeclarationGetterList(QTextStream& os, const QString& szFuncName, const QString& szMemberType, GetterReturnMode iReturnMode) const
 {
 	QString szDeclaration;
-	szDeclaration = "const QList<%0>& get%1List() const;";
+	szDeclaration = "const std::list<%0>& get%1List() const;";
 	szDeclaration = szDeclaration.arg(szMemberType).arg(szFuncName);
 	os << "\t" << szDeclaration << CRLF;
 }
 
-void CppTargetEngine::doWriteDeclarationSetter(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName, bool bParamConst) const
+void CppTargetEngine::doWriteDeclarationSetter(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName, SetterParamMode iParamMode) const
 {
 	QString szDeclaration;
-	if(bParamConst) {
+	if(iParamMode == SetterParamModeConst) {
 		szDeclaration = "void set%0(const %1& %2);";
+	}else if(iParamMode == SetterParamModePointer) {
+		szDeclaration = "void set%0(%1* %2);";
 	}else{
 		szDeclaration = "void set%0(%1 %2);";
 	}
@@ -157,7 +161,7 @@ void CppTargetEngine::doWriteDeclarationSetter(QTextStream& os, const QString& s
 	os << "\t" << szDeclaration << CRLF;
 }
 
-void CppTargetEngine::doWriteDeclarationSetterList(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName) const
+void CppTargetEngine::doWriteDeclarationSetterList(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName, SetterParamMode iParamMode) const
 {
 	QString szDeclaration;
 	szDeclaration = "void set%0List(const std::list<%1>& %2List);";
@@ -165,10 +169,14 @@ void CppTargetEngine::doWriteDeclarationSetterList(QTextStream& os, const QStrin
 	os << "\t" << szDeclaration << CRLF;
 }
 
-void CppTargetEngine::doWriteDeclarationAddList(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName) const
+void CppTargetEngine::doWriteDeclarationAddList(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName, SetterParamMode iParamMode) const
 {
 	QString szDeclaration;
-	szDeclaration += "void add%0(const %1& %2);";
+	if (iParamMode == SetterParamModePointer) {
+		szDeclaration += "void add%0(%1* %2);";
+	}else {
+		szDeclaration += "void add%0(const %1& %2);";
+	}
 	szDeclaration = szDeclaration.arg(szFuncName).arg(szParamType).arg(szParamName);
 	os << "\t" << szDeclaration << CRLF;
 }
