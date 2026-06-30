@@ -300,20 +300,6 @@ QString SimpleType::getExportedTypename() const
 	return getLocalName();
 }
 
-QString SimpleType::getSerializerDeclaration() const
-{
-	return "QString serialize() const;";
-}
-
-QString SimpleType::getDeserializerDeclaration() const
-{
-	QString szRet = "void deserialize(const QDomElement& element);";
-	if(isEnumeration()){
-		szRet += CRLF "\tvoid deserialize(const QDomAttr& attr);";
-	}
-	return szRet;
-}
-
 QString SimpleType::getEnumConvertDeclaration() const
 {
 	QString szFuncName = ModelUtils::getCapitalizedName(getLocalName());

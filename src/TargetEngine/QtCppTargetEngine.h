@@ -33,6 +33,8 @@ private:
 	// Types files
 	void doWriteHeaderIncludes(QTextStream& os, const TypeSharedPtr& pType) const override;
 	void doWriteHeaderClass(QTextStream& os, const TypeSharedPtr& pType) const override;
+	void doWriteHeaderSerializer(QTextStream& os, const TypeSharedPtr& pType) const;
+	void doWriteHeaderDeserializer(QTextStream& os, const TypeSharedPtr& pType) const;
 	void doWriteCppIncludes(QTextStream& os, const TypeSharedPtr& pType) const override;
 	void doWriteCppClass(QTextStream& os, const TypeSharedPtr& pType) const override;
 

@@ -56,8 +56,6 @@ public:
 
 	QString getSetterDeclaration() const;
 	QString getGetterDeclaration() const;
-	QString getSerializerDeclaration() const;
-	QString getDeserializerDeclaration() const;
 	QString getVariableDeclaration() const;
 
 	QString getSetterDefinition(const QString& szClassname) const;
@@ -173,8 +171,6 @@ public:
 
 	QString getSetterDeclaration(const QString& szName = QString()) const;
 	QString getGetterDeclaration(const QString& szName = QString()) const;
-	QString getSerializerDeclaration() const;
-	QString getDeserializerDeclaration() const;
 	QString getVariableDeclaration(const QString& szName = QString()) const;
 	QString getIsNullDeclaration() const;
 	QString getGetNamespaceDeclarationDeclaration() const;

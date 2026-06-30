@@ -235,26 +235,6 @@ QString Element::getGetterDeclaration() const
 	return szDeclaration.arg(szMemberTypeName).arg(szFuncName);
 }
 
-QString Element::getSerializerDeclaration() const
-{
-	if(m_pType->getTypeMode() == Type::TypeSimple) {
-		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
-		return pSimpleType->getSerializerDeclaration();
-	}else{
-		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(m_pType);
-		if(m_iMaxOccurs > 1 || m_iMaxOccurs == -1) {
-			return "";
-		} else {
-			return pComplexType->getSerializerDeclaration();
-		}
-	}
-}
-
-QString Element::getDeserializerDeclaration() const
-{
-	return "void deserialize(QDomElement& element);";
-}
-
 QString Element::getSetterDefinition(const QString& szClassname) const
 {
 	QString szDefinition;
@@ -875,16 +855,6 @@ QString ComplexType::getGetterDeclaration(const QString& szName) const
 
 	QString szDeclaration = "const %0& get%1() const;";
 	return szDeclaration.arg(szMemberType).arg(szFuncName);
-}
-
-QString ComplexType::getSerializerDeclaration() const
-{
-	return "QString serialize(bool bOnlyContent = false) const;";
-}
-
-QString ComplexType::getDeserializerDeclaration() const
-{
-	return "void deserialize(QDomElement& element);";
 }
 
 QString ComplexType::getSetterDefinition(const QString& szClassname, const QString& szName) const

@@ -531,6 +531,44 @@ void QtCppTargetEngine::doWriteHeaderClass(QTextStream& os, const TypeSharedPtr&
 	doWriteNamespaceEnd(os, szNamespace);
 }
 
+void QtCppTargetEngine::doWriteHeaderSerializer(QTextStream& os, const TypeSharedPtr& pType) const
+{
+	QString szDeclaration;
+	if (pType->getTypeMode() == Type::TypeSimple) {
+		szDeclaration = "QString serialize() const;";
+	}else if (pType->getTypeMode() == Type::TypeComplex) {
+		szDeclaration = "QString serialize(bool bOnlyContent = false) const;";
+	}
+	if (!szDeclaration.isEmpty()) {
+		os << "\t" << szDeclaration << CRLF;
+	}
+}
+
+void QtCppTargetEngine::doWriteHeaderDeserializer(QTextStream& os, const TypeSharedPtr& pType) const
+{
+	QString szDeclaration;
+	if (pType->getTypeMode() == Type::TypeSimple) {
+		szDeclaration = "void deserialize(const QDomElement& element);";
+	}else if (pType->getTypeMode() == Type::TypeComplex) {
+#ifdef USE_COMPAT_TEST
+		szDeclaration = "void deserialize(QDomElement& element);";
+#else
+		szDeclaration = "void deserialize(const QDomElement& element);";
+#endif
+	}
+	if (!szDeclaration.isEmpty()) {
+		os << "\t" << szDeclaration << CRLF;
+	}
+
+	if (pType->getTypeMode() == Type::TypeSimple) {
+		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pType);
+		if(pSimpleType->isEnumeration()){
+			szDeclaration = "void deserialize(const QDomAttr& attr);";
+			os << "\t" << szDeclaration << CRLF;
+		}
+	}
+}
+
 void QtCppTargetEngine::doWriteCppClass(QTextStream& os, const TypeSharedPtr& pType) const
 {
 	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pType->getLocalName(true);
@@ -613,12 +651,17 @@ void QtCppTargetEngine::doWriteCppClass(QTextStream& os, const TypeSharedPtr& pT
 
 void QtCppTargetEngine::doWriteHeaderClassContent(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const
 {
+	// Getter/setter
 	doWriteHeaderGetterSetter(os, pSimpleType);
-	os << "\t" << pSimpleType->getSerializerDeclaration() << CRLF;
-	os << "\t" << pSimpleType->getDeserializerDeclaration() << CRLF;
+	// Serialization
+	doWriteHeaderSerializer(os, pSimpleType);
+	doWriteHeaderDeserializer(os, pSimpleType);
+	// Enum conversion
 	os << "\t" << pSimpleType->getEnumConvertDeclaration() << CRLF;
+	// Null declaration
 	os << "\t" << pSimpleType->getIsNullDeclaration() << CRLF;
 	os << CRLF;
+	// Variables
 	os << "private:" << CRLF;
 	os << "\t" << pSimpleType->getVariableDeclaration() << CRLF;
 }
@@ -714,8 +757,8 @@ void QtCppTargetEngine::doWriteHeaderClassContent(QTextStream& os, const Complex
 		}
 	}
 
-	os << "\t" << pComplexType->getSerializerDeclaration() << CRLF;
-	os << "\t" << pComplexType->getDeserializerDeclaration() << CRLF;
+	doWriteHeaderSerializer(os, pComplexType);
+	doWriteHeaderDeserializer(os, pComplexType);
 	os << CRLF;
 	os << "\t" << pComplexType->getIsNullDeclaration() << CRLF;
 	os << CRLF;
