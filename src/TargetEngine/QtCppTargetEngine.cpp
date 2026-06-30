@@ -347,7 +347,7 @@ void QtCppTargetEngine::doWriteCppClass(QTextStream& os, const RequestResponseEl
 		os << szClassname << "::~" << szClassname << "() {}" << CRLF;
 		os << CRLF;
 
-		doWriteCppClass(os, pComplexType, pComplexType->getNamespace());
+		doWriteCppClassContent(os, pComplexType, pComplexType->getNamespace());
 
 		os << CRLF;
 	}
@@ -516,14 +516,111 @@ void QtCppTargetEngine::doWriteHeaderClass(QTextStream& os, const TypeSharedPtr&
 	}
 }
 
-void QtCppTargetEngine::doWriteHeaderClass(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const
+void QtCppTargetEngine::doWriteCppClass(QTextStream& os, const TypeSharedPtr& pType) const
 {
-	if(pSimpleType->isUnion()) {
-		os << pSimpleType->getGetterSetterDeclarationForUnion();
-	}else {
+	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pType->getLocalName(true);
+	QString szNamespace = StringUtils::secureString(pType->getNamespace().toUpper());
+
+	if(!szNamespace.isEmpty()){
+		os << "namespace " << szNamespace << " {" << CRLF;
+	}
+
+	os << "namespace TYPES {" << CRLF;
+	os << CRLF;
+
+	if(pType->getTypeMode() == Type::TypeSimple) {
+		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pType);
+
+		if(pSimpleType->isEnumeration()) {
+			os << szClassname << "::" << szClassname << "()" << CRLF;
+			os << "{" << CRLF;
+			os << "\t" << pSimpleType->getVariableName() << " = Unknown;" << CRLF;
+			os << "}" << CRLF;
+			os << CRLF;
+		}else{
+			os << szClassname << "::" << szClassname << "() {}" << CRLF;
+		}
+		os << szClassname << "::~" << szClassname << "() {}" << CRLF;
+		os << CRLF;
+
+		doWriteCppClass(os, pSimpleType);
+
+		os << CRLF;
+
+	} else if(pType->getTypeMode() == Type::TypeComplex) {
+		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pType);
+
+		if(pComplexType->getExtensionType().isNull()) {
+			os << szClassname << "::" << szClassname << "() {";
+			if(pComplexType->getElementList()){
+				ElementList::const_iterator iter;
+				for(iter = pComplexType->getElementList()->constBegin(); iter != pComplexType->getElementList()->constEnd(); ++iter){
+					if((*iter)->getMaxOccurs() == 1){
+						if((*iter)->getType() && ((*iter)->isNested() || (*iter)->isPointer())){
+							os << CRLF << "\t" << (*iter)->getVariableName() << " = NULL;" << CRLF;
+						}
+					}
+				}
+			}
+			os << "}" << CRLF;
+
+			os << szClassname << "::~" << szClassname << "() {";
+			if(pComplexType->getElementList()){
+				ElementList::const_iterator iter;
+				for(iter = pComplexType->getElementList()->constBegin(); iter != pComplexType->getElementList()->constEnd(); ++iter){
+					if((*iter)->getMaxOccurs() == 1){
+						if((*iter)->getType() && ((*iter)->isNested() || (*iter)->isPointer())){
+							os << CRLF << "\tif(" << (*iter)->getVariableName() << "){" << CRLF;
+							os << "\t\tdelete " << (*iter)->getVariableName() << ";" << CRLF;
+							os << "\t\t" << (*iter)->getVariableName() << " = NULL;" << CRLF;
+							os << "\t}" << CRLF;
+						}
+					}
+				}
+			}
+			os << "}" << CRLF;
+			os << CRLF;
+		}else{
+			QString szExtensionName;
+			if(pComplexType->isExtensionTypeList()){
+				szExtensionName = "QList<";
+			}
+			if(pComplexType->getExtensionType()->getTypeMode() == Type::TypeSimple){
+				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pComplexType->getExtensionType());
+				szExtensionName += pSimpleType->getCPPTypeNameString();
+			}else{
+				szExtensionName += pComplexType->getExtensionType()->getNameWithNamespace();
+			}
+			if(pComplexType->isExtensionTypeList()){
+				szExtensionName += ">";
+			}
+			QString szExtendedClassname = (!m_szPrefix.isEmpty() ? m_szPrefix : "") + szExtensionName;
+
+			os << szClassname << "::" << szClassname << "() : " << szExtendedClassname << "() {}" << CRLF;
+			os << szClassname << "::~" << szClassname << "() {}" << CRLF;
+		}
+		os << CRLF;
+
+		doWriteCppClassContent(os, pComplexType, pComplexType->getNamespace());
+
+		os << CRLF;
+	}
+
+	os << "} // TYPES" << CRLF;
+
+	if(!szNamespace.isEmpty()){
+		os << "} // " << szNamespace << CRLF;
+	}
+}
+
+void QtCppTargetEngine::doWriteHeaderClassContent(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const
+{
+	//if(pSimpleType->isUnion()) {
+	//	os << pSimpleType->getGetterSetterDeclarationForUnion();
+	//}else {
 		os << "\t" << pSimpleType->getSetterDeclaration() << CRLF ;
 		os << "\t" << pSimpleType->getGetterDeclaration() << CRLF ;
-	}
+	//}
 	os << "\t" << pSimpleType->getSerializerDeclaration() << CRLF;
 	os << "\t" << pSimpleType->getDeserializerDeclaration() << CRLF;
 	os << "\t" << pSimpleType->getEnumConvertDeclaration() << CRLF;
@@ -533,7 +630,21 @@ void QtCppTargetEngine::doWriteHeaderClass(QTextStream& os, const SimpleTypeShar
 	os << "\t" << pSimpleType->getVariableDeclaration() << CRLF;
 }
 
-void QtCppTargetEngine::doWriteHeaderClass(QTextStream& os, const ComplexTypeSharedPtr& pComplexType) const
+void QtCppTargetEngine::doWriteCppClassContent(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const
+{
+	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pSimpleType->getLocalName();
+	szClassname = StringUtils::secureString(szClassname);
+
+	os << pSimpleType->getSetterDefinition(szClassname) << CRLF;
+	os << pSimpleType->getGetterDefinition(szClassname) << CRLF;
+	os << pSimpleType->getSerializerDefinition(szClassname) << CRLF;
+	os << pSimpleType->getDeserializerDefinition(szClassname) << CRLF;
+	os << pSimpleType->getEnumConvertDefinition(szClassname) << CRLF;
+	os << pSimpleType->getIsNullDefinition(szClassname) << CRLF;
+	os << CRLF;
+}
+
+void QtCppTargetEngine::doWriteHeaderClassContent(QTextStream& os, const ComplexTypeSharedPtr& pComplexType) const
 {
 	AttributeListSharedPtr pListAttributes = pComplexType->getAttributeList();
 	AttributeList::const_iterator attr;
@@ -620,118 +731,8 @@ void QtCppTargetEngine::doWriteHeaderClass(QTextStream& os, const ComplexTypeSha
 		}
 	}
 }
-void QtCppTargetEngine::doWriteCppClass(QTextStream& os, const TypeSharedPtr& pType) const
-{
-	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pType->getLocalName(true);
-	QString szNamespace = StringUtils::secureString(pType->getNamespace().toUpper());
 
-	if(!szNamespace.isEmpty()){
-		os << "namespace " << szNamespace << " {" << CRLF;
-	}
-
-	os << "namespace TYPES {" << CRLF;
-	os << CRLF;
-
-	if(pType->getTypeMode() == Type::TypeSimple) {
-		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pType);
-
-		if(pSimpleType->isEnumeration()) {
-			os << szClassname << "::" << szClassname << "()" << CRLF;
-			os << "{" << CRLF;
-			os << "\t" << pSimpleType->getVariableName() << " = Unknown;" << CRLF;
-			os << "}" << CRLF;
-			os << CRLF;
-		}else{
-			os << szClassname << "::" << szClassname << "() {}" << CRLF;
-		}
-		os << szClassname << "::~" << szClassname << "() {}" << CRLF;
-		os << CRLF;
-
-		doWriteCppClass(os, pSimpleType);
-
-		os << CRLF;
-
-	} else if(pType->getTypeMode() == Type::TypeComplex) {
-		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pType);
-
-		if(pComplexType->getExtensionType().isNull()) {
-			os << szClassname << "::" << szClassname << "() {";
-			if(pComplexType->getElementList()){
-				ElementList::const_iterator iter;
-				for(iter = pComplexType->getElementList()->constBegin(); iter != pComplexType->getElementList()->constEnd(); ++iter){
-					if((*iter)->getMaxOccurs() == 1){
-						if((*iter)->getType() && ((*iter)->isNested() || (*iter)->isPointer())){
-							os << CRLF << "\t" << (*iter)->getVariableName() << " = NULL;" << CRLF;
-						}
-					}
-				}
-			}
-			os << "}" << CRLF;
-
-			os << szClassname << "::~" << szClassname << "() {";
-			if(pComplexType->getElementList()){
-				ElementList::const_iterator iter;
-				for(iter = pComplexType->getElementList()->constBegin(); iter != pComplexType->getElementList()->constEnd(); ++iter){
-					if((*iter)->getMaxOccurs() == 1){
-						if((*iter)->getType() && ((*iter)->isNested() || (*iter)->isPointer())){
-							os << CRLF << "\tif(" << (*iter)->getVariableName() << "){" << CRLF;
-							os << "\t\tdelete " << (*iter)->getVariableName() << ";" << CRLF;
-							os << "\t\t" << (*iter)->getVariableName() << " = NULL;" << CRLF;
-							os << "\t}" << CRLF;
-						}
-					}
-				}
-			}
-			os << "}" << CRLF;
-			os << CRLF;
-		}else{
-			QString szExtensionName;
-			if(pComplexType->isExtensionTypeList()){
-				szExtensionName = "QList<";
-			}
-			if(pComplexType->getExtensionType()->getTypeMode() == Type::TypeSimple){
-				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pComplexType->getExtensionType());
-				szExtensionName += pSimpleType->getCPPTypeNameString();
-			}else{
-				szExtensionName += pComplexType->getExtensionType()->getNameWithNamespace();
-			}
-			if(pComplexType->isExtensionTypeList()){
-				szExtensionName += ">";
-			}
-			QString szExtendedClassname = (!m_szPrefix.isEmpty() ? m_szPrefix : "") + szExtensionName;
-
-			os << szClassname << "::" << szClassname << "() : " << szExtendedClassname << "() {}" << CRLF;
-			os << szClassname << "::~" << szClassname << "() {}" << CRLF;
-		}
-		os << CRLF;
-
-		doWriteCppClass(os, pComplexType, pComplexType->getNamespace());
-
-		os << CRLF;
-	}
-
-	os << "} // TYPES" << CRLF;
-
-	if(!szNamespace.isEmpty()){
-		os << "} // " << szNamespace << CRLF;
-	}
-}
-
-void QtCppTargetEngine::doWriteCppClass(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const
-{
-	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pSimpleType->getLocalName();
-	szClassname = StringUtils::secureString(szClassname);
-
-	os << pSimpleType->getSetterDefinition(szClassname) << CRLF;
-	os << pSimpleType->getGetterDefinition(szClassname) << CRLF;
-	os << pSimpleType->getSerializerDefinition(szClassname) << CRLF;
-	os << pSimpleType->getDeserializerDefinition(szClassname) << CRLF;
-	os << pSimpleType->getEnumConvertDefinition(szClassname) << CRLF;
-	os << pSimpleType->getIsNullDefinition(szClassname) << CRLF;
-	os << CRLF;
-}
-
-void QtCppTargetEngine::doWriteCppClass(QTextStream& os, const ComplexTypeSharedPtr& pComplexType, const QString& szTargetNamespace) const
+void QtCppTargetEngine::doWriteCppClassContent(QTextStream& os, const ComplexTypeSharedPtr& pComplexType, const QString& szTargetNamespace) const
 {
 	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pComplexType->getLocalName();
 

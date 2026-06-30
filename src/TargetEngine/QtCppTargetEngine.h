@@ -31,12 +31,12 @@ private:
 	void doWriteCppClass(QTextStream& os, const TypeSharedPtr& pType) const override;
 
 	// Simple type
-	void doWriteHeaderClass(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const;
-	void doWriteCppClass(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const;
+	void doWriteHeaderClassContent(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const;
+	void doWriteCppClassContent(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const;
 
 	// Complex type
-	void doWriteHeaderClass(QTextStream& os, const ComplexTypeSharedPtr& pComplexType) const;
-	void doWriteCppClass(QTextStream& os, const ComplexTypeSharedPtr& pComplexType, const QString& szTargetNamespace = QString()) const;
+	void doWriteHeaderClassContent(QTextStream& os, const ComplexTypeSharedPtr& pComplexType) const;
+	void doWriteCppClassContent(QTextStream& os, const ComplexTypeSharedPtr& pComplexType, const QString& szTargetNamespace = QString()) const;
 
 	void startCppClass(QTextStream& os, const QString& szClassName, const ComplexTypeSharedPtr& pComplexType) const;
 	void endCppClass(QTextStream& os) const;
