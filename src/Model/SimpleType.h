@@ -74,8 +74,6 @@ public:
 	QString getExportedNamespace() const;
 	QString getExportedTypename() const;
 
-	QString getEnumConvertDeclaration() const;
-
 	QString getEnumConvertDefinition(const QString& szClassname) const;
 
 	QString getVariableDeclaration() const;

@@ -50,6 +50,7 @@ private:
 	void doWriteDefinitionSerializerDeserializer(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType, const QString& szClassName) const;
 	void doWriteDeclarationIsNull(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const;
 	void doWriteDefinitionIsNull(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType, const QString& szClassName) const;
+	void doWriteDeclarationEnumConvert(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const;
 
 	// Complex type
 	void doWriteDeclarationClassContent(QTextStream& os, const ComplexTypeSharedPtr& pComplexType) const;

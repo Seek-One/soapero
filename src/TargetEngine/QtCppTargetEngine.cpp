@@ -745,7 +745,7 @@ void QtCppTargetEngine::doWriteDeclarationClassContent(QTextStream& os, const Si
 	doWriteDeclarationSerializer(os, pSimpleType);
 	doWriteDeclarationDeserializer(os, pSimpleType);
 	// Enum conversion
-	os << "\t" << pSimpleType->getEnumConvertDeclaration() << CRLF;
+	doWriteDeclarationEnumConvert(os, pSimpleType);
 	// Null declaration
 	doWriteDeclarationIsNull(os, pSimpleType);
 	os << CRLF;
@@ -890,6 +890,21 @@ void QtCppTargetEngine::doWriteDefinitionIsNull(QTextStream& os, const SimpleTyp
 	os << CRLF;
 }
 
+void QtCppTargetEngine::doWriteDeclarationEnumConvert(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const
+{
+	QString szFuncName = ModelUtils::getCapitalizedName(pSimpleType->getLocalName());
+	QString szDeclaration;
+	if(pSimpleType->isEnumeration()) {
+		szDeclaration += "\tvoid set%0FromString(const QString& szValue);" CRLF;
+		szDeclaration += "\tQString get%0ToString() const;";
+		szDeclaration = szDeclaration.arg(szFuncName);
+	}else {
+#ifdef USE_COMPAT_TEST
+		szDeclaration = "\t";
+#endif
+	}
+	os << szDeclaration << CRLF;
+}
 
 void QtCppTargetEngine::doWriteDefinitionClassContent(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const
 {

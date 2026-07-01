@@ -10,6 +10,10 @@
 
 #include "../common.h"
 
+/*
+ * Base class for C++ writer.
+ * This class must contain only basic function to write C++ code without using any framework.
+ */
 class CppWriter
 {
 public:

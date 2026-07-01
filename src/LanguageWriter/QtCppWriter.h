@@ -9,6 +9,10 @@
 
 #include "CppWriter.h"
 
+/*
+ * Qt C++ writer extention to the C++ writer.
+ * This class must extend the base class by adding Qt specific usage in code writing.
+ */
 class QtCppWriter : public CppWriter
 {
 public:

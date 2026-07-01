@@ -298,19 +298,6 @@ QString SimpleType::getExportedTypename() const
 	return getLocalName();
 }
 
-QString SimpleType::getEnumConvertDeclaration() const
-{
-	QString szFuncName = ModelUtils::getCapitalizedName(getLocalName());
-
-	QString szDeclaration;
-	if(isEnumeration()) {
-		szDeclaration += "void set%0FromString(const QString& szValue);" CRLF;
-		szDeclaration += "\tQString get%0ToString() const;";
-		szDeclaration = szDeclaration.arg(szFuncName);
-	}
-	return szDeclaration;
-}
-
 QString SimpleType::getVariableDeclaration() const
 {
 	QString szDeclaration;
