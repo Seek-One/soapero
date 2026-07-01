@@ -74,7 +74,6 @@ public:
 	QString getExportedNamespace() const;
 	QString getExportedTypename() const;
 
-	QString getVariableDeclaration() const;
 	QString getVariableName() const;
 	QString getVariableIsNullName() const;
 

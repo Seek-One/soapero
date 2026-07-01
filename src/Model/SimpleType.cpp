@@ -298,17 +298,6 @@ QString SimpleType::getExportedTypename() const
 	return getLocalName();
 }
 
-QString SimpleType::getVariableDeclaration() const
-{
-	QString szDeclaration;
-	szDeclaration += getCPPTypeNameValuesString();
-	szDeclaration += " ";
-	szDeclaration += getVariableName();
-	szDeclaration += ";";
-
-	return szDeclaration;
-}
-
 QString SimpleType::getVariableName() const
 {
 	return StringUtils::secureString(QString("_" + getLocalName().left(1).toLower() + getLocalName().mid(1)));

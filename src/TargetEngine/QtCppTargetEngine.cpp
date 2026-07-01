@@ -751,7 +751,7 @@ void QtCppTargetEngine::doWriteDeclarationClassContent(QTextStream& os, const Si
 	os << CRLF;
 	// Variables
 	os << "private:" << CRLF;
-	os << "\t" << pSimpleType->getVariableDeclaration() << CRLF;
+	doWriteDeclarationVariable(os, pSimpleType);
 }
 
 void QtCppTargetEngine::doWriteDeclarationGetterSetter(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const
@@ -983,6 +983,15 @@ void QtCppTargetEngine::doWriteDeclarationEnumeration(QTextStream& os, const Sim
 	os << szDeclaration << CRLF;
 }
 
+void QtCppTargetEngine::doWriteDeclarationVariable(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const
+{
+	QtCppWriter langWriter(os);
+
+	const auto& szTypeName = pSimpleType->getCPPTypeNameValuesString();
+	const auto& szVariableName = pSimpleType->getVariableName();
+	langWriter.writeDeclarationVariable(szTypeName, szVariableName);
+}
+
 void QtCppTargetEngine::doWriteDefinitionClassContent(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const
 {
 	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pSimpleType->getLocalName();
@@ -1061,7 +1070,7 @@ void QtCppTargetEngine::doWriteDeclarationClassContent(QTextStream& os, const Co
 				continue;
 			}
 
-			doWriteVariableDeclaration(os, pAttribute);
+			doWriteDeclarationVariable(os, pAttribute);
 #ifdef USE_COMPAT_TEST
 			if (pAttribute->getType()->getTypeMode() == Type::TypeUnknown) {
 				os << "\t" << CRLF;
@@ -1079,7 +1088,7 @@ void QtCppTargetEngine::doWriteDeclarationClassContent(QTextStream& os, const Co
 				continue;
 			}
 
-			doWriteVariableDeclaration(os, pElement);
+			doWriteDeclarationVariable(os, pElement);
 		}
 	}
 }
@@ -1768,7 +1777,7 @@ void QtCppTargetEngine::doWriteDefinitionGetterSetter(QTextStream& os, const Ele
 	}
 }
 
-void QtCppTargetEngine::doWriteVariableDeclaration(QTextStream& os, const ElementSharedPtr& pElement) const
+void QtCppTargetEngine::doWriteDeclarationVariable(QTextStream& os, const ElementSharedPtr& pElement) const
 {
 	QString szDeclaration;
 
@@ -1913,7 +1922,7 @@ void QtCppTargetEngine::doWriteDefinitionGetterSetter(QTextStream& os, const Att
 	}
 }
 
-void QtCppTargetEngine::doWriteVariableDeclaration(QTextStream& os, const AttributeSharedPtr& pAttribute) const
+void QtCppTargetEngine::doWriteDeclarationVariable(QTextStream& os, const AttributeSharedPtr& pAttribute) const
 {
 	QString szDeclaration;
 
