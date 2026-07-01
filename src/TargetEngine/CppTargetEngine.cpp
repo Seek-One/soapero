@@ -7,6 +7,8 @@
 #include "Builder/FileHelper.h"
 #include "Utils/StringUtils.h"
 
+#include "LanguageWriter/CppWriter.h"
+
 #include "CppTargetEngine.h"
 
 CppTargetEngine::CppTargetEngine()
@@ -60,11 +62,6 @@ void CppTargetEngine::doWriteDeclarationGuardEnd(QTextStream& os, const QString&
 #else
 	os << "#endif" << CRLF;
 #endif
-}
-
-void CppTargetEngine::doWriteIncludeLocalFile(QTextStream& os, const QString& szIncludeFile) const
-{
-	os << "#include \"" << szIncludeFile << "\"" << CRLF;
 }
 
 void CppTargetEngine::doWriteNamespaceStart(QTextStream& os, const QString& szNamespace) const
@@ -339,19 +336,20 @@ bool CppTargetEngine::doBuildCppFile(const ServiceSharedPtr& pService)
 	bRes = openFile(file);
 	if(bRes) {
 		QTextStream os(&file);
+		CppWriter langWriter(os);
 
 		// File description
 		doWriteFileDescription(os, szCppFilename);
 
-		os << "#include <QUrl>" << CRLF;
-		os << "#include <QEventLoop>" << CRLF;
-		os << "#include <QDomElement>" << CRLF;
-		os << "#include <QNetworkAccessManager>" << CRLF;
-		os << "#include <QNetworkRequest>" << CRLF;
-		os << "#include <QNetworkReply>" << CRLF;
-		os << "#include <QStringList>" << CRLF;
+		langWriter.writeIncludeFileSystem("QUrl");
+		langWriter.writeIncludeFileSystem("QEventLoop");
+		langWriter.writeIncludeFileSystem("QDomElement");
+		langWriter.writeIncludeFileSystem("QNetworkAccessManager");
+		langWriter.writeIncludeFileSystem("QNetworkRequest");
+		langWriter.writeIncludeFileSystem("QNetworkReply");
+		langWriter.writeIncludeFileSystem("QStringList");
 		os << CRLF;
-		os << "#include \"" << szHeaderFilename << "\"" << CRLF;
+		langWriter.writeIncludeFileLocal(szHeaderFilename);
 		os << CRLF;
 		os << "#define TIMEOUT_MSEC 10*1000" << CRLF;
 		os << CRLF;
@@ -515,15 +513,15 @@ bool CppTargetEngine::doBuildCppFile(const RequestResponseElementSharedPtr& pEle
 	QFile file(szFullFilePath);
 	bRes = openFile(file);
 	if(bRes) {
-
 		QTextStream os(&file);
+		CppWriter langWriter(os);
 
 		// File description
 		doWriteFileDescription(os, szCppFilename);
 		// Includes
 		doWriteDefinitionIncludes(os, pElement->getType());
 		// Add related header
-		os << "#include \"" << szHeaderFilename << "\"" << CRLF;
+		langWriter.writeIncludeFileLocal(szHeaderFilename);
 		os << CRLF;
 		// Namespace start
 		doWriteNamespaceStart(os, m_szNamespace);
@@ -684,15 +682,15 @@ bool CppTargetEngine::doBuildCppFile(const TypeSharedPtr& pType)
 	QFile file(szFullFilePath);
 	bRes = openFile(file);
 	if(bRes) {
-
 		QTextStream os(&file);
+		CppWriter langWriter(os);
 
 		// File description
 		doWriteFileDescription(os, szCppFilename);
 		// Includes
 		doWriteDefinitionIncludes(os, pType);
 		// Add related header
-		os << "#include \"" << szHeaderFilename << "\"" << CRLF;
+		langWriter.writeIncludeFileLocal(szHeaderFilename);
 		os << CRLF;
 		// Namespace start
 		doWriteNamespaceStart(os, m_szNamespace);

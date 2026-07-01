@@ -122,12 +122,13 @@ void QtCppTargetEngine::doWriteDeclarationIncludes(QTextStream& os, const Servic
 	QStringList list;
 	bool bSoapEnvelopeFaultIncluded = false;
 
-	os << "#include <QString>" << CRLF;
-	os << "#include <QMap>" << CRLF;
-	os << "#include <QDomDocument>" << CRLF;
+	QtCppWriter langWriter(os);
+	// Includes
+	langWriter.writeIncludeFileSystem("QString");
+	langWriter.writeIncludeFileSystem("QMap");
+	langWriter.writeIncludeFileSystem("QDomDocument");
 	os << CRLF;
-
-	doWriteIncludeLocalFile(os, "Service.h");
+	langWriter.writeIncludeFileLocal("Service.h");
 	os << CRLF;
 
 	QString szTmpFileName;
@@ -149,7 +150,7 @@ void QtCppTargetEngine::doWriteDeclarationIncludes(QTextStream& os, const Servic
 
 		if(!bSoapEnvelopeFaultIncluded && pOperation->getSoapEnvelopeFaultType()){
 			const auto& szHeaderFilePath = getComplexTypeHeaderPath((*operation)->getSoapEnvelopeFaultType(), FileCategory_Service);
-			doWriteIncludeLocalFile(os, szHeaderFilePath);
+			langWriter.writeIncludeFileLocal(szHeaderFilePath);
 			bSoapEnvelopeFaultIncluded = true;
 		}
 
@@ -158,7 +159,7 @@ void QtCppTargetEngine::doWriteDeclarationIncludes(QTextStream& os, const Servic
 			szTmpFileName = getHeaderFilePath(pMessage->getParameter(), FileCategory_Service);
 			if(!list.contains(szTmpFileName)) {
 				list.append(szTmpFileName);
-				doWriteIncludeLocalFile(os, szTmpFileName);
+				langWriter.writeIncludeFileLocal(szTmpFileName);
 			}
 		}
 
@@ -167,7 +168,7 @@ void QtCppTargetEngine::doWriteDeclarationIncludes(QTextStream& os, const Servic
 			szTmpFileName = getHeaderFilePath(pMessage->getParameter(), FileCategory_Service);
 			if(!list.contains(szTmpFileName)) {
 				list.append(szTmpFileName);
-				doWriteIncludeLocalFile(os, szTmpFileName);
+				langWriter.writeIncludeFileLocal(szTmpFileName);
 			}
 		}
 	}
@@ -216,18 +217,20 @@ void QtCppTargetEngine::doWriteDefinitionIncludes(QTextStream& os, const TypeSha
 		return;
 	}
 
+	QtCppWriter langWriter(os);
+
 	if(pType->getTypeMode() == Type::TypeComplex)
 	{
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pType);
 		if(pComplexType->getAttributeList()){
 			if(pComplexType->getAttributeList()->containsListAttribute()){
-				os << "#include <QStringList>" << CRLF;
+				langWriter.writeIncludeFileSystem("QStringList");
 				bQStringListIncluded = true;
 			}
 		}
 		if(!bQStringListIncluded && pComplexType->getExtensionType() && pComplexType->isExtensionTypeList())
 		{
-			os << "#include <QStringList>" << CRLF;
+			langWriter.writeIncludeFileSystem("QStringList");
 			bQStringListIncluded = true;
 		}
 
@@ -239,7 +242,7 @@ void QtCppTargetEngine::doWriteDefinitionIncludes(QTextStream& os, const TypeSha
 			for(iter = pComplexType->getElementList()->constBegin(); iter != pComplexType->getElementList()->constEnd(); ++iter){
 				if((*iter)->getType() && (*iter)->isPointer()){
 					const auto& szHeaderFilePath = getHeaderFilePath((*iter)->getType(), FileCategory_Type);
-					doWriteIncludeLocalFile(os, szHeaderFilePath);
+					langWriter.writeIncludeFileLocal(szHeaderFilePath);
 					bHasIncludes = true;
 				}
 			}
@@ -316,9 +319,11 @@ void QtCppTargetEngine::doWriteDeclarationIncludes(QTextStream& os, const Reques
 		pComplexType = qSharedPointerCast<ComplexType>(pType);
 	}
 
-	os << "#include <QDomElement>" << CRLF;
-	os << "#include <QList>" << CRLF;
-	os << "#include <QString>" << CRLF;
+	QtCppWriter langWriter(os);
+	// Includes
+	langWriter.writeIncludeFileSystem("QDomElement");
+	langWriter.writeIncludeFileSystem("QList");
+	langWriter.writeIncludeFileSystem("QString");
 	os << CRLF;
 
 	AttributeListSharedPtr pListAttributes;
@@ -335,7 +340,7 @@ void QtCppTargetEngine::doWriteDeclarationIncludes(QTextStream& os, const Reques
 
 		if(!pComplexType->getExtensionType().isNull()) {
 			const auto& szHeaderFilePath = getHeaderFilePath(pComplexType->getExtensionType(), FileCategory_Type);
-			doWriteIncludeLocalFile(os, szHeaderFilePath);
+			langWriter.writeIncludeFileLocal(szHeaderFilePath);
 			os << CRLF;
 		}
 	}
@@ -358,7 +363,7 @@ void QtCppTargetEngine::doWriteDeclarationIncludes(QTextStream& os, const Reques
 			// Add required include file
 			QString szFilename = getHeaderFilePath(pAttribute->getType(), FileCategory_Type);
 			if(!list.contains(szFilename)) {
-				doWriteIncludeLocalFile(os, szFilename);
+				langWriter.writeIncludeFileLocal(szFilename);
 				list.append(szFilename);
 			}
 		}
@@ -376,7 +381,7 @@ void QtCppTargetEngine::doWriteDeclarationIncludes(QTextStream& os, const Reques
 			// Add required include file
 			QString szFilename = getHeaderFilePath(pElement->getType(), FileCategory_Message);
 			if(!list.contains(szFilename)) {
-				doWriteIncludeLocalFile(os, szFilename);
+				langWriter.writeIncludeFileLocal(szFilename);
 				list.append(szFilename);
 			}
 		}
@@ -456,9 +461,11 @@ void QtCppTargetEngine::doWriteDefinitionClass(QTextStream& os, const RequestRes
 
 void QtCppTargetEngine::doWriteDeclarationIncludes(QTextStream& os, const TypeSharedPtr& pType) const
 {
-	os << "#include <QDomElement>" << CRLF;
-	os << "#include <QList>" << CRLF;
-	os << "#include <QString>" << CRLF;
+	QtCppWriter langWriter(os);
+	// Includes
+	langWriter.writeIncludeFileSystem("QDomElement");
+	langWriter.writeIncludeFileSystem("QList");
+	langWriter.writeIncludeFileSystem("QString");
 	os << CRLF;
 
 	if(pType->getTypeMode() == Type::TypeSimple) {
@@ -469,7 +476,7 @@ void QtCppTargetEngine::doWriteDeclarationIncludes(QTextStream& os, const TypeSh
 				const auto& pUnionType = findTypeByName(pUnionTypeRef->getTypeName(), pUnionTypeRef->getNamespace());
 				if (pUnionType) {
 					const auto& szHeaderFilePath =  getHeaderFilePath(pUnionType, FileCategory_Type);
-					doWriteIncludeLocalFile(os, szHeaderFilePath);
+					langWriter.writeIncludeFileLocal(szHeaderFilePath);
 				}else {
 					qWarning("[Builder] Union type not found: %s:%s", qPrintable(pUnionTypeRef->getNamespace()), qPrintable(pUnionTypeRef->getTypeName()));
 				}
@@ -477,7 +484,7 @@ void QtCppTargetEngine::doWriteDeclarationIncludes(QTextStream& os, const TypeSh
 		}
 		if(pSimpleType->hasVariableType()) {
 			const auto& szHeaderFilePath =  getHeaderFilePath(pSimpleType, FileCategory_Type);
-			doWriteIncludeLocalFile(os, szHeaderFilePath);
+			langWriter.writeIncludeFileLocal(szHeaderFilePath);
 		}
 		os << CRLF;
 	}else if(pType->getTypeMode() == Type::TypeComplex){
@@ -494,7 +501,7 @@ void QtCppTargetEngine::doWriteDeclarationIncludes(QTextStream& os, const TypeSh
 
 		if(!pComplexType->getExtensionType().isNull()) {
 			const auto& szHeaderFilePath =  getHeaderFilePath(pComplexType->getExtensionType(), FileCategory_Type);
-			doWriteIncludeLocalFile(os, szHeaderFilePath);
+			langWriter.writeIncludeFileLocal(szHeaderFilePath);
 		}
 
 		if(pListAttributes->count() > 0 || pListElements->count() > 0) {
@@ -516,7 +523,7 @@ void QtCppTargetEngine::doWriteDeclarationIncludes(QTextStream& os, const TypeSh
 				QString szFilename = getHeaderFilePath(pAttribute->getType(), FileCategory_Type);
 				if(!list.contains(szFilename)) {
 					list.append(szFilename);
-					doWriteIncludeLocalFile(os, szFilename);
+					langWriter.writeIncludeFileLocal(szFilename);
 				}
 			}
 			for(element = pListElements->constBegin(); element != pListElements->constEnd(); ++element) {
@@ -539,7 +546,7 @@ void QtCppTargetEngine::doWriteDeclarationIncludes(QTextStream& os, const TypeSh
 				QString szFilename = getHeaderFilePath(pElement->getType(), FileCategory_Type);
 				if(!szFilename.isEmpty() && !list.contains(szFilename)) {
 					list.append(szFilename);
-					doWriteIncludeLocalFile(os, szFilename);
+					langWriter.writeIncludeFileLocal(szFilename);
 				}
 			}
 		}

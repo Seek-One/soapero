@@ -14,6 +14,16 @@ CppWriter::~CppWriter()
 
 }
 
+void CppWriter::writeIncludeFileSystem(const QString& szIncludeFile) const
+{
+	m_os << "#include <" << szIncludeFile << ">" << CRLF;
+}
+
+void CppWriter::writeIncludeFileLocal(const QString& szIncludeFile) const
+{
+	m_os << "#include \"" << szIncludeFile << "\"" << CRLF;
+}
+
 void CppWriter::writeDeclarationVariable(const QString& szTypeName, const QString& szVariableName, bool bTypePointer)
 {
 	m_os << "\t" << szTypeName;
