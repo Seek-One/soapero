@@ -747,7 +747,7 @@ void QtCppTargetEngine::doWriteDeclarationClassContent(QTextStream& os, const Si
 	// Enum conversion
 	os << "\t" << pSimpleType->getEnumConvertDeclaration() << CRLF;
 	// Null declaration
-	os << "\t" << pSimpleType->getIsNullDeclaration() << CRLF;
+	doWriteDeclarationIsNull(os, pSimpleType);
 	os << CRLF;
 	// Variables
 	os << "private:" << CRLF;
@@ -865,6 +865,11 @@ void QtCppTargetEngine::doWriteDefinitionSerializerDeserializer(QTextStream& os,
 	}
 }
 
+void QtCppTargetEngine::doWriteDeclarationIsNull(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const
+{
+	os << "\tbool isNull() const;" << CRLF;
+}
+
 void QtCppTargetEngine::doWriteDefinitionIsNull(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType, const QString& szClassName) const
 {
 	if(pSimpleType->isEnumeration()) {
@@ -947,7 +952,7 @@ void QtCppTargetEngine::doWriteDeclarationClassContent(QTextStream& os, const Co
 	doWriteDeclarationSerializer(os, pComplexType);
 	doWriteDeclarationDeserializer(os, pComplexType);
 	os << CRLF;
-	os << "\t" << pComplexType->getIsNullDeclaration() << CRLF;
+	doWriteDeclarationIsNull(os, pComplexType);
 	os << CRLF;
 	os << "\t" << pComplexType->getGetNamespaceDeclarationDeclaration() << CRLF;
 	os << CRLF;
@@ -1373,6 +1378,11 @@ void QtCppTargetEngine::doWriteDefinitionDeserializer(QTextStream& os, const Com
 	szDefinition += "}" CRLF;
 
 	os << szDefinition.arg(szClassName);
+}
+
+void QtCppTargetEngine::doWriteDeclarationIsNull(QTextStream& os, const ComplexTypeSharedPtr& pComplexType) const
+{
+	os << "\tbool isNull() const;" << CRLF;
 }
 
 void QtCppTargetEngine::doWriteDefinitionIsNull(QTextStream& os, const ComplexTypeSharedPtr& pComplexType, const QString& szClassName) const

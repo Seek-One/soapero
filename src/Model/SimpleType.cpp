@@ -311,11 +311,6 @@ QString SimpleType::getEnumConvertDeclaration() const
 	return szDeclaration;
 }
 
-QString SimpleType::getIsNullDeclaration() const
-{
-	return "bool isNull() const;";
-}
-
 QString SimpleType::getVariableDeclaration() const
 {
 	QString szDeclaration;

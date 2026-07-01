@@ -144,11 +144,6 @@ QString ComplexType::getGetNamespaceDeclarationDefinition(const QString& szClass
 	return szDefinition.arg(szClassname);
 }
 
-QString ComplexType::getIsNullDeclaration() const
-{
-	return "bool isNull() const;";
-}
-
 QString ComplexType::getGetNamespaceDeclarationDeclaration() const
 {
 	return "static QList<QString> getNamespaceDeclaration();";
