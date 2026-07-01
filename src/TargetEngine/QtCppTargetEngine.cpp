@@ -954,7 +954,7 @@ void QtCppTargetEngine::doWriteDeclarationClassContent(QTextStream& os, const Co
 	os << CRLF;
 	doWriteDeclarationIsNull(os, pComplexType);
 	os << CRLF;
-	os << "\t" << pComplexType->getGetNamespaceDeclarationDeclaration() << CRLF;
+	doWriteDeclarationGetNamespaceDeclaration(os, pComplexType);
 	os << CRLF;
 
 	if(pListAttributes->count() > 0 || pListElements->count() > 0) {
@@ -1046,12 +1046,10 @@ void QtCppTargetEngine::doWriteDefinitionClassContent(QTextStream& os, const Com
 	}
 
 	doWriteDefinitionSerializer(os, pComplexType, szClassname, szTargetNamespace);
-	os << CRLF;
 	doWriteDefinitionDeserializer(os, pComplexType, szClassname, szTargetNamespace);
 	os << CRLF;
-	os << CRLF;
 	doWriteDefinitionIsNull(os, pComplexType, szClassname);
-	os << pComplexType->getGetNamespaceDeclarationDefinition(szClassname) << CRLF;
+	doWriteDefinitionGetNamespaceDeclaration(os, pComplexType, szClassname);
 }
 
 void QtCppTargetEngine::doWriteDefinitionSerializer(QTextStream& os, const ComplexTypeSharedPtr& pComplexType, const QString& szClassName, const QString& szTargetNamespace) const
@@ -1230,7 +1228,7 @@ void QtCppTargetEngine::doWriteDefinitionSerializer(QTextStream& os, const Compl
 	szDefinition += "\t}" CRLF;
 	szDefinition += "\treturn szValue;" CRLF;
 	szDefinition += "}" CRLF;
-	os << szDefinition.arg(szClassName).arg(szTargetNamespace).arg(pComplexType->getLocalName());
+	os << szDefinition.arg(szClassName).arg(szTargetNamespace).arg(pComplexType->getLocalName()) << CRLF;
 }
 
 void QtCppTargetEngine::doWriteDefinitionDeserializer(QTextStream& os, const ComplexTypeSharedPtr& pComplexType, const QString& szClassName, const QString& szTargetNamespace) const
@@ -1377,7 +1375,7 @@ void QtCppTargetEngine::doWriteDefinitionDeserializer(QTextStream& os, const Com
 	szDefinition += "\t}" CRLF;
 	szDefinition += "}" CRLF;
 
-	os << szDefinition.arg(szClassName);
+	os << szDefinition.arg(szClassName) << CRLF;
 }
 
 void QtCppTargetEngine::doWriteDeclarationIsNull(QTextStream& os, const ComplexTypeSharedPtr& pComplexType) const
@@ -1482,6 +1480,56 @@ void QtCppTargetEngine::doWriteDefinitionIsNull(QTextStream& os, const ComplexTy
 	}else{
 		szDefinition += "true;" CRLF;
 	}
+	szDefinition += "}" CRLF;
+
+	os << szDefinition.arg(szClassName) << CRLF;
+}
+
+void QtCppTargetEngine::doWriteDeclarationGetNamespaceDeclaration(QTextStream& os, const ComplexTypeSharedPtr& pComplexType) const
+{
+	os << "\tstatic QList<QString> getNamespaceDeclaration();" << CRLF;
+}
+
+void QtCppTargetEngine::doWriteDefinitionGetNamespaceDeclaration(QTextStream& os, const ComplexTypeSharedPtr& pComplexType, const QString& szClassName) const
+{
+	ElementList::const_iterator elem;
+	AttributeSharedPtr pAttribute;
+	ElementSharedPtr pElement;
+
+	QString szDefinition = ""
+	"QList<QString> %0::getNamespaceDeclaration()" CRLF
+	"{" CRLF;
+	szDefinition += "\tQList<QString> listNamespaceDeclaration;" CRLF;
+
+	const auto& pExtentionType = pComplexType->getExtensionType();
+	if(!pExtentionType.isNull()){
+		QString szExtensionName;
+		if(pExtentionType->getTypeMode() == Type::TypeComplex){
+			szDefinition += "\tlistNamespaceDeclaration.append(" + pExtentionType->getNameWithNamespace() + "::getNamespaceDeclaration());" CRLF;
+		}
+	}
+
+	const auto& pListElement = pComplexType->getElementList();
+	for(elem = pListElement->constBegin(); elem != pListElement->constEnd(); ++elem){
+		if((*elem)->hasRef()){
+			pElement = (*elem)->getRef();
+		}else{
+			pElement = *elem;
+		}
+
+		if(!pElement->getType()) {
+			continue;
+		}
+
+		if((pElement->getType()->getTypeMode() == Type::TypeComplex) &&
+				(pComplexType->getLocalName(true) != pElement->getType()->getLocalName(true))){
+			ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pElement->getType());
+			szDefinition += "\tlistNamespaceDeclaration.append(" + pComplexType->getNameWithNamespace() + "::getNamespaceDeclaration());" CRLF;
+				}
+	}
+
+	szDefinition += "\tlistNamespaceDeclaration.append(\"xmlns:" + pComplexType->getNamespace() + "=\\\"" + pComplexType->getNamespaceUri() + "\\\"\");" CRLF;
+	szDefinition += "\treturn listNamespaceDeclaration;" CRLF;
 	szDefinition += "}" CRLF;
 
 	os << szDefinition.arg(szClassName) << CRLF;

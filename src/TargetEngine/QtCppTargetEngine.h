@@ -58,6 +58,8 @@ private:
 	void doWriteDefinitionDeserializer(QTextStream& os, const ComplexTypeSharedPtr& pComplexType, const QString& szClassName, const QString& szTargetNamespace = QString()) const;
 	void doWriteDeclarationIsNull(QTextStream& os, const ComplexTypeSharedPtr& pComplexType) const;
 	void doWriteDefinitionIsNull(QTextStream& os, const ComplexTypeSharedPtr& pComplexType, const QString& szClassName) const;
+	void doWriteDeclarationGetNamespaceDeclaration(QTextStream& os, const ComplexTypeSharedPtr& pComplexType) const;
+	void doWriteDefinitionGetNamespaceDeclaration(QTextStream& os, const ComplexTypeSharedPtr& pComplexType, const QString& szClassName) const;
 
 	// Element
 	void doWriteDeclarationGetterSetter(QTextStream& os, const ElementSharedPtr& pElement) const;
