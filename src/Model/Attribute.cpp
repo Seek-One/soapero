@@ -96,38 +96,6 @@ bool Attribute::isList() const
 	return m_bIsList;
 }
 
-QString Attribute::getVariableDeclaration() const
-{
-	QString szDeclaration;
-
-	if(m_pType->getTypeMode() == Type::TypeSimple) {
-		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
-		if(m_bIsList){
-			szDeclaration += "QList<";
-			szDeclaration += pSimpleType->getCPPTypeNameString();
-			szDeclaration += "> ";
-			szDeclaration +=  getVariableName();
-			szDeclaration += "List";
-			szDeclaration += ";";
-		}else{
-			szDeclaration += pSimpleType->getVariableDeclarationForComplexType() ;
-		}
-	}else if(m_pType->getTypeMode() == Type::TypeComplex) {
-		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(m_pType);
-		if(m_bIsList){
-			szDeclaration += "QList<";
-			szDeclaration += pComplexType->getNameWithNamespace();
-			szDeclaration += "> ";
-			szDeclaration += getVariableName();
-			szDeclaration += "List";
-			szDeclaration += ";";
-		}else{
-			szDeclaration += pComplexType->getVariableDeclaration(getName());
-		}
-	}
-
-	return szDeclaration;
-}
 
 QString Attribute::getVariableName() const
 {

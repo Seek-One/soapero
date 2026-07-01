@@ -173,49 +173,6 @@ QString Element::getDeserializerDefinition(const QString& szClassname) const
 	}
 }
 
-QString Element::getVariableDeclaration() const
-{
-	QString szDeclaration;
-
-	QString szVariableName = getVariableName();
-
-	if(m_pType->getTypeMode() == Type::TypeSimple)
-	{
-		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
-
-		if(m_iMaxOccurs > 1 || m_iMaxOccurs == -1) {
-			szDeclaration += "QList<";
-			szDeclaration += pSimpleType->getCPPTypeNameString();
-			szDeclaration += "> ";
-			szDeclaration += szVariableName;
-			szDeclaration += "List";
-			szDeclaration += ";";
-		} else {
-			szDeclaration += pSimpleType->getCPPTypeNameString();
-			szDeclaration += " ";
-			szDeclaration += szVariableName;
-			szDeclaration += ";";
-		}
-	}else{
-		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(m_pType);
-
-		if(m_iMaxOccurs > 1 || m_iMaxOccurs == -1) {
-			szDeclaration += "QList<";
-			szDeclaration += m_pType->getNameWithNamespace() + (m_bIsPointer ? "*" : "");
-			szDeclaration += "> ";
-			szDeclaration += szVariableName;
-			szDeclaration += "List";
-		} else {
-			szDeclaration += (m_bIsNested || m_bIsPointer) ? m_pType->getLocalName() : m_pType->getNameWithNamespace();
-			szDeclaration += (m_bIsNested || m_bIsPointer) ? "* " : " ";
-			szDeclaration += szVariableName;
-		}
-		szDeclaration += ";";
-	}
-
-	return szDeclaration;
-}
-
 ElementList::ElementList()
 {
 

@@ -83,7 +83,6 @@ public:
 	QString getIsNullDefinition(const QString& szClassname) const;
 
 	QString getVariableDeclaration() const;
-	QString getVariableDeclarationForComplexType() const;
 	QString getEnumerationDeclaration() const;
 	QString getVariableName() const;
 	QString getVariableIsNullName() const;

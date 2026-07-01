@@ -51,8 +51,6 @@ public:
 	QString getVariableNameList() const;
 	QString getTagQualifiedName() const;
 
-	QString getVariableDeclaration() const;
-
 	QString getSerializerDefinition(const QString& szClassname, const QString& szNamespace) const;
 	QString getDeserializerDefinition(const QString& szClassname) const;
 

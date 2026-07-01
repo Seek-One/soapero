@@ -9,6 +9,8 @@
 #include "Utils/StringUtils.h"
 #include "Utils/ModelUtils.h"
 
+#include "LanguageWriter/QtCppWriter.h"
+
 #include "QtCppTargetEngine.h"
 
 QtCppTargetEngine::QtCppTargetEngine()
@@ -870,7 +872,12 @@ void QtCppTargetEngine::doWriteDeclarationClassContent(QTextStream& os, const Co
 				continue;
 			}
 
-			os << "\t" << pAttribute->getVariableDeclaration() << CRLF;
+			doWriteVariableDeclaration(os, pAttribute);
+#ifdef USE_COMPAT_TEST
+			if (pAttribute->getType()->getTypeMode() == Type::TypeUnknown) {
+				os << "\t" << CRLF;
+			}
+#endif
 		}
 		for(element = pListElements->constBegin(); element != pListElements->constEnd(); ++element) {
 			if((*element)->hasRef()){
@@ -883,7 +890,7 @@ void QtCppTargetEngine::doWriteDeclarationClassContent(QTextStream& os, const Co
 				continue;
 			}
 
-			os << "\t" << pElement->getVariableDeclaration() << CRLF ;
+			doWriteVariableDeclaration(os, pElement);
 		}
 	}
 }
@@ -899,10 +906,6 @@ void QtCppTargetEngine::doWriteDefinitionClassContent(QTextStream& os, const Com
 	ElementListSharedPtr pListElements = pComplexType->getElementList();
 	ElementList::const_iterator element;
 	ElementSharedPtr pElement;
-
-	if (szClassname == "Topic") {
-		qDebug() << "Topic";
-	}
 
 	if(pListAttributes->count() > 0 || pListElements->count() > 0) {
 
@@ -1031,8 +1034,6 @@ void QtCppTargetEngine::doWriteDeclarationGetterSetter(QTextStream& os, const El
 
 void QtCppTargetEngine::doWriteDefinitionGetterSetter(QTextStream& os, const ElementSharedPtr& pElement, const QString& szClassName) const
 {
-	QString szDefinition;
-
 	QString szElementName = pElement->getName();
 	QString szFuncName = ModelUtils::getCapitalizedName(szElementName);
 	QString szParamType;
@@ -1093,6 +1094,38 @@ void QtCppTargetEngine::doWriteDefinitionGetterSetter(QTextStream& os, const Ele
 				doWriteDefinitionGetter(os, szClassName, szFuncName, szMemberType, szMemberName, GetterReturnModeConst);
 			}
 		}
+	}
+}
+
+void QtCppTargetEngine::doWriteVariableDeclaration(QTextStream& os, const ElementSharedPtr& pElement) const
+{
+	QString szDeclaration;
+
+	QString szVariableName = pElement->getVariableName();
+	const auto& pType = pElement->getType();
+	const int iMaxOccurs = pElement->getMaxOccurs();
+	const bool bIsNested = pElement->isNested();
+	const bool bIsPointer = pElement->isPointer();
+
+	QtCppWriter langWriter(os);
+
+	if(pType->getTypeMode() == Type::TypeSimple)
+	{
+		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pType);
+		if(iMaxOccurs > 1 || iMaxOccurs == -1) {
+			langWriter.writeDeclarationVariableList(pSimpleType->getCPPTypeNameString(), szVariableName+"List");
+		} else {
+			langWriter.writeDeclarationVariable(pSimpleType->getCPPTypeNameString(), szVariableName);
+		}
+	}else{
+		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pType);
+		if(iMaxOccurs > 1 || iMaxOccurs == -1) {
+			langWriter.writeDeclarationVariableList(pType->getNameWithNamespace(), szVariableName+"List", bIsPointer);
+		} else {
+			const auto& szTypeName =  (bIsNested || bIsPointer) ? pType->getLocalName() : pType->getNameWithNamespace();
+			langWriter.writeDeclarationVariable(szTypeName, szVariableName, (bIsNested || bIsPointer));
+		}
+		szDeclaration += ";";
 	}
 }
 
@@ -1190,8 +1223,6 @@ void QtCppTargetEngine::doWriteDefinitionGetterSetter(QTextStream& os, const Att
 			doWriteDefinitionSetter(os, szClassName, szFuncName, szParamType, szParamName, szMemberName, SetterParamModeConst);
 			doWriteDefinitionGetter(os, szClassName, szFuncName, szMemberType, szMemberName, GetterReturnModeConst);
 		}
-
-
 	}else if(pType->getTypeMode() == Type::TypeComplex) {
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pType);
 		szParamType = pComplexType->getNameWithNamespace();
@@ -1207,6 +1238,40 @@ void QtCppTargetEngine::doWriteDefinitionGetterSetter(QTextStream& os, const Att
 			szMemberName = "_" + ModelUtils::getUncapitalizedName(szLocalName);
 			doWriteDefinitionSetter(os, szClassName, szFuncName, szParamType, szParamName, szMemberName, SetterParamModeConst);
 			doWriteDefinitionGetter(os, szClassName, szFuncName, szMemberType, szMemberName, GetterReturnModeConst);
+		}
+	}
+}
+
+void QtCppTargetEngine::doWriteVariableDeclaration(QTextStream& os, const AttributeSharedPtr& pAttribute) const
+{
+	QString szDeclaration;
+
+	const auto& szAttributeName = pAttribute->getName();
+
+	const auto& pType = pAttribute->getType();
+	const auto& bIsList = pAttribute->isList();
+
+	QtCppWriter langWriter(os);
+
+	if(pType->getTypeMode() == Type::TypeSimple) {
+		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pType);
+		if(bIsList){
+			langWriter.writeDeclarationVariableList(pSimpleType->getCPPTypeNameString(), pAttribute->getVariableName()+"List");
+		}else{
+			langWriter.writeDeclarationVariable(pSimpleType->getCPPTypeNameString(), pSimpleType->getVariableName());
+		}
+	}else if(pType->getTypeMode() == Type::TypeComplex) {
+		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pType);
+		if(bIsList){
+			langWriter.writeDeclarationVariableList(pComplexType->getNameWithNamespace(), pAttribute->getVariableName()+"List");
+		}else{
+			QString szVarName;
+			if(!szAttributeName.isEmpty()){
+				szVarName = "_" + ModelUtils::getUncapitalizedName(szAttributeName);
+			}else{
+				szVarName = pComplexType->getVariableName();
+			}
+			langWriter.writeDeclarationVariable(pComplexType->getNameWithNamespace(), szVarName);
 		}
 	}
 }

@@ -99,5 +99,8 @@ protected:
 	// Complex types files
 	static QString getComplexTypeHeaderPath(const ComplexTypeSharedPtr& pComplexType, FileCategory iOrigin);
 
+private:
+	CppTargetEngine* m_pWriter;
+
 };
 #endif //SOAPERO_TARGETENGINE_CPPTARGETENGINE_H

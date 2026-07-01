@@ -38,8 +38,6 @@ public:
 	void setIsList(bool bIsList);
 	bool isList() const;
 
-	QString getVariableDeclaration() const;
-
 	QString getVariableName() const;
 	QString getVariableNameList() const;
 

@@ -553,23 +553,6 @@ QString ComplexType::getGetNamespaceDeclarationDefinition(const QString& szClass
 	return szDefinition.arg(szClassname);
 }
 
-QString ComplexType::getVariableDeclaration(const QString& szName) const
-{
-	QString szVarName;
-	QString szDeclaration;
-	if(!szName.isEmpty()){
-		szVarName = "_" + ModelUtils::getUncapitalizedName(szName);
-	}else{
-		szVarName = getVariableName();
-	}
-	szDeclaration += getNameWithNamespace();
-	szDeclaration += " ";
-	szDeclaration += szVarName;
-	szDeclaration += ";";
-
-	return szDeclaration;
-}
-
 QString ComplexType::getIsNullDeclaration() const
 {
 	return "bool isNull() const;";

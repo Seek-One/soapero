@@ -137,6 +137,11 @@ set(APPLICATION_SOURCES
 	src/Builder/TypeListBuilder.cpp
 	src/Builder/TypeListBuilder.h
 
+	src/LanguageWriter/CppWriter.cpp
+	src/LanguageWriter/CppWriter.h
+	src/LanguageWriter/QtCppWriter.cpp
+	src/LanguageWriter/QtCppWriter.h
+
 	src/Model/Attribute.h
 	src/Model/Attribute.cpp
 	src/Model/Classname.h

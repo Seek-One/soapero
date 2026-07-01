@@ -329,17 +329,6 @@ QString SimpleType::getVariableDeclaration() const
 	return szDeclaration;
 }
 
-QString SimpleType::getVariableDeclarationForComplexType() const
-{
-	QString szDeclaration;
-	szDeclaration += getCPPTypeNameString();
-	szDeclaration += " ";
-	szDeclaration += getVariableName();
-	szDeclaration += ";";
-
-	return szDeclaration;
-}
-
 QString SimpleType::getEnumerationDeclaration() const
 {
 	bool bHasUnknownValue = false;

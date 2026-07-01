@@ -338,7 +338,6 @@ bool CppTargetEngine::doBuildCppFile(const ServiceSharedPtr& pService)
 	QFile file(szFullFilePath);
 	bRes = openFile(file);
 	if(bRes) {
-
 		QTextStream os(&file);
 
 		// File description

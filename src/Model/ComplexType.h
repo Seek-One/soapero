@@ -37,7 +37,6 @@ public:
 	void addElement(const ElementSharedPtr& pElement);
 	ElementListSharedPtr getElementList() const;
 
-	QString getVariableDeclaration(const QString& szName = QString()) const;
 	QString getIsNullDeclaration() const;
 	QString getGetNamespaceDeclarationDeclaration() const;
 

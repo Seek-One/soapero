@@ -55,11 +55,12 @@ private:
 	// Element
 	void doWriteDeclarationGetterSetter(QTextStream& os, const ElementSharedPtr& pElement) const;
 	void doWriteDefinitionGetterSetter(QTextStream& os, const ElementSharedPtr& pElement, const QString& szClassName) const;
+	void doWriteVariableDeclaration(QTextStream& os, const ElementSharedPtr& pElement) const;
 
 	// Attribute
 	void doWriteDeclarationGetterSetter(QTextStream& os, const AttributeSharedPtr& pAttribute) const;
 	void doWriteDefinitionGetterSetter(QTextStream& os, const AttributeSharedPtr& pAttribute, const QString& szClassName) const;
-
+	void doWriteVariableDeclaration(QTextStream& os, const AttributeSharedPtr& pAttribute) const;
 
 	void startCppClass(QTextStream& os, const QString& szClassName, const ComplexTypeSharedPtr& pComplexType) const;
 	void endCppClass(QTextStream& os, const QString& szClassName) const;
