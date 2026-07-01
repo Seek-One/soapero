@@ -51,9 +51,6 @@ public:
 	QString getVariableNameList() const;
 	QString getTagQualifiedName() const;
 
-	QString getSerializerDefinition(const QString& szClassname, const QString& szNamespace) const;
-	QString getDeserializerDefinition(const QString& szClassname) const;
-
 private:
 	ElementSharedPtr m_pRef;
 	QString m_szRefValue;

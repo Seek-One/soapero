@@ -77,8 +77,6 @@ public:
 	QString getEnumConvertDeclaration() const;
 	QString getIsNullDeclaration() const;
 
-	QString getSerializerDefinition(const QString& szClassname) const;
-	QString getDeserializerDefinition(const QString& szClassname) const;
 	QString getEnumConvertDefinition(const QString& szClassname) const;
 	QString getIsNullDefinition(const QString& szClassname) const;
 

@@ -146,31 +146,6 @@ QString Element::getTagQualifiedName() const
 	return m_pType->getTagQualifiedName();
 }
 
-
-QString Element::getSerializerDefinition(const QString& szClassname, const QString& szNamespace) const
-{
-	if(m_pType->getTypeMode() == Type::TypeSimple) {
-		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
-		return pSimpleType->getVariableDeclaration();
-
-	}else{
-		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(m_pType);
-		return pComplexType->getSerializerDefinition(szClassname, szNamespace);
-	}
-}
-
-QString Element::getDeserializerDefinition(const QString& szClassname) const
-{
-	if(m_pType->getTypeMode() == Type::TypeSimple) {
-		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(m_pType);
-		return pSimpleType->getDeserializerDefinition(szClassname);
-
-	}else{
-		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(m_pType);
-		return pComplexType->getDeserializerDefinition(szClassname);
-	}
-}
-
 ElementList::ElementList()
 {
 

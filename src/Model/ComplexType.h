@@ -40,8 +40,6 @@ public:
 	QString getIsNullDeclaration() const;
 	QString getGetNamespaceDeclarationDeclaration() const;
 
-	QString getSerializerDefinition(const QString& szClassname, const QString& szNamespace = QString()) const;
-	QString getDeserializerDefinition(const QString& szClassname) const;
 	QString getIsNullDefinition(const QString& szClassname) const;
 	QString getGetNamespaceDeclarationDefinition(const QString& szClassname) const;
 
