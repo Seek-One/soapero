@@ -10,9 +10,7 @@
 
 #include "SimpleType.h"
 
-#ifndef CRLF
-#define CRLF "\r\n"
-#endif
+#include "../common.h"
 
 SimpleType::SimpleType() : Type(CategoryType, Type::TypeSimple)
 {

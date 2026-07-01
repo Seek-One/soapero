@@ -10,9 +10,7 @@
 
 #include "Element.h"
 
-#ifndef CRLF
-#define CRLF "\r\n"
-#endif
+#include "../common.h"
 
 Element::Element()
 {

@@ -16,9 +16,7 @@
 
 #include "TargetEngine/QtCppTargetEngine.h"
 
-#ifndef CRLF
-#define CRLF "\r\n"
-#endif
+#include "../common.h"
 
 TypeListBuilder::TypeListBuilder(const ServiceSharedPtr& pService, const TypeListSharedPtr& pListType, const RequestResponseElementListSharedPtr& pListElement, const QSharedPointer<UniqueStringList>& pListGeneratedFiles)
 {

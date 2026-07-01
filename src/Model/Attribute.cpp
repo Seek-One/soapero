@@ -9,9 +9,7 @@
 #include "SimpleType.h"
 #include "ComplexType.h"
 
-#ifndef CRLF
-#define CRLF "\r\n"
-#endif
+#include "../common.h"
 
 #include "Attribute.h"
 

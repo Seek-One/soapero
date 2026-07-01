@@ -8,9 +8,7 @@
 #include <QString>
 #include <QTextStream>
 
-#ifndef CRLF
-#define CRLF "\r\n"
-#endif
+#include "../common.h"
 
 class CppWriter
 {
@@ -19,6 +17,8 @@ public:
 	virtual ~CppWriter();
 
 public:
+	// Header guardian
+
 	// Includes
 	void writeIncludeFileSystem(const QString& szIncludeFile);
 	void writeIncludeFileLocal(const QString& szIncludeFile);
@@ -27,6 +27,7 @@ public:
 	void writeNamespaceStart(const QString& szNamespace);
 	void writeNamespaceEnd(const QString& szNamespace);
 
+	// Variable declaration
 	void writeDeclarationVariable(const QString& szTypeName, const QString& szVariableName, bool bTypePointer = false);
 	void writeDeclarationVariableList(const QString& szListType, const QString& szTypeName, const QString& szVariableName, bool bTypePointer = false);
 

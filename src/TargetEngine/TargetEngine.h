@@ -13,11 +13,7 @@
 
 #include "Utils/UniqueStringList.h"
 
-#ifndef CRLF
-#define CRLF "\r\n"
-#endif
-
-#define USE_COMPAT_TEST
+#include "../common.h"
 
 /*
  * Base class for target engines

@@ -14,9 +14,7 @@
 
 #include "ComplexType.h"
 
-#ifndef CRLF
-#define CRLF "\r\n"
-#endif
+#include "../common.h"
 
 ComplexType::ComplexType() : Type(Type::CategoryType, Type::TypeComplex)
 {

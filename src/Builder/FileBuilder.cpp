@@ -15,9 +15,7 @@
 
 #include "FileBuilder.h"
 
-#ifndef CRLF
-#define CRLF "\r\n"
-#endif
+#include "../common.h"
 
 // Added in Qt 5.14.0
 #if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
