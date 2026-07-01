@@ -580,7 +580,7 @@ void QtCppTargetEngine::doWriteDeclarationClass(QTextStream& os, const TypeShare
 
 		if(pSimpleType->isEnumeration()) {
 			os << "public:" << CRLF;
-			os << "\t" << pSimpleType->getEnumerationDeclaration() << CRLF;
+			doWriteDeclarationEnumeration(os, pSimpleType);
 			os << CRLF;
 		}
 
@@ -906,14 +906,90 @@ void QtCppTargetEngine::doWriteDeclarationEnumConvert(QTextStream& os, const Sim
 	os << szDeclaration << CRLF;
 }
 
+void QtCppTargetEngine::doWriteDefinitionEnumConvert(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType, const QString& szClassName) const
+{
+	QString szDefinition;
+
+	QString szFuncName = ModelUtils::getCapitalizedName(pSimpleType->getLocalName());
+
+	if(pSimpleType->isEnumeration()) {
+
+		const auto& listEnumerationValues = pSimpleType->getEnumerationValues();
+
+		szDefinition += ""
+		"void %0::set%1FromString(const QString& szValue)" CRLF
+		"{" CRLF
+		"\tif((szValue == \"" + listEnumerationValues[0] + "\") || szValue.endsWith(\":" + StringUtils::getLocalNameIfPossible(listEnumerationValues[0]) + "\")) {" CRLF
+		"\t\t %2 = %0::" + StringUtils::removeNonAlphaNum(listEnumerationValues[0]) + ";" CRLF
+		"\t}";
+
+		for(int i=1; i < listEnumerationValues.count(); ++i) {
+			szDefinition += ""
+			"else if((szValue == \"" + listEnumerationValues[i] + "\") || szValue.endsWith(\":" + StringUtils::getLocalNameIfPossible(listEnumerationValues[i]) + "\")) {" CRLF
+			"\t\t%2 = %0::" + StringUtils::removeNonAlphaNum(listEnumerationValues[i]) + ";" CRLF
+			"\t}";
+		}
+		szDefinition += " else {" CRLF;
+		szDefinition += "\t\t%2 = %0::Unknown;" CRLF;
+		szDefinition += "\t}" CRLF;
+		szDefinition += CRLF;
+		szDefinition += "}" CRLF CRLF;
+
+		szDefinition += ""
+		"QString %0::get%1ToString() const" CRLF
+		"{" CRLF
+		"\tswitch(%2) {" CRLF;
+
+		for(int i=0; i < listEnumerationValues.count(); ++i) {
+			szDefinition += ""
+			"\tcase " + StringUtils::removeNonAlphaNum(listEnumerationValues[i]) + ":" CRLF
+			"\t\treturn \"" + listEnumerationValues[i] + "\";" CRLF;
+		}
+		szDefinition += "\tdefault:" CRLF;
+		szDefinition += "\t\treturn \"Unknown\";" CRLF;
+		szDefinition += "\t}" CRLF;
+		szDefinition += "}" CRLF;
+
+		szDefinition = szDefinition.arg(szClassName).arg(szFuncName).arg(pSimpleType->getVariableName());
+	}
+	os << szDefinition << CRLF;
+}
+
+void QtCppTargetEngine::doWriteDeclarationEnumeration(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const
+{
+	bool bHasUnknownValue = false;
+	QString szDeclaration;
+
+	const auto& bRestricted = pSimpleType->isRestricted();
+	const auto& listEnumerationValues = pSimpleType->getEnumerationValues();
+
+	if(bRestricted) {
+		szDeclaration += "\tenum Values {";
+		for(int i=0; i < listEnumerationValues.count(); ++i) {
+			if(listEnumerationValues[i] == "Unknown") {
+				bHasUnknownValue = true;
+			}
+			if(i==0) {
+				szDeclaration += StringUtils::removeNonAlphaNum(listEnumerationValues[i]);
+			} else {
+				szDeclaration += ", " + StringUtils::removeNonAlphaNum(listEnumerationValues[i]);
+			}
+		}
+		if(!bHasUnknownValue) {
+			szDeclaration += ", Unknown";
+		}
+		szDeclaration += "};";
+	}
+	os << szDeclaration << CRLF;
+}
+
 void QtCppTargetEngine::doWriteDefinitionClassContent(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const
 {
 	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pSimpleType->getLocalName();
 	szClassname = StringUtils::secureString(szClassname);
-
 	doWriteDefinitionGetterSetter(os, pSimpleType, szClassname);
 	doWriteDefinitionSerializerDeserializer(os, pSimpleType, szClassname);
-	os << pSimpleType->getEnumConvertDefinition(szClassname) << CRLF;
+	doWriteDefinitionEnumConvert(os, pSimpleType, szClassname);
 	doWriteDefinitionIsNull(os, pSimpleType, szClassname);
 	os << CRLF;
 }
