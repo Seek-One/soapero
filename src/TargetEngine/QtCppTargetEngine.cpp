@@ -26,13 +26,8 @@ QtCppTargetEngine::~QtCppTargetEngine()
 void QtCppTargetEngine::doWriteNamespaceTargetInfos(QTextStream& os, const QString& szPrefix, const QString& szNamespace, const QString& szNamespaceURI) const
 {
 	os << CRLF;
-#ifndef USE_COMPAT_TEST
 	os << "const QString " << szPrefix << "_TargetNamespace = \"" << szNamespace << "\";" CRLF;
 	os << "const QString " << szPrefix << "_TargetNamespaceUri = \"" << szNamespaceURI << "\";" CRLF;
-#else
-	os << "const QString " << szPrefix << "TargetNamespace = \"" << szNamespace << "\";" CRLF;
-	os << "const QString " << szPrefix << "TargetNamespaceUri = \"" << szNamespaceURI << "\";" CRLF;
-#endif
 	os << CRLF;
 }
 
@@ -636,11 +631,7 @@ void QtCppTargetEngine::doWriteDeclarationDeserializer(QTextStream& os, const Ty
 	if (pType->getTypeMode() == Type::TypeSimple) {
 		szDeclaration = "void deserialize(const QDomElement& element);";
 	}else if (pType->getTypeMode() == Type::TypeComplex) {
-#ifdef USE_COMPAT_TEST
 		szDeclaration = "void deserialize(QDomElement& element);";
-#else
-		szDeclaration = "void deserialize(const QDomElement& element);";
-#endif
 	}
 	if (!szDeclaration.isEmpty()) {
 		os << "\t" << szDeclaration << CRLF;
@@ -898,10 +889,6 @@ void QtCppTargetEngine::doWriteDeclarationEnumConvert(QTextStream& os, const Sim
 		szDeclaration += "\tvoid set%0FromString(const QString& szValue);" CRLF;
 		szDeclaration += "\tQString get%0ToString() const;";
 		szDeclaration = szDeclaration.arg(szFuncName);
-	}else {
-#ifdef USE_COMPAT_TEST
-		szDeclaration = "\t";
-#endif
 	}
 	os << szDeclaration << CRLF;
 }
@@ -1071,11 +1058,6 @@ void QtCppTargetEngine::doWriteDeclarationClassContent(QTextStream& os, const Co
 			}
 
 			doWriteDeclarationVariable(os, pAttribute);
-#ifdef USE_COMPAT_TEST
-			if (pAttribute->getType()->getTypeMode() == Type::TypeUnknown) {
-				os << "\t" << CRLF;
-			}
-#endif
 		}
 		for(element = pListElements->constBegin(); element != pListElements->constEnd(); ++element) {
 			if((*element)->hasRef()){
@@ -1120,11 +1102,6 @@ void QtCppTargetEngine::doWriteDefinitionClassContent(QTextStream& os, const Com
 			}
 
 			doWriteDefinitionGetterSetter(os, pAttribute, szClassname);
-#ifdef USE_COMPAT_TEST
-			if (pAttribute->getType()->getTypeMode() == Type::TypeUnknown) {
-				os << CRLF;
-			}
-#endif
 		}
 		for(element = pListElements->constBegin(); element != pListElements->constEnd(); ++element) {
 			if((*element)->hasRef()){
@@ -1862,10 +1839,6 @@ void QtCppTargetEngine::doWriteDeclarationGetterSetter(QTextStream& os, const At
 			doWriteDeclarationSetter(os, szFuncName, szParamType, szParamName, SetterParamModeConst);
 			doWriteDeclarationGetter(os, szFuncName, szParamType, GetterReturnModeConst);
 		}
-	}else {
-#ifdef USE_COMPAT_TEST
-		os << "\t\t";
-#endif
 	}
 }
 

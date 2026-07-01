@@ -50,13 +50,8 @@ void CppTargetEngine::doWriteFileDescription(QTextStream& os, const QString& szF
 void CppTargetEngine::doWriteNamespaceTargetInfos(QTextStream& os, const QString& szPrefix, const QString& szNamespace, const QString& szNamespaceURI) const
 {
 	os << CRLF;
-#ifndef USE_COMPAT_TEST
 	os << "const char* " << szPrefix << "_TargetNamespace = \"" << szNamespace << "\";" CRLF;
 	os << "const char* " << szPrefix << "_TargetNamespaceUri = \"" << szNamespaceURI << "\";" CRLF;
-#else
-	os << "const char* " << szPrefix << "TargetNamespace = \"" << szNamespace << "\";" CRLF;
-	os << "const char* " << szPrefix << "TargetNamespaceUri = \"" << szNamespaceURI << "\";" CRLF;
-#endif
 	os << CRLF;
 }
 
@@ -455,9 +450,6 @@ bool CppTargetEngine::doBuildHeaderFile(const RequestResponseElementSharedPtr& p
 		// Namespace end
 		langWriter.writeNamespaceEnd(m_szNamespace);
 		// Header guard end
-#ifdef USE_COMPAT_TEST
-		os << CRLF;
-#endif
 		langWriter.writeDeclarationGuardEnd(szHeaderGuard);
 
 		m_pGeneratedFilesList->append(szShortFilePath);
@@ -626,9 +618,6 @@ bool CppTargetEngine::doBuildHeaderFile(const TypeSharedPtr& pType) {
 		// Namespace end
 		langWriter.writeNamespaceEnd(m_szNamespace);
 		// Header guard end
-#ifdef USE_COMPAT_TEST
-		os << CRLF;
-#endif
 		langWriter.writeDeclarationGuardEnd(szHeaderGuard);
 
 		m_pGeneratedFilesList->append(szShortFilePath);
