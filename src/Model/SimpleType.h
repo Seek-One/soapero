@@ -78,7 +78,6 @@ public:
 	QString getIsNullDeclaration() const;
 
 	QString getEnumConvertDefinition(const QString& szClassname) const;
-	QString getIsNullDefinition(const QString& szClassname) const;
 
 	QString getVariableDeclaration() const;
 	QString getEnumerationDeclaration() const;

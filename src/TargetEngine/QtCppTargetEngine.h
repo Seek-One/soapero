@@ -48,12 +48,14 @@ private:
 	void doWriteDefinitionClassContent(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const;
 	void doWriteDefinitionGetterSetter(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType, const QString& szClassName) const;
 	void doWriteDefinitionSerializerDeserializer(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType, const QString& szClassName) const;
+	void doWriteDefinitionIsNull(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType, const QString& szClassName) const;
 
 	// Complex type
 	void doWriteDeclarationClassContent(QTextStream& os, const ComplexTypeSharedPtr& pComplexType) const;
 	void doWriteDefinitionClassContent(QTextStream& os, const ComplexTypeSharedPtr& pComplexType, const QString& szTargetNamespace = QString()) const;
 	void doWriteDefinitionSerializer(QTextStream& os, const ComplexTypeSharedPtr& pComplexType, const QString& szClassName, const QString& szTargetNamespace = QString()) const;
 	void doWriteDefinitionDeserializer(QTextStream& os, const ComplexTypeSharedPtr& pComplexType, const QString& szClassName, const QString& szTargetNamespace = QString()) const;
+	void doWriteDefinitionIsNull(QTextStream& os, const ComplexTypeSharedPtr& pComplexType, const QString& szClassName) const;
 
 	// Element
 	void doWriteDeclarationGetterSetter(QTextStream& os, const ElementSharedPtr& pElement) const;

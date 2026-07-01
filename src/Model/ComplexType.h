@@ -40,7 +40,6 @@ public:
 	QString getIsNullDeclaration() const;
 	QString getGetNamespaceDeclarationDeclaration() const;
 
-	QString getIsNullDefinition(const QString& szClassname) const;
 	QString getGetNamespaceDeclarationDefinition(const QString& szClassname) const;
 
 	QString getVariableName() const;

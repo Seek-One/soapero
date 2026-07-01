@@ -398,28 +398,6 @@ QString SimpleType::getEnumConvertDefinition(const QString& szClassname) const
 	return szDefinition;
 }
 
-QString SimpleType::getIsNullDefinition(const QString& szClassname) const
-{
-	if(isEnumeration()) {
-
-		QString szDefinition = ""
-		"bool %0::isNull() const" CRLF
-		"{" CRLF
-		"\t return %1 == Unknown;" CRLF
-		"}" CRLF;
-
-		return szDefinition.arg(szClassname).arg(getVariableName());
-
-	} else {
-		QString szDefinition = ""
-		"bool %0::isNull() const" CRLF
-		"{" CRLF
-		"\t return %1.isNull();" CRLF
-		"}" CRLF;
-
-		return szDefinition.arg(szClassname).arg(getVariableName());
-	}
-}
 
 QString SimpleType::getVariableName() const
 {

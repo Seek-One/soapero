@@ -865,6 +865,27 @@ void QtCppTargetEngine::doWriteDefinitionSerializerDeserializer(QTextStream& os,
 	}
 }
 
+void QtCppTargetEngine::doWriteDefinitionIsNull(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType, const QString& szClassName) const
+{
+	if(pSimpleType->isEnumeration()) {
+		QString szDefinition = ""
+			"bool %0::isNull() const" CRLF
+			"{" CRLF
+			"\t return %1 == Unknown;" CRLF
+			"}" CRLF;
+		os << szDefinition.arg(szClassName).arg(pSimpleType->getVariableName());
+	} else {
+		QString szDefinition = ""
+			"bool %0::isNull() const" CRLF
+			"{" CRLF
+			"\t return %1.isNull();" CRLF
+			"}" CRLF;
+		os << szDefinition.arg(szClassName).arg(pSimpleType->getVariableName());
+	}
+	os << CRLF;
+}
+
+
 void QtCppTargetEngine::doWriteDefinitionClassContent(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const
 {
 	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pSimpleType->getLocalName();
@@ -873,7 +894,7 @@ void QtCppTargetEngine::doWriteDefinitionClassContent(QTextStream& os, const Sim
 	doWriteDefinitionGetterSetter(os, pSimpleType, szClassname);
 	doWriteDefinitionSerializerDeserializer(os, pSimpleType, szClassname);
 	os << pSimpleType->getEnumConvertDefinition(szClassname) << CRLF;
-	os << pSimpleType->getIsNullDefinition(szClassname) << CRLF;
+	doWriteDefinitionIsNull(os, pSimpleType, szClassname);
 	os << CRLF;
 }
 
@@ -1024,7 +1045,7 @@ void QtCppTargetEngine::doWriteDefinitionClassContent(QTextStream& os, const Com
 	doWriteDefinitionDeserializer(os, pComplexType, szClassname, szTargetNamespace);
 	os << CRLF;
 	os << CRLF;
-	os << pComplexType->getIsNullDefinition(szClassname) << CRLF;
+	doWriteDefinitionIsNull(os, pComplexType, szClassname);
 	os << pComplexType->getGetNamespaceDeclarationDefinition(szClassname) << CRLF;
 }
 
@@ -1352,6 +1373,108 @@ void QtCppTargetEngine::doWriteDefinitionDeserializer(QTextStream& os, const Com
 	szDefinition += "}" CRLF;
 
 	os << szDefinition.arg(szClassName);
+}
+
+void QtCppTargetEngine::doWriteDefinitionIsNull(QTextStream& os, const ComplexTypeSharedPtr& pComplexType, const QString& szClassName) const
+{
+	AttributeList::const_iterator attr;
+	ElementList::const_iterator elem;
+	AttributeSharedPtr pAttribute;
+	ElementSharedPtr pElement;
+
+	QString szDefinition = ""
+	"bool %0::isNull() const" CRLF
+	"{" CRLF
+	"\treturn ";
+	QString szCond = "";
+
+	const auto& pExtensionType = pComplexType->getExtensionType();
+	if(!pExtensionType.isNull()) {
+		QString szExtensionName;
+		if(pExtensionType->getTypeMode() == Type::TypeSimple){
+			SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pExtensionType);
+			szExtensionName = pSimpleType->getCPPTypeNameString();
+		}else{
+			szExtensionName = pExtensionType->getNameWithNamespace();
+		}
+
+		if(pComplexType->isExtensionTypeList()){
+			szCond += "isEmpty() && ";
+		}else{
+			szCond += szExtensionName + "::isNull() && ";
+		}
+	}
+
+	const auto& pListAttribute = pComplexType->getAttributeList();
+	for(attr = pListAttribute->constBegin(); attr != pListAttribute->constEnd(); ++attr) {
+		if((*attr)->hasRef()){
+			pAttribute = (*attr)->getRef();
+		}else{
+			pAttribute = *attr;
+		}
+
+		if(pAttribute->getType()){
+			if( pAttribute->getType()->getTypeMode() == Type::TypeSimple) {
+				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pAttribute->getType());
+				if(pAttribute->isList()){
+					szCond += "(_" + pAttribute->getName() + "List.size() > 0) && ";
+				}else{
+					szCond += pSimpleType->getVariableName() + ".isNull() && ";
+				}
+
+			}else if( pAttribute->getType()->getTypeMode() == Type::TypeComplex) {
+				ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pAttribute->getType());
+				if(pAttribute->isList()){
+					szCond += "(_" + pAttribute->getName() + "List.size() > 0) && ";
+				}else{
+					QString szVariableName = "_" + ModelUtils::getUncapitalizedName(pAttribute->getName());
+					szCond += szVariableName + ".isNull() && ";
+				}
+			}
+		}
+	}
+
+	const auto& pListElement = pComplexType->getElementList();
+	for(elem = pListElement->constBegin(); elem != pListElement->constEnd(); ++elem) {
+		if((*elem)->hasRef()){
+			pElement = (*elem)->getRef();
+		}else{
+			pElement = *elem;
+		}
+
+		if( !pElement->getType()) {
+			continue;
+		}
+		if(pElement->getType()->getTypeMode() == Type::TypeSimple) {
+			SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pElement->getType());
+			if(pElement->getMaxOccurs() > 1 || pElement->getMaxOccurs() == -1) {
+				szCond += pElement->getVariableName() + "List.isEmpty() && ";
+			}else{
+				szCond += pElement->getVariableName() + ".isNull() && ";
+			}
+
+		}else if(pElement->getType()->getTypeMode() == Type::TypeComplex) {
+			ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pElement->getType());
+			if(pElement->getMaxOccurs() > 1 || pElement->getMaxOccurs() == -1) {
+				szCond += pElement->getVariableName() + "List.isEmpty() && ";
+			}else{
+				if((pElement->isNested() || pElement->isPointer())){
+					szCond += "(!" + pElement->getVariableName() + " || (" + pElement->getVariableName() + " && " + pElement->getVariableName() + "->isNull())) && ";
+				}else{
+					szCond += pElement->getVariableName() + ".isNull() && ";
+				}
+			}
+		}
+	}
+	if(szCond.length() > 1) {
+		szDefinition += szCond.left(szCond.length() - 4);
+		szDefinition += ";" CRLF;
+	}else{
+		szDefinition += "true;" CRLF;
+	}
+	szDefinition += "}" CRLF;
+
+	os << szDefinition.arg(szClassName) << CRLF;
 }
 
 QString QtCppTargetEngine::getBaseClassName(const QString& szPrefix, const ComplexTypeSharedPtr& pComplexType)
