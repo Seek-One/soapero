@@ -18,6 +18,8 @@ public:
 
 public:
 	// Header guardian
+	void writeDeclarationGuardStart(const QString& szHeaderGuard);
+	void writeDeclarationGuardEnd(const QString& szHeaderGuard);
 
 	// Includes
 	void writeIncludeFileSystem(const QString& szIncludeFile);

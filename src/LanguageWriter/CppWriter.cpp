@@ -14,6 +14,23 @@ CppWriter::~CppWriter()
 
 }
 
+void CppWriter::writeDeclarationGuardStart(const QString& szHeaderGuard)
+{
+	m_os << "#ifndef " << szHeaderGuard << CRLF;
+	m_os << "#define " << szHeaderGuard << CRLF;
+	m_os << CRLF;
+}
+
+void CppWriter::writeDeclarationGuardEnd(const QString& szHeaderGuard)
+{
+#ifndef USE_COMPAT_TEST
+	m_os << CRLF;
+	m_os << "#endif //" << szHeaderGuard << CRLF;
+#else
+	m_os << "#endif" << CRLF;
+#endif
+}
+
 void CppWriter::writeIncludeFileSystem(const QString& szIncludeFile)
 {
 	m_os << "#include <" << szIncludeFile << ">" << CRLF;

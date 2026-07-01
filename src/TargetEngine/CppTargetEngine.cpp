@@ -47,23 +47,6 @@ void CppTargetEngine::doWriteFileDescription(QTextStream& os, const QString& szF
 	os << CRLF;
 }
 
-void CppTargetEngine::doWriteDeclarationGuardStart(QTextStream& os, const QString& szHeaderGuard) const
-{
-	os << "#ifndef " << szHeaderGuard << CRLF;
-	os << "#define " << szHeaderGuard << CRLF;
-	os << CRLF;
-}
-
-void CppTargetEngine::doWriteDeclarationGuardEnd(QTextStream& os, const QString& szHeaderGuard) const
-{
-#ifndef USE_COMPAT_TEST
-	os << CRLF;
-	os << "#endif //" << szHeaderGuard << CRLF;
-#else
-	os << "#endif" << CRLF;
-#endif
-}
-
 void CppTargetEngine::doWriteNamespaceTargetInfos(QTextStream& os, const QString& szPrefix, const QString& szNamespace, const QString& szNamespaceURI) const
 {
 	os << CRLF;
@@ -286,7 +269,7 @@ bool CppTargetEngine::doBuildHeaderFile(const ServiceSharedPtr& pService)
 		doWriteFileDescription(os, szHeaderFilename);
 		// Header guard start
 		QString szHeaderGuard = getHeaderGuard(m_szNamespace, pService);
-		doWriteDeclarationGuardStart(os, szHeaderGuard);
+		langWriter.writeDeclarationGuardStart(szHeaderGuard);
 		// Includes
 		doWriteDeclarationIncludes(os, m_pService);
 		// Namespace start
@@ -296,7 +279,7 @@ bool CppTargetEngine::doBuildHeaderFile(const ServiceSharedPtr& pService)
 		// Namespace end
 		langWriter.writeNamespaceEnd(m_szNamespace);
 		// Header guard end
-		doWriteDeclarationGuardEnd(os, szHeaderGuard);
+		langWriter.writeDeclarationGuardEnd(szHeaderGuard);
 
 		m_pGeneratedFilesList->append(szShortFilePath);
 
@@ -462,7 +445,7 @@ bool CppTargetEngine::doBuildHeaderFile(const RequestResponseElementSharedPtr& p
 		doWriteFileDescription(os, szHeaderFilename);
 		// Header guard start
 		QString szHeaderGuard = getHeaderGuard(m_szNamespace, pElement);
-		doWriteDeclarationGuardStart(os, szHeaderGuard);
+		langWriter.writeDeclarationGuardStart(szHeaderGuard);
 		// Includes
 		doWriteDeclarationIncludes(os, pElement);
 		// Namespace start
@@ -475,7 +458,7 @@ bool CppTargetEngine::doBuildHeaderFile(const RequestResponseElementSharedPtr& p
 #ifdef USE_COMPAT_TEST
 		os << CRLF;
 #endif
-		doWriteDeclarationGuardEnd(os, szHeaderGuard);
+		langWriter.writeDeclarationGuardEnd(szHeaderGuard);
 
 		m_pGeneratedFilesList->append(szShortFilePath);
 
@@ -633,7 +616,7 @@ bool CppTargetEngine::doBuildHeaderFile(const TypeSharedPtr& pType) {
 		doWriteFileDescription(os, szHeaderFilename);
 		// Header guard start
 		QString szHeaderGuard = getHeaderGuard(m_szNamespace, pType);
-		doWriteDeclarationGuardStart(os, szHeaderGuard);
+		langWriter.writeDeclarationGuardStart(szHeaderGuard);
 		// Includes
 		doWriteDeclarationIncludes(os, pType);
 		// Namespace start
@@ -646,7 +629,7 @@ bool CppTargetEngine::doBuildHeaderFile(const TypeSharedPtr& pType) {
 #ifdef USE_COMPAT_TEST
 		os << CRLF;
 #endif
-		doWriteDeclarationGuardEnd(os, szHeaderGuard);
+		langWriter.writeDeclarationGuardEnd(szHeaderGuard);
 
 		m_pGeneratedFilesList->append(szShortFilePath);
 

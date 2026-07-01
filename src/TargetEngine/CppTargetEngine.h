@@ -34,8 +34,6 @@ protected:
 	// CPP files creation
 	static QString getHeaderPath(const QString& szNamespace, const QString& szCategory, const QString& szFilename, FileCategory iOrigin);
 	virtual void doWriteFileDescription(QTextStream& os, const QString& szFilename) const;
-	virtual void doWriteDeclarationGuardStart(QTextStream& os, const QString& szHeaderGuard) const;
-	virtual void doWriteDeclarationGuardEnd(QTextStream& os, const QString& szHeaderGuard) const;
 	virtual void doWriteNamespaceTargetInfos(QTextStream& os, const QString& szPrefix, const QString& szNamespace, const QString& szNamespaceURI) const;
 
 	// CPP class creation
