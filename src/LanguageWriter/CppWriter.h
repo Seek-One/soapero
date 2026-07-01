@@ -20,8 +20,12 @@ public:
 
 public:
 	// Includes
-	void writeIncludeFileSystem(const QString& szIncludeFile) const;
-	void writeIncludeFileLocal(const QString& szIncludeFile) const;
+	void writeIncludeFileSystem(const QString& szIncludeFile);
+	void writeIncludeFileLocal(const QString& szIncludeFile);
+
+	// Namespace
+	void writeNamespaceStart(const QString& szNamespace);
+	void writeNamespaceEnd(const QString& szNamespace);
 
 	void writeDeclarationVariable(const QString& szTypeName, const QString& szVariableName, bool bTypePointer = false);
 	void writeDeclarationVariableList(const QString& szListType, const QString& szTypeName, const QString& szVariableName, bool bTypePointer = false);

@@ -14,14 +14,28 @@ CppWriter::~CppWriter()
 
 }
 
-void CppWriter::writeIncludeFileSystem(const QString& szIncludeFile) const
+void CppWriter::writeIncludeFileSystem(const QString& szIncludeFile)
 {
 	m_os << "#include <" << szIncludeFile << ">" << CRLF;
 }
 
-void CppWriter::writeIncludeFileLocal(const QString& szIncludeFile) const
+void CppWriter::writeIncludeFileLocal(const QString& szIncludeFile)
 {
 	m_os << "#include \"" << szIncludeFile << "\"" << CRLF;
+}
+
+void CppWriter::writeNamespaceStart(const QString& szNamespace)
+{
+	if(!szNamespace.isEmpty()) {
+		m_os << "namespace " << szNamespace << " {" << CRLF;
+	}
+}
+
+void CppWriter::writeNamespaceEnd(const QString& szNamespace)
+{
+	if(!szNamespace.isEmpty()) {
+		m_os << "} // " << szNamespace << CRLF;
+	}
 }
 
 void CppWriter::writeDeclarationVariable(const QString& szTypeName, const QString& szVariableName, bool bTypePointer)

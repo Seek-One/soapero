@@ -36,8 +36,6 @@ protected:
 	virtual void doWriteFileDescription(QTextStream& os, const QString& szFilename) const;
 	virtual void doWriteDeclarationGuardStart(QTextStream& os, const QString& szHeaderGuard) const;
 	virtual void doWriteDeclarationGuardEnd(QTextStream& os, const QString& szHeaderGuard) const;
-	virtual void doWriteNamespaceStart(QTextStream& os, const QString& szNamespace) const;
-	virtual void doWriteNamespaceEnd(QTextStream& os, const QString& szNamespace) const;
 	virtual void doWriteNamespaceTargetInfos(QTextStream& os, const QString& szPrefix, const QString& szNamespace, const QString& szNamespaceURI) const;
 
 	// CPP class creation

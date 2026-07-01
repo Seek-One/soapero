@@ -394,10 +394,12 @@ void QtCppTargetEngine::doWriteDeclarationClass(QTextStream& os, const RequestRe
 	QString szClassName =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pElement->getLocalName(true);
 	TypeSharedPtr pType = pElement->getType();
 	QString szNamespace = StringUtils::secureString(pElement->getNamespace().toUpper());
-
+	
+	QtCppWriter langWriter(os);
+	
 	// Namespaces start
-	doWriteNamespaceStart(os, szNamespace);
-	doWriteNamespaceStart(os, "MSG");
+	langWriter.writeNamespaceStart(szNamespace);
+	langWriter.writeNamespaceStart("MSG");
 
 	ComplexTypeSharedPtr pComplexType;
 	if(pType->getTypeMode() == Type::TypeComplex){
@@ -416,8 +418,8 @@ void QtCppTargetEngine::doWriteDeclarationClass(QTextStream& os, const RequestRe
 	}
 
 	// Namespaces end
-	doWriteNamespaceEnd(os, "MSG");
-	doWriteNamespaceEnd(os, szNamespace);
+	langWriter.writeNamespaceEnd("MSG");
+	langWriter.writeNamespaceEnd(szNamespace);
 }
 
 void QtCppTargetEngine::doWriteDefinitionClass(QTextStream& os, const RequestResponseElementSharedPtr& pElement) const
@@ -435,9 +437,11 @@ void QtCppTargetEngine::doWriteDefinitionClass(QTextStream& os, const RequestRes
 	}
 	QString szNamespace = StringUtils::secureString(pElement->getNamespace().toUpper());
 
+	QtCppWriter langWriter(os);
+
 	// Namespaces start
-	doWriteNamespaceStart(os, szNamespace);
-	doWriteNamespaceStart(os, "MSG");
+	langWriter.writeNamespaceStart(szNamespace);
+	langWriter.writeNamespaceStart("MSG");
 	os << CRLF;
 
 	if(!pComplexType.isNull()) {
@@ -451,8 +455,8 @@ void QtCppTargetEngine::doWriteDefinitionClass(QTextStream& os, const RequestRes
 	}
 
 	// Namespaces end
-	doWriteNamespaceEnd(os, "MSG");
-	doWriteNamespaceEnd(os, szNamespace);
+	langWriter.writeNamespaceEnd("MSG");
+	langWriter.writeNamespaceEnd(szNamespace);
 }
 
 //////////////////////////////////
@@ -559,9 +563,11 @@ void QtCppTargetEngine::doWriteDeclarationClass(QTextStream& os, const TypeShare
 	QString szClassname = (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pType->getLocalName(true);
 	QString szNamespace = StringUtils::secureString(pType->getNamespace().toUpper());
 
+	QtCppWriter langWriter(os);
+
 	// Namespaces start
-	doWriteNamespaceStart(os, szNamespace);
-	doWriteNamespaceStart(os, "TYPES");
+	langWriter.writeNamespaceStart(szNamespace);
+	langWriter.writeNamespaceStart("TYPES");
 
 	if(pType->getTypeMode() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pType);
@@ -607,8 +613,8 @@ void QtCppTargetEngine::doWriteDeclarationClass(QTextStream& os, const TypeShare
 	}
 
 	// Namespaces end
-	doWriteNamespaceEnd(os, "TYPES ");
-	doWriteNamespaceEnd(os, szNamespace);
+	langWriter.writeNamespaceEnd("TYPES ");
+	langWriter.writeNamespaceEnd(szNamespace);
 }
 
 void QtCppTargetEngine::doWriteDeclarationSerializer(QTextStream& os, const TypeSharedPtr& pType) const
@@ -654,9 +660,11 @@ void QtCppTargetEngine::doWriteDefinitionClass(QTextStream& os, const TypeShared
 	QString szClassname =  (!m_szPrefix.isEmpty() ? m_szPrefix : "") + pType->getLocalName(true);
 	QString szNamespace = StringUtils::secureString(pType->getNamespace().toUpper());
 
+	QtCppWriter langWriter(os);
+
 	// Namespaces start
-	doWriteNamespaceStart(os, szNamespace);
-	doWriteNamespaceStart(os, "TYPES");
+	langWriter.writeNamespaceStart(szNamespace);
+	langWriter.writeNamespaceStart("TYPES");
 	os << CRLF;
 
 	if(pType->getTypeMode() == Type::TypeSimple) {
@@ -725,8 +733,8 @@ void QtCppTargetEngine::doWriteDefinitionClass(QTextStream& os, const TypeShared
 	}
 
 	// Namespaces end
-	doWriteNamespaceEnd(os, "TYPES");
-	doWriteNamespaceEnd(os, szNamespace);
+	langWriter.writeNamespaceEnd("TYPES");
+	langWriter.writeNamespaceEnd(szNamespace);
 }
 
 void QtCppTargetEngine::doWriteDeclarationClassContent(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const

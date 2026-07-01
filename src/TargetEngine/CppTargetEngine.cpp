@@ -64,20 +64,6 @@ void CppTargetEngine::doWriteDeclarationGuardEnd(QTextStream& os, const QString&
 #endif
 }
 
-void CppTargetEngine::doWriteNamespaceStart(QTextStream& os, const QString& szNamespace) const
-{
-	if(!szNamespace.isEmpty()) {
-		os << "namespace " << szNamespace << " {" << CRLF;
-	}
-}
-
-void CppTargetEngine::doWriteNamespaceEnd(QTextStream& os, const QString& szNamespace) const
-{
-	if(!szNamespace.isEmpty()) {
-		os << "} // " << szNamespace << CRLF;
-	}
-}
-
 void CppTargetEngine::doWriteNamespaceTargetInfos(QTextStream& os, const QString& szPrefix, const QString& szNamespace, const QString& szNamespaceURI) const
 {
 	os << CRLF;
@@ -293,8 +279,8 @@ bool CppTargetEngine::doBuildHeaderFile(const ServiceSharedPtr& pService)
 	QFile file(szFullFilePath);
 	bRes = openFile(file);
 	if(bRes) {
-
 		QTextStream os(&file);
+		CppWriter langWriter(os);
 
 		// File description
 		doWriteFileDescription(os, szHeaderFilename);
@@ -304,11 +290,11 @@ bool CppTargetEngine::doBuildHeaderFile(const ServiceSharedPtr& pService)
 		// Includes
 		doWriteDeclarationIncludes(os, m_pService);
 		// Namespace start
-		doWriteNamespaceStart(os, m_szNamespace);
+		langWriter.writeNamespaceStart(m_szNamespace);
 		// Class
 		doWriteDeclarationClass(os, m_pService);
 		// Namespace end
-		doWriteNamespaceEnd(os, m_szNamespace);
+		langWriter.writeNamespaceEnd(m_szNamespace);
 		// Header guard end
 		doWriteDeclarationGuardEnd(os, szHeaderGuard);
 
@@ -470,6 +456,7 @@ bool CppTargetEngine::doBuildHeaderFile(const RequestResponseElementSharedPtr& p
 	bRes = openFile(file);
 	if(bRes) {
 		QTextStream os(&file);
+		CppWriter langWriter(os);
 
 		// File description
 		doWriteFileDescription(os, szHeaderFilename);
@@ -479,11 +466,11 @@ bool CppTargetEngine::doBuildHeaderFile(const RequestResponseElementSharedPtr& p
 		// Includes
 		doWriteDeclarationIncludes(os, pElement);
 		// Namespace start
-		doWriteNamespaceStart(os, m_szNamespace);
+		langWriter.writeNamespaceStart(m_szNamespace);
 		// Class
 		doWriteDeclarationClass(os, pElement);
 		// Namespace end
-		doWriteNamespaceEnd(os, m_szNamespace);
+		langWriter.writeNamespaceEnd(m_szNamespace);
 		// Header guard end
 #ifdef USE_COMPAT_TEST
 		os << CRLF;
@@ -524,11 +511,11 @@ bool CppTargetEngine::doBuildCppFile(const RequestResponseElementSharedPtr& pEle
 		langWriter.writeIncludeFileLocal(szHeaderFilename);
 		os << CRLF;
 		// Namespace start
-		doWriteNamespaceStart(os, m_szNamespace);
+		langWriter.writeNamespaceStart(m_szNamespace);
 		// Class
 		doWriteDefinitionClass(os, pElement);
 		// Namespace end
-		doWriteNamespaceEnd(os, m_szNamespace);
+		langWriter.writeNamespaceEnd(m_szNamespace);
 
 		m_pGeneratedFilesList->append(szShortFilePath);
 
@@ -639,8 +626,8 @@ bool CppTargetEngine::doBuildHeaderFile(const TypeSharedPtr& pType) {
 	QFile file(szFullFilePath);
 	bRes = openFile(file);
 	if(bRes) {
-
 		QTextStream os(&file);
+		CppWriter langWriter(os);
 
 		// File description
 		doWriteFileDescription(os, szHeaderFilename);
@@ -650,11 +637,11 @@ bool CppTargetEngine::doBuildHeaderFile(const TypeSharedPtr& pType) {
 		// Includes
 		doWriteDeclarationIncludes(os, pType);
 		// Namespace start
-		doWriteNamespaceStart(os, m_szNamespace);
+		langWriter.writeNamespaceStart(m_szNamespace);
 		// Class
 		doWriteDeclarationClass(os, pType);
 		// Namespace end
-		doWriteNamespaceEnd(os, m_szNamespace);
+		langWriter.writeNamespaceEnd(m_szNamespace);
 		// Header guard end
 #ifdef USE_COMPAT_TEST
 		os << CRLF;
@@ -693,11 +680,11 @@ bool CppTargetEngine::doBuildCppFile(const TypeSharedPtr& pType)
 		langWriter.writeIncludeFileLocal(szHeaderFilename);
 		os << CRLF;
 		// Namespace start
-		doWriteNamespaceStart(os, m_szNamespace);
+		langWriter.writeNamespaceStart(m_szNamespace);
 		// Class
 		doWriteDefinitionClass(os, pType);
 		// Namespace end
-		doWriteNamespaceEnd(os, m_szNamespace);
+		langWriter.writeNamespaceEnd(m_szNamespace);
 
 		m_pGeneratedFilesList->append(szShortFilePath);
 
