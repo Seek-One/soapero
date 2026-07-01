@@ -181,6 +181,73 @@ void CppTargetEngine::doWriteDeclarationAddList(QTextStream& os, const QString& 
 	os << "\t" << szDeclaration << CRLF;
 }
 
+void CppTargetEngine::doWriteDefinitionGetter(QTextStream& os, const QString& szClassName, const QString& szFuncName, const QString& szMemberType, const QString& szMemberName, GetterReturnMode iReturnMode) const
+{
+	QString szDefinition;
+	if(iReturnMode == GetterReturnModePointer) {
+		szDefinition = "%0* %1::get%2() const" CRLF;
+	}else if(iReturnMode == GetterReturnModeConst) {
+		szDefinition = "const %0& %1::get%2() const" CRLF;
+	}else{
+		szDefinition = "%0 %1::get%2() const" CRLF;
+	}
+	szDefinition += "{" CRLF;
+	szDefinition += "\treturn %3;" CRLF;
+	szDefinition += "}" CRLF;;
+	szDefinition =  szDefinition.arg(szMemberType).arg(szClassName).arg(szFuncName).arg(szMemberName);
+	os << szDefinition << CRLF;
+}
+
+void CppTargetEngine::doWriteDefinitionGetterList(QTextStream& os, const QString& szClassName, const QString& szFuncName, const QString& szMemberType, const QString& szMemberName, GetterReturnMode iReturnMode) const
+{
+	QString szDefinition;
+	szDefinition += "const std::list<%0>& %1::get%2List() const" CRLF;
+	szDefinition += "{" CRLF;
+	szDefinition += "\treturn %3;" CRLF;
+	szDefinition += "}" CRLF;
+	szDefinition = szDefinition.arg(szMemberType).arg(szClassName).arg(szFuncName).arg(szMemberName);
+	os << szDefinition << CRLF;
+}
+
+void CppTargetEngine::doWriteDefinitionSetter(QTextStream& os, const QString& szClassName, const QString& szFuncName, const QString& szParamType, const QString& szParamName, const QString& szMemberName, SetterParamMode iParamMode) const
+{
+	QString szDefinition;
+	if(iParamMode == SetterParamModeConst) {
+		szDefinition = "void %0::set%1(const %2& %3)" CRLF;
+	}else if(iParamMode == SetterParamModePointer) {
+		szDefinition = "void %0::set%1(%2* %3)" CRLF;
+	}else{
+		szDefinition = "void %0::set%1(%2 %3)" CRLF;
+	}
+	szDefinition += "{" CRLF;
+	szDefinition += "\t%4 = %3;" CRLF;
+	szDefinition += "}" CRLF;
+	szDefinition = szDefinition.arg(szClassName).arg(szFuncName).arg(szParamType).arg(szParamName).arg(szMemberName);
+	os << szDefinition << CRLF;
+}
+
+void CppTargetEngine::doWriteDefinitionSetterList(QTextStream& os, const QString& szClassName, const QString& szFuncName, const QString& szParamType, const QString& szParamName, const QString& szMemberName, SetterParamMode iParamMode) const
+{
+	QString szDefinition;
+	szDefinition += "void %0::set%1List(const std::list<%2>& %3List)" CRLF;
+	szDefinition += "{" CRLF;
+	szDefinition += "\t%4 = %3List;" CRLF;
+	szDefinition += "}" CRLF;
+	szDefinition = szDefinition.arg(szClassName).arg(szFuncName).arg(szParamType).arg(szParamName).arg(szMemberName);
+	os << szDefinition << CRLF;
+}
+
+void CppTargetEngine::doWriteDefinitionAddList(QTextStream& os, const QString& szClassName, const QString& szFuncName, const QString& szParamType, const QString& szParamName, const QString& szMemberName, SetterParamMode iParamMode) const
+{
+	QString szDefinition;
+	szDefinition += "void %0::add%1(const %2& %3)" CRLF;
+	szDefinition += "{" CRLF;
+	szDefinition += "\t%4.push(%3);" CRLF;
+	szDefinition += "}" CRLF;
+	szDefinition = szDefinition.arg(szClassName).arg(szFuncName).arg(szParamType).arg(szParamName).arg(szMemberName);
+	os << szDefinition << CRLF;
+}
+
 //////////////////
 // Service files
 //////////////////

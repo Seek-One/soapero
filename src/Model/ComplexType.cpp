@@ -101,39 +101,6 @@ ElementListSharedPtr ComplexType::getElementList() const
 	return m_pListElement;
 }
 
-QString ComplexType::getSetterDefinition(const QString& szClassname, const QString& szName) const
-{
-	QString szLocalName = (szName.isEmpty() ? getLocalName() : szName);
-	QString szFuncName = ModelUtils::getCapitalizedName(szLocalName);
-	QString szParamName = ModelUtils::getUncapitalizedName(szLocalName);
-	QString szParamType = getNameWithNamespace();
-	QString szMemberName = "_" + ModelUtils::getUncapitalizedName(szLocalName);
-
-	QString szDeclaration;
-	szDeclaration += "void %0::set%1(const %2& %3)" CRLF;
-	szDeclaration += "{" CRLF;
-	szDeclaration += "\t%4 = %3;" CRLF;
-	szDeclaration += "}" CRLF;
-
-	return szDeclaration.arg(szClassname).arg(szFuncName).arg(szParamType).arg(szParamName).arg(szMemberName);
-}
-
-QString ComplexType::getGetterDefinition(const QString& szClassname, const QString& szName) const
-{
-	QString szLocalName = (szName.isEmpty() ? getLocalName() : szName);
-	QString szFuncName = ModelUtils::getCapitalizedName(szLocalName);
-	QString szMemberType = getNameWithNamespace();
-	QString szMemberName = "_" + ModelUtils::getUncapitalizedName(szLocalName);
-
-	QString szDefinition;
-	szDefinition += "const %0& %1::get%2() const" CRLF;
-	szDefinition += "{" CRLF;
-	szDefinition += "\treturn %3;" CRLF;
-	szDefinition += "}" CRLF;
-
-	return szDefinition.arg(szMemberType).arg(szClassname).arg(szFuncName).arg(szMemberName);
-}
-
 QString ComplexType::getSerializerDefinition(const QString& szClassname, const QString& szNamespace) const
 {
 	AttributeList::const_iterator attr;

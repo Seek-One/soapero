@@ -40,9 +40,6 @@ public:
 
 	QString getVariableDeclaration() const;
 
-	QString getSetterDefinition(const QString& szClassname) const;
-	QString getGetterDefinition(const QString& szClassname) const;
-
 	QString getVariableName() const;
 	QString getVariableNameList() const;
 

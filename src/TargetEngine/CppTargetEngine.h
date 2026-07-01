@@ -20,14 +20,12 @@ protected:
 		GetterReturnModeDefault = 0x00,
 		GetterReturnModeConst = 0x01,
 		GetterReturnModePointer = 0x02,
-		GetterReturnModeReference = 0x04,
 	};
 
 	enum SetterParamMode {
 		SetterParamModeDefault = 0x00,
 		SetterParamModeConst = 0x01,
 		SetterParamModePointer = 0x02,
-		SetterParamModeReference = 0x04,
 
 		SetterParamModeConst2 = 0x03, // Compat
 	};
@@ -53,6 +51,11 @@ protected:
 	virtual void doWriteDeclarationSetter(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName, SetterParamMode iParamMode) const;
 	virtual void doWriteDeclarationSetterList(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName, SetterParamMode iParamMode) const;
 	virtual void doWriteDeclarationAddList(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName, SetterParamMode iParamMode) const;
+	virtual void doWriteDefinitionGetter(QTextStream& os, const QString& szClassName, const QString& szFuncName, const QString& szMemberType, const QString& szMemberName, GetterReturnMode iReturnMode) const;
+	virtual void doWriteDefinitionGetterList(QTextStream& os, const QString& szClassName, const QString& szFuncName, const QString& szMemberType, const QString& szMemberName, GetterReturnMode iReturnMode) const;
+	virtual void doWriteDefinitionSetter(QTextStream& os, const QString& szClassName, const QString& szFuncName, const QString& szParamType, const QString& szParamName, const QString& szMemberName, SetterParamMode iParamMode) const;
+	virtual void doWriteDefinitionSetterList(QTextStream& os, const QString& szClassName, const QString& szFuncName, const QString& szParamType, const QString& szParamName, const QString& szMemberName, SetterParamMode iParamMode) const;
+	virtual void doWriteDefinitionAddList(QTextStream& os, const QString& szClassName, const QString& szFuncName, const QString& szParamType, const QString& szParamName, const QString& szMemberName, SetterParamMode iParamMode) const;
 
 	// Service files
 	static QString getHeaderGuard(const QString& szPrefix, const ServiceSharedPtr& pService);
