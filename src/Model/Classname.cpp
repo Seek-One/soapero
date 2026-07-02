@@ -28,10 +28,28 @@ Classname::~Classname()
 
 }
 
-void Classname::setQualifedName(const QString& szNamespace, const QString& szLocalName)
+Classname::ClassCategory Classname::getClassCategory() const
 {
-	m_szNamespace = szNamespace;
+	return m_iCategory;
+}
+
+QString Classname::getLocalName(bool bSafe) const
+{
+	if(bSafe){
+		QString szSafeLocalName = StringUtils::secureString(m_szLocalName);
+		return szSafeLocalName;
+	}
+	return m_szLocalName;
+}
+
+void Classname::setLocalName(const QString& szLocalName)
+{
 	m_szLocalName = szLocalName;
+}
+
+const QString& Classname::getNamespace() const
+{
+	return m_szNamespace;
 }
 
 void Classname::setNamespace(const QString& szNamespace)
@@ -39,14 +57,24 @@ void Classname::setNamespace(const QString& szNamespace)
 	m_szNamespace = szNamespace;
 }
 
+const QString& Classname::getNamespaceUri() const
+{
+	return m_szNamespaceUri;
+}
+
 void Classname::setNamespaceUri(const QString& szNamespaceUri)
 {
 	m_szNamespaceUri = szNamespaceUri;
 }
 
-void Classname::setLocalName(const QString& szLocalName)
+const QString& Classname::getSchemaUri() const
 {
-	m_szLocalName = szLocalName;
+	return m_szSchemaUri;
+}
+
+void Classname::setSchemaUri(const QString& szSchemaUri)
+{
+	m_szSchemaUri = szSchemaUri;
 }
 
 void Classname::setName(const QString& szName)
@@ -58,6 +86,23 @@ void Classname::setName(const QString& szName)
 	}else{
 		m_szLocalName = szName;
 	}
+}
+
+QString Classname::getQualifiedName() const
+{
+	QString szSafeLocalName = StringUtils::secureString(m_szLocalName);
+
+	if(m_szNamespace.isEmpty()) {
+		return m_szLocalName;
+	}else{
+		return m_szNamespace.toUpper().replace("-", "_") + getCategoryNamespace() + "::" + szSafeLocalName;
+	}
+}
+
+void Classname::setQualifedName(const QString& szNamespace, const QString& szLocalName)
+{
+	m_szNamespace = szNamespace;
+	m_szLocalName = szLocalName;
 }
 
 QString Classname::getTagQualifiedName() const
@@ -80,36 +125,6 @@ QString Classname::getNameWithNamespace() const
 	}
 }
 
-QString Classname::getQualifiedName() const
-{
-	QString szSafeLocalName = StringUtils::secureString(m_szLocalName);
-
-	if(m_szNamespace.isEmpty()) {
-		return m_szLocalName;
-	}else{
-		return m_szNamespace.toUpper().replace("-", "_") + getCategoryNamespace() + "::" + szSafeLocalName;
-	}
-}
-
-const QString& Classname::getNamespace() const
-{
-	return m_szNamespace;
-}
-
-const QString& Classname::getNamespaceUri() const
-{
-	return m_szNamespaceUri;
-}
-
-QString Classname::getLocalName(bool bSafe) const
-{
-	if(bSafe){
-		QString szSafeLocalName = StringUtils::secureString(m_szLocalName);
-		return szSafeLocalName;
-	}
-	return m_szLocalName;
-}
-
 QString Classname::getCategoryNamespace() const
 {
 	if(m_iCategory == CategoryType){
@@ -119,9 +134,4 @@ QString Classname::getCategoryNamespace() const
 		return "::MSG";
 	}
 	return "";
-}
-
-Classname::ClassCategory Classname::getClassCategory() const
-{
-	return m_iCategory;
 }

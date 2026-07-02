@@ -25,19 +25,29 @@ public:
 	virtual ~Classname();
 
 public:
-	void setQualifedName(const QString& szNamespace, const QString& szName);
-	void setNamespace(const QString& szNamespace);
-	void setNamespaceUri(const QString& szNamespaceUri);
+	ClassCategory getClassCategory() const;
+
+	// Attributes
+	QString getLocalName(bool bSafe = false) const;
 	void setLocalName(const QString& szLocalName);
+
+	const QString& getNamespace() const;
+	void setNamespace(const QString& szNamespace);
+
+	const QString& getNamespaceUri() const;
+	void setNamespaceUri(const QString& szNamespaceUri);
+
+	const QString& getSchemaUri() const;
+	void setSchemaUri(const QString& szSchemaUri);
+
+	// Utility function
 	void setName(const QString& szName);
+	QString getQualifiedName() const;
+	void setQualifedName(const QString& szNamespace, const QString& szName);
+
 	QString getTagQualifiedName() const;
 	QString getNameWithNamespace() const;
-	QString getQualifiedName() const;
-	const QString& getNamespace() const;
-	const QString& getNamespaceUri() const;
-	QString getLocalName(bool bSafe = false) const;
 
-	ClassCategory getClassCategory() const;
 
 protected:
 	QString getCategoryNamespace() const;
@@ -47,6 +57,7 @@ private:
 	QString m_szLocalName;
 	QString m_szNamespace;
 	QString m_szNamespaceUri;
+	QString m_szSchemaUri;
 };
 
 

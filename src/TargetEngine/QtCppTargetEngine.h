@@ -15,7 +15,7 @@ public:
 
 private:
 	// CPP files creation
-	void doWriteNamespaceTargetInfos(QTextStream& os, const QString& szPrefix, const QString& szNamespace, const QString& szNamespaceURI) const override;
+	void doWriteClassInfos(QTextStream& os, const QString& szPrefix, const QString& szSchemaURI, const QString& szNamespace, const QString& szNamespaceURI) const override;
 
 	// CPP class creation
 	void doWriteDeclarationSetterList(QTextStream& os, const QString& szFuncName, const QString& szParamType, const QString& szParamName, SetterParamMode iParamMode) const override;

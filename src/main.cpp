@@ -52,6 +52,7 @@ bool processWSDLFile(const QString& szFilename, const QString& szFilePath, const
 
 		// Parse WSDL file in XML format
 		QWSDLParser parser;
+		parser.setSchemaURI(szFilename);
 		if(bRes){
 			QXmlStreamReader xmlReader;
 			xmlReader.addData(bytes);

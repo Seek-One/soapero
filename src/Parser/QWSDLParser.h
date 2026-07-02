@@ -30,6 +30,8 @@ public:
 	void initXMLAttributes();		// https://www.w3.org/2001/xml.xsd
 	void setLogIndent(int iIdent);
 
+	void setSchemaURI(const QString& szSchemaURI);
+
 	void setWSDLData(const QSharedPointer<QWSDLData>& pDataLoaded);
 
 	void setInitialNamespaceUri(const QString& szNamespaceUri);
@@ -122,7 +124,11 @@ private:
 	TypeSharedPtr getTypeByName(const QString& szLocalName, const QString& szNamespace = QString(), const TypeListSharedPtr& pListIgnoredTypes = TypeList::create());
 	TypeRefSharedPtr getTypeRefByTypeName(const QString& szTypeName, const QString& szNamespace = QString());
 
+	SimpleTypeSharedPtr createSimpleType() const;
+	ComplexTypeSharedPtr createComplexType() const;
+
 	bool isWSDLSchema(const QString& szQName);
+	QString getCompleteSchemaURI() const;
 
 	// Remote file loading
 	bool loadFromHttp(const QString& szURL, const QString& szNamespace = QString());
@@ -143,7 +149,10 @@ private:
 	void incrLogIndent();
 	void decrLogIndent();
 
+
 private:
+	QString m_szSchemaURI;
+
     QString m_szCurrentType;
     QString m_szCurrentText;
     QString m_szCurrentOperationName;

@@ -23,9 +23,12 @@ QtCppTargetEngine::~QtCppTargetEngine()
 
 }
 
-void QtCppTargetEngine::doWriteNamespaceTargetInfos(QTextStream& os, const QString& szPrefix, const QString& szNamespace, const QString& szNamespaceURI) const
+void QtCppTargetEngine::doWriteClassInfos(QTextStream& os, const QString& szPrefix, const QString& szSchemaURI, const QString& szNamespace, const QString& szNamespaceURI) const
 {
 	os << CRLF;
+	if (!szSchemaURI.isEmpty()) {
+		os << "const QString " << szPrefix << "_SchemaUri = \"" << szSchemaURI << "\";" CRLF;
+	}
 	os << "const QString " << szPrefix << "_TargetNamespace = \"" << szNamespace << "\";" CRLF;
 	os << "const QString " << szPrefix << "_TargetNamespaceUri = \"" << szNamespaceURI << "\";" CRLF;
 	os << CRLF;
@@ -403,7 +406,7 @@ void QtCppTargetEngine::doWriteDeclarationClass(QTextStream& os, const RequestRe
 	if(!pComplexType.isNull())
 	{
 		// Write namespace infos
-		doWriteNamespaceTargetInfos(os, szClassName, pElement->getNamespace(), pElement->getNamespaceUri());
+		doWriteClassInfos(os, szClassName, pElement->getSchemaUri(), pElement->getNamespace(), pElement->getNamespaceUri());
 
 		startCppClass(os, szClassName, pComplexType);
 		doWriteDeclarationClassContent(os, pComplexType);
@@ -568,7 +571,7 @@ void QtCppTargetEngine::doWriteDeclarationClass(QTextStream& os, const TypeShare
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pType);
 
 		// Write namespace infos
-		doWriteNamespaceTargetInfos(os, pSimpleType->getLocalName(true), pSimpleType->getNamespace(), pSimpleType->getNamespaceUri());
+		doWriteClassInfos(os, pSimpleType->getLocalName(true), pSimpleType->getSchemaUri(), pSimpleType->getNamespace(), pSimpleType->getNamespaceUri());
 
 		// Start class
 		doWriteDeclarationClassStart(os, szClassname);
@@ -591,7 +594,7 @@ void QtCppTargetEngine::doWriteDeclarationClass(QTextStream& os, const TypeShare
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pType);
 
 		// Write namespace infos
-		doWriteNamespaceTargetInfos(os, pComplexType->getLocalName(true), pComplexType->getNamespace(), pComplexType->getNamespaceUri());
+		doWriteClassInfos(os, pComplexType->getLocalName(true), pComplexType->getSchemaUri(), pComplexType->getNamespace(), pComplexType->getNamespaceUri());
 
 		if(pComplexType->getElementList()){
 			ElementList::const_iterator iter;

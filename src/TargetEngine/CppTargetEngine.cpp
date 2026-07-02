@@ -47,9 +47,12 @@ void CppTargetEngine::doWriteFileDescription(QTextStream& os, const QString& szF
 	os << CRLF;
 }
 
-void CppTargetEngine::doWriteNamespaceTargetInfos(QTextStream& os, const QString& szPrefix, const QString& szNamespace, const QString& szNamespaceURI) const
+void CppTargetEngine::doWriteClassInfos(QTextStream& os, const QString& szPrefix, const QString& szSchemaURI, const QString& szNamespace, const QString& szNamespaceURI) const
 {
 	os << CRLF;
+	if (!szSchemaURI.isEmpty()) {
+		os << "const char* " << szPrefix << "_SchemaUri = \"" << szSchemaURI << "\";" CRLF;
+	}
 	os << "const char* " << szPrefix << "_TargetNamespace = \"" << szNamespace << "\";" CRLF;
 	os << "const char* " << szPrefix << "_TargetNamespaceUri = \"" << szNamespaceURI << "\";" CRLF;
 	os << CRLF;

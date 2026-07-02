@@ -70,6 +70,12 @@ void QWSDLParser::setLogIndent(int iIdent)
 	m_iLogIndent = iIdent;
 }
 
+
+void QWSDLParser::setSchemaURI(const QString& szSchemaURI)
+{
+	m_szSchemaURI = szSchemaURI;
+}
+
 void QWSDLParser::setWSDLData(const QSharedPointer<QWSDLData>& pWSDLData)
 {
 	m_pWSDLData = pWSDLData;
@@ -719,7 +725,7 @@ bool QWSDLParser::readComplexType(QXmlStreamReader& xmlReader, Section::Name iPa
 
 	if(iParentSection == Section::Element)
 	{
-		pComplexType = ComplexType::create();
+		pComplexType = createComplexType();
 		if(m_pCurrentElement){
 			pComplexType->setLocalName(m_pCurrentElement->getName());
 			pComplexType->setNamespace(m_szCurrentTargetNamespacePrefix);
@@ -735,7 +741,7 @@ bool QWSDLParser::readComplexType(QXmlStreamReader& xmlReader, Section::Name iPa
 			pFoundType = getTypeByName(szName, m_szCurrentTargetNamespacePrefix);
 			if(!pFoundType.isNull()) {
 				if(pFoundType->getTypeMode() == Type::TypeUnknown) {
-					pComplexType = ComplexType::create();
+					pComplexType = createComplexType();
 					pComplexType->setLocalName(szName);
 					pComplexType->setNamespace(m_szCurrentTargetNamespacePrefix);
 					pComplexType->setNamespaceUri(m_szCurrentTargetNamespaceUri);
@@ -743,7 +749,7 @@ bool QWSDLParser::readComplexType(QXmlStreamReader& xmlReader, Section::Name iPa
 					pComplexType = qSharedPointerCast<ComplexType>(pFoundType);;
 				}
 			}else{
-				pComplexType = ComplexType::create();
+				pComplexType = createComplexType();
 				pComplexType->setLocalName(szName);
 				pComplexType->setNamespace(m_szCurrentTargetNamespacePrefix);
 				pComplexType->setNamespaceUri(m_szCurrentTargetNamespaceUri);
@@ -863,7 +869,7 @@ bool QWSDLParser::readExtension(QXmlStreamReader& xmlReader, Section::Name iPare
 			qSharedPointerCast<ComplexType>(pCurrentType)->setExtensionType(pType);
 		}else{
 			if(szName.startsWith(m_szCurrentSchemaNamespacePrefix + ":")) {
-				SimpleTypeSharedPtr pType = SimpleType::create();
+				SimpleTypeSharedPtr pType = createSimpleType();
 				pType->setVariableTypeFromString(m_szCurrentSchemaNamespacePrefix, szName);
 				qSharedPointerCast<ComplexType>(pCurrentType)->setExtensionType(pType);
 			}else{
@@ -944,7 +950,7 @@ bool QWSDLParser::readElement(QXmlStreamReader& xmlReader, Section::Name iParent
 					qWarning("[QWSDLParser] Type %s is not found at this moment, we create it", qPrintable(szValue));
 
 					if(szValue.startsWith(m_szCurrentSchemaNamespacePrefix + ":")) {
-						SimpleTypeSharedPtr pSimpleType = SimpleType::create();
+						SimpleTypeSharedPtr pSimpleType = createSimpleType();
 						pSimpleType->setVariableTypeFromString(m_szCurrentSchemaNamespacePrefix, szValue);
 						pSimpleType->setName(pElement->getName());
 						pTypeFound = pSimpleType;
@@ -974,7 +980,7 @@ bool QWSDLParser::readElement(QXmlStreamReader& xmlReader, Section::Name iParent
 		//						qWarning("[QWSDLParser] Type %s is not found at this moment, we create it", qPrintable(szValue));
 		//
 		//						if(szValue.startsWith(m_szCurrentElementNamespacePrefix + ":")) {
-		//							SimpleTypeSharedPtr pType = SimpleType::create();
+		//							SimpleTypeSharedPtr pType = createSimpleType();
 		//							pType->setVariableTypeFromString(m_szCurrentElementNamespacePrefix, szValue);
 		//							pType->setName(element->getName());
 		//							element->setType(pType);
@@ -1027,7 +1033,7 @@ bool QWSDLParser::readElement(QXmlStreamReader& xmlReader, Section::Name iParent
 				qWarning("[QWSDLParser] Type %s is not found at this moment, we create it", qPrintable(szValue));
 
 				if(szValue.startsWith(m_szCurrentSchemaNamespacePrefix + ":")) {
-					SimpleTypeSharedPtr pType = SimpleType::create();
+					SimpleTypeSharedPtr pType = createSimpleType();
 					pType->setVariableTypeFromString(m_szCurrentSchemaNamespacePrefix, szValue);
 					pType->setName(m_pCurrentElement->getName());
 					pType->setNamespace(m_szCurrentTargetNamespacePrefix);
@@ -1124,7 +1130,7 @@ bool QWSDLParser::readAny(QXmlStreamReader& xmlReader)
 	//		if(inSection(Section::ComplexType) && currentType()){
 	//			ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(currentType());
 	//			if(!pComplexType->getExtensionType() && pComplexType->getElementList()->isEmpty()){
-	//				SimpleTypeSharedPtr pSimpleType = SimpleType::create();
+	//				SimpleTypeSharedPtr pSimpleType = createSimpleType();
 	//				pSimpleType->setVariableType(SimpleType::AnyType);
 	//				pComplexType->setExtensionType(pSimpleType);
 	//			}
@@ -1184,7 +1190,7 @@ bool QWSDLParser::readAttribute(QXmlStreamReader& xmlReader, Section::Name iPare
 					qWarning("[QWSDLParser] Type %s is not found at this moment, we create it", qPrintable(szValue));
 
 					if(szValue.startsWith(m_szCurrentSchemaNamespacePrefix + ":")) {
-						SimpleTypeSharedPtr pType = SimpleType::create();
+						SimpleTypeSharedPtr pType = createSimpleType();
 						pType->setName(attr->getName());
 						pType->setVariableTypeFromString(m_szCurrentSchemaNamespacePrefix, szValue);
 						attr->setType(pType);
@@ -1229,7 +1235,7 @@ bool QWSDLParser::readAttribute(QXmlStreamReader& xmlReader, Section::Name iPare
 				qWarning("[QWSDLParser] Type %s is not found at this moment, we create it", qPrintable(szValue));
 
 				if(szValue.startsWith(m_szCurrentSchemaNamespacePrefix + ":")) {
-					SimpleTypeSharedPtr pType = SimpleType::create();
+					SimpleTypeSharedPtr pType = createSimpleType();
 					pType->setVariableTypeFromString(m_szCurrentSchemaNamespacePrefix, szValue);
 					pType->setName(m_pCurrentAttribute->getName());
 					m_pCurrentAttribute->setType(pType);
@@ -1479,7 +1485,7 @@ bool QWSDLParser::readSimpleType(QXmlStreamReader& xmlReader, Section::Name iPar
 	SimpleTypeSharedPtr pSimpleType;
 
 	if((iParentSection == Section::Attribute) && m_pCurrentAttribute && (xmlAttrs.count() == 0)){
-		TypeSharedPtr pCurrentType = SimpleType::create();
+		TypeSharedPtr pCurrentType = createSimpleType();
 		m_pCurrentAttribute->setType(pCurrentType);
 	}
 
@@ -1491,10 +1497,10 @@ bool QWSDLParser::readSimpleType(QXmlStreamReader& xmlReader, Section::Name iPar
 		TypeSharedPtr pFoundType = getTypeByName(szName, m_szCurrentTargetNamespacePrefix);
 		if(!pFoundType.isNull()) {
 			if(pFoundType->getTypeMode() == Type::TypeUnknown) {
-				pSimpleType = SimpleType::create();
+				pSimpleType = createSimpleType();
 			}
 		}else{
-			pSimpleType = SimpleType::create();
+			pSimpleType = createSimpleType();
 		}
 		if(pSimpleType){
 			pSimpleType->setLocalName(szName);
@@ -1640,7 +1646,7 @@ bool QWSDLParser::readList(QXmlStreamReader& xmlReader, Section::Name iParentSec
 			QString szLocalName = pCurrentType->getLocalName();
 			QString szNamespace = pCurrentType->getNamespace();
 
-			ComplexTypeSharedPtr pComplexType = ComplexType::create();
+			ComplexTypeSharedPtr pComplexType = createComplexType();
 			pComplexType->setLocalName(szLocalName);
 			pComplexType->setNamespace(szNamespace);
 
@@ -1872,6 +1878,20 @@ TypeRefSharedPtr QWSDLParser::getTypeRefByTypeName(const QString& szTypeName, co
 	return m_pWSDLData->getTypeRefByTypeName(szTypeName, szNamespace);
 }
 
+SimpleTypeSharedPtr QWSDLParser::createSimpleType() const
+{
+	SimpleTypeSharedPtr pSimpleType = SimpleType::create();
+	pSimpleType->setSchemaUri(getCompleteSchemaURI());
+	return pSimpleType;
+}
+
+ComplexTypeSharedPtr QWSDLParser::createComplexType() const
+{
+	ComplexTypeSharedPtr pComplexTypeType = ComplexType::create();
+	pComplexTypeType->setSchemaUri(getCompleteSchemaURI());
+	return pComplexTypeType;
+}
+
 bool QWSDLParser::isWSDLSchema(const QString& szQName)
 {
 	QStringList tokens = szQName.split(":");
@@ -1884,6 +1904,23 @@ bool QWSDLParser::isWSDLSchema(const QString& szQName)
 	}
 
 	return (szSchema == "wsdl");
+}
+
+QString QWSDLParser::getCompleteSchemaURI() const
+{
+	if (m_szSchemaURI.startsWith("http://") || m_szSchemaURI.startsWith("https://")) {
+		// Parse the URL to normalize it
+		QUrl url(m_szSchemaURI);
+		return url.toString(QUrl::NormalizePathSegments);
+	}else {
+		QString szTargetNamespace;
+		if (m_szSchemaURI.endsWith(".wsdl")) {
+			if (!m_stackTargetNamespace.isEmpty()) {
+				return m_stackTargetNamespace.back();
+			}
+		}
+	}
+	return QString();
 }
 
 bool QWSDLParser::loadFromHttp(const QString& szURL, const QString& szNamespaceUri)
@@ -1922,6 +1959,7 @@ bool QWSDLParser::loadFromHttp(const QString& szURL, const QString& szNamespaceU
 
 	// Parse WSDL
 	QWSDLParser parser;
+	parser.setSchemaURI(szURL);
 	parser.setInitialNamespaceUri(szNamespaceUri);
 	parser.setLogIndent(m_iLogIndent);
 	parser.setWSDLData(m_pWSDLData);
@@ -1984,6 +2022,7 @@ bool QWSDLParser::loadFromFile(const QString& szFileName, const QString& szNames
 
 		// Parse WSDL
 		QWSDLParser parser;
+		parser.setSchemaURI(szFileName);
 		parser.setInitialNamespaceUri(szNamespaceUri);
 		parser.setLogIndent(m_iLogIndent);
 		parser.setWSDLData(m_pWSDLData);
