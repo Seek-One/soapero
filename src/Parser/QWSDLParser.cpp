@@ -1055,6 +1055,7 @@ bool QWSDLParser::readElement(QXmlStreamReader& xmlReader, Section::Name iParent
 		if(iParentSection == Section::Schema){
 			//We are in Message Request/Response elements list section
 			pRequestResponseElement = RequestResponseElement::create();
+			pRequestResponseElement->setSchemaUri(getCompleteSchemaURI());
 			pRequestResponseElement->setLocalName(szName);
 			pRequestResponseElement->setNamespace(m_szCurrentTargetNamespacePrefix);
 			pRequestResponseElement->setNamespaceUri(m_szCurrentTargetNamespaceUri);
@@ -1947,9 +1948,9 @@ SimpleTypeSharedPtr QWSDLParser::createSimpleType() const
 
 ComplexTypeSharedPtr QWSDLParser::createComplexType() const
 {
-	ComplexTypeSharedPtr pComplexTypeType = ComplexType::create();
-	pComplexTypeType->setSchemaUri(getCompleteSchemaURI());
-	return pComplexTypeType;
+	ComplexTypeSharedPtr pComplexType = ComplexType::create();
+	pComplexType->setSchemaUri(getCompleteSchemaURI());
+	return pComplexType;
 }
 
 bool QWSDLParser::isWSDLSchema(const QString& szQName)
