@@ -738,7 +738,7 @@ QString CppTargetEngine::getHeaderFilePath(const SimpleTypeSharedPtr& pSimpleTyp
 {
 	QString szFileName;
 	QString szNamespace;
-	if(pSimpleType->hasVariableType()){
+	if(pSimpleType->hasVariableType() || pSimpleType->isUnion()){
 		szNamespace = getSimpleTypeNamespace(pSimpleType);
 		szFileName = getHeaderFileName(pSimpleType);
 		return getHeaderPath(szNamespace, "types", szFileName, iOrigin);

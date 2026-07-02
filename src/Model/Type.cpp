@@ -59,6 +59,8 @@ TypeSharedPtr TypeList::getByName(const QString& szLocalName, const QString& szN
 {
 	TypeSharedPtr pCurrentType;
 
+	QString szNamespaceCurrentType;
+
 	TypeList::const_iterator iter_type;
 	for(iter_type = constBegin(); iter_type != constEnd(); ++iter_type)
 	{
@@ -66,10 +68,26 @@ TypeSharedPtr TypeList::getByName(const QString& szLocalName, const QString& szN
 		if(pCurrentType->getLocalName() != szLocalName){
 			continue;
 		}
-		if(pCurrentType->getNamespace() != szNamespace){
-			if(pCurrentType->getNamespaceUri() != szNamespace){
-				continue;
+
+		bool bAcceptNamespace = false;
+		szNamespaceCurrentType = pCurrentType->getNamespace();
+		if (szNamespaceCurrentType == szNamespace){
+			bAcceptNamespace = true;
+		}
+		if(!bAcceptNamespace) {
+			if(pCurrentType->getNamespaceUri() == szNamespace) {
+				bAcceptNamespace = true;
 			}
+		}
+		if(!bAcceptNamespace) {
+			// xds and xs refer to the same namespace
+			if(szNamespace == "xsd" && szNamespaceCurrentType == "xs"){
+				bAcceptNamespace = true;
+			}
+		}
+
+		if(!bAcceptNamespace){
+			continue;
 		}
 		if(pListIgnoredTypes && pListIgnoredTypes->contains(pCurrentType)){
 			continue;

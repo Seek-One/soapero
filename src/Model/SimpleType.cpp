@@ -140,7 +140,9 @@ QString SimpleType::getCPPTypeNameString() const
 	if(isEnumeration()) {
 		return getNameWithNamespace();
 	}else{
-		if(m_iVariableType == Custom){
+		if (isUnion()) {
+			return getQualifiedName();
+		}else if(m_iVariableType == Custom || isUnion()){
 			return (m_szCustomNamespace + getCategoryNamespace() + "::" + m_szCustomName);
 		}else{
 			return "XS::" + getVariableTypeNameString(m_iVariableType);
