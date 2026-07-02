@@ -2,6 +2,8 @@
 // Created by ebeuque on 29/06/2026.
 //
 
+#include "Model/SimpleType.h"
+
 #include "Builder/FileHelper.h"
 
 #include "TargetEngine.h"
@@ -117,6 +119,24 @@ TypeSharedPtr TargetEngine::findTypeByName(const QString& szLocalName, const QSt
 		return m_pTypeList->getByName(szLocalName, szNamespace, pListIgnoredTypes);
 	}
 	return TypeSharedPtr();
+}
+
+TypeSharedPtr TargetEngine::findOrCreateTypeByName(const QString& szLocalName, const QString& szNamespace, const TypeListSharedPtr& pListIgnoredTypes) const
+{
+	TypeSharedPtr pType;
+	if (m_pTypeList) {
+		pType = m_pTypeList->getByName(szLocalName, szNamespace, pListIgnoredTypes);
+	}
+	if (!pType) {
+		qDebug("[Builder] Type %s:%s is not found at this moment, we create it", qPrintable(szNamespace), qPrintable(szLocalName));
+		SimpleTypeSharedPtr pSimpleType = SimpleType::create();
+		pSimpleType->setVariableTypeFromString(szNamespace, szNamespace + ":" + szLocalName);
+		pSimpleType->setNamespace(szNamespace);
+		pSimpleType->setName(szLocalName);
+		return pSimpleType;
+
+	}
+	return pType;
 }
 
 bool TargetEngine::openFile(QFile& file, bool bCleanFirst) const

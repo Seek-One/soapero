@@ -17,17 +17,18 @@ public:
 
 protected:
 	enum GetterReturnMode {
-		GetterReturnModeDefault = 0x00,
-		GetterReturnModeConst = 0x01,
-		GetterReturnModePointer = 0x02,
+		GetterReturnModeDefault = 0,
+		GetterReturnModeConst,
+		GetterReturnModePointer,
+		GetterReturnModeVariant,
 	};
 
 	enum SetterParamMode {
-		SetterParamModeDefault = 0x00,
-		SetterParamModeConst = 0x01,
-		SetterParamModePointer = 0x02,
+		SetterParamModeDefault = 0,
+		SetterParamModeConst,
+		SetterParamModePointer,
 
-		SetterParamModeConst2 = 0x03, // Compat
+		SetterParamModeConst2, // Compat
 	};
 
 protected:
@@ -51,6 +52,8 @@ protected:
 	virtual void doWriteDefinitionSetter(QTextStream& os, const QString& szClassName, const QString& szFuncName, const QString& szParamType, const QString& szParamName, const QString& szMemberName, SetterParamMode iParamMode) const;
 	virtual void doWriteDefinitionSetterList(QTextStream& os, const QString& szClassName, const QString& szFuncName, const QString& szParamType, const QString& szParamName, const QString& szMemberName, SetterParamMode iParamMode) const;
 	virtual void doWriteDefinitionAddList(QTextStream& os, const QString& szClassName, const QString& szFuncName, const QString& szParamType, const QString& szParamName, const QString& szMemberName, SetterParamMode iParamMode) const;
+	virtual void doWriteDeclarationVariantIs(QTextStream& os, const QString& szFuncName) const;
+	virtual void doWriteDefinitionVariantIs(QTextStream& os, const QString& szClassName, const QString& szFuncName, const QString& szParamType, const QString& szParamName, const QString& szMemberName) const;
 
 	// Service files
 	static QString getHeaderGuard(const QString& szPrefix, const ServiceSharedPtr& pService);

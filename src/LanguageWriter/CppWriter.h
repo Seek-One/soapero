@@ -21,6 +21,9 @@ public:
 	virtual ~CppWriter();
 
 public:
+	void setClassName(const QString& szClassName);
+
+public:
 	// Header guardian
 	void writeDeclarationGuardStart(const QString& szHeaderGuard);
 	void writeDeclarationGuardEnd(const QString& szHeaderGuard);
@@ -33,12 +36,29 @@ public:
 	void writeNamespaceStart(const QString& szNamespace);
 	void writeNamespaceEnd(const QString& szNamespace);
 
-	// Variable declaration
+	// Class variable declaration
 	void writeDeclarationVariable(const QString& szTypeName, const QString& szVariableName, bool bTypePointer = false);
 	void writeDeclarationVariableList(const QString& szListType, const QString& szTypeName, const QString& szVariableName, bool bTypePointer = false);
 
+	// Class methods non-const
+	void writeClassMethodDeclaration(const QString& szReturnType, const QString& szMethodName, const QString& szParamType, const QString& szParamName);
+	void writeClassMethodDefinitionStart(const QString& szClassName, const QString& szMethodName, const QString& szReturnType, const QString& szParamType, const QString& szParamName);
+	void writeClassMethodDefinitionStart(const QString& szClassName, const QString& szMethodName, const QString& szReturnType);
+	void writeClassMethodDefinitionStart(const QString& szMethodName, const QString& szReturnType);
+	void writeClassMethodDefinitionStart(const QString& szMethodName, const QString& szReturnType, const QString& szParamType, const QString& szParamName);
+	void writeClassMethodDefinitionEnd();
+	// Class methods const
+	void writeClassMethodConstDeclaration(const QString& szReturnType, const QString& szMethodName, const QString& szParamType, const QString& szParamName);
+	void writeClassMethodConstDefinitionStart(const QString& szClassName, const QString& szMethodName, const QString& szReturnType, const QString& szParamType, const QString& szParamName);
+	void writeClassMethodConstDefinitionStart(const QString& szClassName, const QString& szMethodName, const QString& szReturnType);
+	void writeClassMethodConstDefinitionStart(const QString& szMethodName, const QString& szReturnType);
+	void writeClassMethodConstDefinitionStart(const QString& szMethodName, const QString& szReturnType, const QString& szParamType, const QString& szParamName);
+	void writeClassMethodConstDefinitionEnd();
+
 private:
 	QTextStream& m_os;
+
+	QString m_szClassName;
 };
 
 

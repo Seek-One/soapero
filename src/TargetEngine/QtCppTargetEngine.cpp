@@ -464,7 +464,6 @@ void QtCppTargetEngine::doWriteDefinitionClass(QTextStream& os, const RequestRes
 void QtCppTargetEngine::doWriteDeclarationIncludes(QTextStream& os, const TypeSharedPtr& pType) const
 {
 	QtCppWriter langWriter(os);
-	// Includes
 	langWriter.writeIncludeFileSystem("QDomElement");
 	langWriter.writeIncludeFileSystem("QList");
 	langWriter.writeIncludeFileSystem("QString");
@@ -473,6 +472,10 @@ void QtCppTargetEngine::doWriteDeclarationIncludes(QTextStream& os, const TypeSh
 	if(pType->getTypeMode() == Type::TypeSimple) {
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pType);
 		if(pSimpleType->isUnion()) {
+			// Includes
+			langWriter.writeIncludeFileSystem("variant");
+			os << CRLF;
+
 			const auto& listUnionTypes = pSimpleType->getUnionTypes();
 			for(const auto& pUnionTypeRef : listUnionTypes) {
 				const auto& pUnionType = findTypeByName(pUnionTypeRef->getTypeName(), pUnionTypeRef->getNamespace());
@@ -754,27 +757,48 @@ void QtCppTargetEngine::doWriteDeclarationGetterSetter(QTextStream& os, const Si
 	QString szParamType = pSimpleType->getCPPTypeNameValuesString();
 	QString szParamName = ModelUtils::getUncapitalizedName(pSimpleType->getLocalName());
 
-	/*
-	//if(pSimpleType->isUnion()) {
-		QString szDeclaration;
+	QtCppWriter langWriter(os);
 
-		const auto& listTypeUnion = getUnionTypes();
-		for(const auto& pTypeUnionRef : listTypeUnion)
-		{
-			const auto& pTypeUnion = pTypeUnionRef;
+	if(pSimpleType->isUnion()) {
+		const auto& listUnionTypes = pSimpleType->getUnionTypes();
+		if (listUnionTypes.count() > 0) {
+			for(const auto& pTypeUnionRef : listUnionTypes)
+			{
+				const auto& pTypeUnion = findOrCreateTypeByName(pTypeUnionRef->getTypeName(), pTypeUnionRef->getNamespace());
+				if (pTypeUnion) {
+					switch (pTypeUnion->getTypeMode()){
+					case Type::TypeSimple:
+					{
+						const auto& pTypeUnionSimple = qSharedPointerCast<SimpleType>(pTypeUnion);
+						szFuncName = ModelUtils::getCapitalizedName(pTypeUnionRef->getTypeName());
+						szParamType = pTypeUnionSimple->getCPPTypeNameString();
+						szParamName = pTypeUnionRef->getTypeName();
 
-			QString szNamespace = pTypeUnion->getNamespace().toUpper();
-			QString szTypeName = pTypeUnion->getTypeName();
-			QString szTypeDeclaration = szNamespace + "::" + szTypeName;
+						doWriteDeclarationVariantIs(os, szFuncName);
+						doWriteDeclarationSetter(os, szFuncName, szParamType, szParamName, SetterParamModeConst);
+						doWriteDeclarationGetter(os, szFuncName, szParamType, GetterReturnModeConst);
+						os << CRLF;
+					}
+						break;
+					case Type::TypeComplex:
+					{
+						const auto& pTypeUnionComplex = qSharedPointerCast<ComplexType>(pTypeUnion);
+						szFuncName = ModelUtils::getCapitalizedName(pTypeUnionRef->getTypeName());
+						szParamType = pTypeUnionComplex->getQualifiedName();
+						szParamName = pTypeUnionRef->getTypeName();
 
-			szDeclaration += "\t" + QString("void set%0(const %1& %2);").arg(szTypeName).arg(szTypeDeclaration).arg(szTypeName) + CRLF;
-			szDeclaration += "\t" + QString("const %0& get%1() const;").arg(szTypeDeclaration).arg(szTypeName) + CRLF;
-			szDeclaration += CRLF;
+						doWriteDeclarationSetter(os, szFuncName, szParamType, szParamName, SetterParamModeConst);
+						doWriteDeclarationGetter(os, szFuncName, szParamType, GetterReturnModeConst);
+						os << CRLF;
+					}
+						break;
+					default:
+						break;
+					}
+				}
+			}
 		}
-		return szDeclaration;;
-	}
-	}*/
-	if (pSimpleType->isEnumeration()) {
+	}else if (pSimpleType->isEnumeration()) {
 		doWriteDeclarationSetter(os, szFuncName, szParamType, szParamName, SetterParamModeDefault);
 		doWriteDeclarationGetter(os, szFuncName, szParamType, GetterReturnModeDefault);
 	}else {
@@ -791,7 +815,44 @@ void QtCppTargetEngine::doWriteDefinitionGetterSetter(QTextStream& os, const Sim
 	QString szParamName = ModelUtils::getUncapitalizedName(szLocalName);
 	QString szMemberName = pSimpleType->getVariableName();
 
-	if (pSimpleType->isEnumeration()) {
+	if (pSimpleType->isUnion()) {
+		const auto& listUnionTypes = pSimpleType->getUnionTypes();
+		if (listUnionTypes.count() > 0) {
+			for(const auto& pTypeUnionRef : listUnionTypes)
+			{
+				const auto& pTypeUnion = findOrCreateTypeByName(pTypeUnionRef->getTypeName(), pTypeUnionRef->getNamespace());
+				if (pTypeUnion) {
+					switch (pTypeUnion->getTypeMode()){
+						case Type::TypeSimple:
+						{
+							const auto& pTypeUnionSimple = qSharedPointerCast<SimpleType>(pTypeUnion);
+							szFuncName = ModelUtils::getCapitalizedName(pTypeUnionRef->getTypeName());
+							szParamType = pTypeUnionSimple->getCPPTypeNameString();
+							szParamName = ModelUtils::getUncapitalizedName(pTypeUnionRef->getTypeName());
+
+							doWriteDefinitionVariantIs(os, szClassName, szFuncName, szParamType, szParamName, szMemberName);
+							doWriteDefinitionSetter(os, szClassName, szFuncName, szParamType, szParamName, szMemberName, SetterParamModeConst);
+							doWriteDefinitionGetter(os, szClassName, szFuncName, szParamType, szMemberName, GetterReturnModeVariant);
+						}
+							break;
+						case Type::TypeComplex:
+						{
+							const auto& pTypeUnionComplex = qSharedPointerCast<ComplexType>(pTypeUnion);
+							szFuncName = ModelUtils::getCapitalizedName(pTypeUnionRef->getTypeName());
+							szParamType = pTypeUnionComplex->getQualifiedName();
+							szParamName = pTypeUnionRef->getTypeName();
+
+							doWriteDefinitionSetter(os, szClassName, szFuncName, szParamType, szParamName, szMemberName, SetterParamModeConst);
+							doWriteDefinitionGetter(os, szClassName, szFuncName, szParamType, szMemberName, GetterReturnModeVariant);
+						}
+							break;
+						default:
+							break;
+					}
+				}
+			}
+		}
+	}else if (pSimpleType->isEnumeration()) {
 		doWriteDefinitionSetter(os, szClassName, szFuncName, szParamType, szParamName, szMemberName, SetterParamModeDefault);
 		doWriteDefinitionGetter(os, szClassName, szFuncName, szParamType, szMemberName, GetterReturnModeDefault);
 	}else {
@@ -805,10 +866,137 @@ void QtCppTargetEngine::doWriteDefinitionSerializerDeserializer(QTextStream& os,
 	QString szLocalName = pSimpleType->getLocalName();
 	QString szFuncName = ModelUtils::getCapitalizedName(szLocalName);
 	QString szMemberName = pSimpleType->getVariableName();
+	QString szXmlType = pSimpleType->getTagQualifiedName();
 
 	QString szDefinition;
 
-	if(pSimpleType->isEnumeration()) {
+	QtCppWriter langWriter(os);
+	langWriter.setClassName(szClassName);
+
+	if(pSimpleType->isUnion()) {
+		// Serialize
+		langWriter.writeClassMethodConstDefinitionStart("serialize", "QString");
+		{
+			const auto& listUnionTypes = pSimpleType->getUnionTypes();
+			if (listUnionTypes.count() > 0) {
+
+				// Add function head
+				os << "\tif(!isNull()) {" CRLF;
+
+				for(const auto& pTypeUnionRef : listUnionTypes)
+				{
+					const auto& pTypeUnion = findOrCreateTypeByName(pTypeUnionRef->getTypeName(), pTypeUnionRef->getNamespace());
+					if (pTypeUnion) {
+						switch (pTypeUnion->getTypeMode()){
+						case Type::TypeSimple:
+						{
+							const auto& pTypeUnionSimple = qSharedPointerCast<SimpleType>(pTypeUnion);
+							szFuncName = ModelUtils::getCapitalizedName(pTypeUnionRef->getTypeName());
+							const auto& szVariantType = pTypeUnionSimple->getCPPTypeNameString();
+							//szMemberName = ModelUtils::getNormalizedMemberName(pTypeUnionRef->getTypeName());
+
+							szDefinition = ""
+								"\t\tif(is%0()){" CRLF
+								"\t\t\tconst auto& variant = std::get<%2>(%3);" CRLF
+								"\t\t\treturn \"<%1>\" + variant.serialize() + \"</%1>\";" CRLF
+								"\t\t}" CRLF;
+							os << szDefinition.arg(szFuncName).arg(szXmlType).arg(szVariantType).arg(szMemberName);
+						}
+							break;
+						case Type::TypeComplex:
+						{
+							os << "\t\t// Missing implemenation for complex type" << CRLF;
+							//const auto& pTypeUnionComplex = qSharedPointerCast<ComplexType>(pTypeUnion);
+							//szFuncName = ModelUtils::getCapitalizedName(pTypeUnionRef->getTypeName());
+							//const auto& szParamType = pTypeUnionComplex->getQualifiedName();
+							//szMemberName = pTypeUnionRef->getTypeName();
+
+							//doWriteDefinitionSetter(os, szClassName, szFuncName, szMemberName, szMemberName, szMemberName, SetterParamModeConst);
+							//doWriteDefinitionGetter(os, szClassName, szFuncName, szParamType, szMemberName, GetterReturnModeVariant);
+						}
+							break;
+						default:
+							break;
+						}
+					}
+				}
+
+				// Add function footer
+				os << "\t}" CRLF;
+			}
+			os << "\treturn \"\";" CRLF;
+		}
+		langWriter.writeClassMethodConstDefinitionEnd();
+
+		// Deserialize
+		langWriter.writeClassMethodDefinitionStart("deserialize", "void", "const QDomElement&", "element");
+
+		{
+			const auto& listUnionTypes = pSimpleType->getUnionTypes();
+			if (listUnionTypes.count() > 0) {
+				os << "\tQDomElement child = element.firstChild().toElement();" CRLF;
+				os << "\twhile(!child.isNull()) {" CRLF;
+				szDefinition = "\t\tif((child.tagName() == \"%0\") || child.tagName().endsWith(\"%1\")) {" CRLF;
+				os << szDefinition.arg(pSimpleType->getTagQualifiedName()).arg(szFuncName);
+
+				for(const auto& pTypeUnionRef : listUnionTypes)
+				{
+					const auto& pTypeUnion = findOrCreateTypeByName(pTypeUnionRef->getTypeName(), pTypeUnionRef->getNamespace());
+					if (pTypeUnion) {
+						switch (pTypeUnion->getTypeMode()){
+							case Type::TypeSimple:
+							{
+								const auto& pTypeUnionSimple = qSharedPointerCast<SimpleType>(pTypeUnion);
+								szFuncName = ModelUtils::getCapitalizedName(pTypeUnionRef->getTypeName());
+								const auto& szVariantType = pTypeUnionSimple->getCPPTypeNameString();
+								//szMemberName = ModelUtils::getNormalizedMemberName(pTypeUnionRef->getTypeName());
+
+								szDefinition = ""
+									"\t\t\t{" CRLF
+									"\t\t\t\t%0 variant;" CRLF
+									"\t\t\t\tvariant.deserialize(child);" CRLF
+									"\t\t\t\tif(!variant.isNull()){" CRLF
+									"\t\t\t\t\t%1 = variant;" CRLF
+									"\t\t\t\t\tcontinue;" CRLF
+									"\t\t\t\t}" CRLF
+									"\t\t\t}" CRLF;
+								os << szDefinition.arg(szVariantType).arg(szMemberName);
+
+								/*
+								szDefinition = ""
+									"\t\tif(is%0()){" CRLF
+									"\t\t\tconst auto& variant = std::get<%2>(%3);" CRLF
+									"\t\t\treturn \"<%1>\" + variant.serialize() + \"</%1>\";" CRLF
+									"\t\t}" CRLF;
+								os << szDefinition.arg(szFuncName).arg(szXmlType).arg(szVariantType).arg(szMemberName);*/
+							}
+								break;
+							case Type::TypeComplex:
+							{
+								os << "\t\t// Missing implemenation for complex type" << CRLF;
+								//const auto& pTypeUnionComplex = qSharedPointerCast<ComplexType>(pTypeUnion);
+								//szFuncName = ModelUtils::getCapitalizedName(pTypeUnionRef->getTypeName());
+								//const auto& szParamType = pTypeUnionComplex->getQualifiedName();
+								//szMemberName = pTypeUnionRef->getTypeName();
+
+								//doWriteDefinitionSetter(os, szClassName, szFuncName, szMemberName, szMemberName, szMemberName, SetterParamModeConst);
+								//doWriteDefinitionGetter(os, szClassName, szFuncName, szParamType, szMemberName, GetterReturnModeVariant);
+							}
+								break;
+							default:
+								break;
+						}
+					}
+				}
+
+				// Add function footer
+				os << "\t\t}" CRLF;
+				os << "\t\tchild = child.nextSibling().toElement();" CRLF;
+				os << "\t}" CRLF;
+			}
+		}
+		langWriter.writeClassMethodDefinitionEnd();
+	}else if(pSimpleType->isEnumeration()) {
 		// Serialize
 		szDefinition = ""
 			"QString %0::serialize() const" CRLF
@@ -866,7 +1054,14 @@ void QtCppTargetEngine::doWriteDeclarationIsNull(QTextStream& os, const SimpleTy
 
 void QtCppTargetEngine::doWriteDefinitionIsNull(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType, const QString& szClassName) const
 {
-	if(pSimpleType->isEnumeration()) {
+	if(pSimpleType->isUnion()) {
+		QString szDefinition = ""
+			"bool %0::isNull() const" CRLF
+			"{" CRLF
+			"\t return std::holds_alternative<std::monostate>(%1);" CRLF
+			"}" CRLF;
+		os << szDefinition.arg(szClassName).arg(pSimpleType->getVariableName());
+	}else if(pSimpleType->isEnumeration()) {
 		QString szDefinition = ""
 			"bool %0::isNull() const" CRLF
 			"{" CRLF
@@ -977,9 +1172,46 @@ void QtCppTargetEngine::doWriteDeclarationVariable(QTextStream& os, const Simple
 {
 	QtCppWriter langWriter(os);
 
-	const auto& szTypeName = pSimpleType->getCPPTypeNameValuesString();
-	const auto& szVariableName = pSimpleType->getVariableName();
-	langWriter.writeDeclarationVariable(szTypeName, szVariableName);
+	if(pSimpleType->isUnion()) {
+		const auto& listUnionTypes = pSimpleType->getUnionTypes();
+		if (listUnionTypes.count() > 0) {
+			os << "\t// Possible types for union" << CRLF;
+
+			QString szMemberType;
+			QString szMemberName = pSimpleType->getVariableName();
+
+			szMemberType = "std::variant<std::monostate";
+			for(const auto& pTypeUnionRef : listUnionTypes)
+			{
+				const auto& pTypeUnion = findOrCreateTypeByName(pTypeUnionRef->getTypeName(), pTypeUnionRef->getNamespace());
+				if (pTypeUnion) {
+					switch (pTypeUnion->getTypeMode()){
+					case Type::TypeSimple:
+					{
+						const auto& pTypeUnionSimple = qSharedPointerCast<SimpleType>(pTypeUnion);
+						szMemberType += ", " + pTypeUnionSimple->getCPPTypeNameString();
+					}
+						break;
+					case Type::TypeComplex:
+					{
+						const auto& pTypeUnionComplex = qSharedPointerCast<ComplexType>(pTypeUnion);
+						szMemberType += ", " + pTypeUnionComplex->getQualifiedName();
+					}
+						break;
+					default:
+						break;
+					}
+				}
+			}
+			szMemberType += ">";
+
+			langWriter.writeDeclarationVariable(szMemberType, szMemberName);
+		}
+	}else {
+		const auto& szVariableType = pSimpleType->getCPPTypeNameValuesString();
+		const auto& szVariableName = pSimpleType->getVariableName();
+		langWriter.writeDeclarationVariable(szVariableType, szVariableName);
+	}
 }
 
 void QtCppTargetEngine::doWriteDefinitionClassContent(QTextStream& os, const SimpleTypeSharedPtr& pSimpleType) const

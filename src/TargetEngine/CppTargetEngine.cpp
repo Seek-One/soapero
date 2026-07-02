@@ -150,13 +150,17 @@ void CppTargetEngine::doWriteDefinitionGetter(QTextStream& os, const QString& sz
 	QString szDefinition;
 	if(iReturnMode == GetterReturnModePointer) {
 		szDefinition = "%0* %1::get%2() const" CRLF;
-	}else if(iReturnMode == GetterReturnModeConst) {
+	}else if(iReturnMode == GetterReturnModeConst || iReturnMode == GetterReturnModeVariant) {
 		szDefinition = "const %0& %1::get%2() const" CRLF;
 	}else{
 		szDefinition = "%0 %1::get%2() const" CRLF;
 	}
 	szDefinition += "{" CRLF;
-	szDefinition += "\treturn %3;" CRLF;
+	if (iReturnMode == GetterReturnModeVariant) {
+		szDefinition += "\treturn std::get<%0>(%3);" CRLF;
+	}else{
+		szDefinition += "\treturn %3;" CRLF;
+	}
 	szDefinition += "}" CRLF;;
 	szDefinition =  szDefinition.arg(szMemberType).arg(szClassName).arg(szFuncName).arg(szMemberName);
 	os << szDefinition << CRLF;
@@ -209,6 +213,25 @@ void CppTargetEngine::doWriteDefinitionAddList(QTextStream& os, const QString& s
 	szDefinition += "\t%4.push(%3);" CRLF;
 	szDefinition += "}" CRLF;
 	szDefinition = szDefinition.arg(szClassName).arg(szFuncName).arg(szParamType).arg(szParamName).arg(szMemberName);
+	os << szDefinition << CRLF;
+}
+
+void CppTargetEngine::doWriteDeclarationVariantIs(QTextStream& os, const QString& szFuncName) const
+{
+	QString szDeclaration;
+	szDeclaration += "bool is%0() const;";
+	szDeclaration = szDeclaration.arg(szFuncName);
+	os << "\t" << szDeclaration << CRLF;
+}
+
+void CppTargetEngine::doWriteDefinitionVariantIs(QTextStream& os, const QString& szClassName, const QString& szFuncName, const QString& szParamType, const QString& szParamName, const QString& szMemberName) const
+{
+	QString szDefinition;
+	szDefinition += "bool %0::is%1() const" CRLF;
+	szDefinition += "{" CRLF;
+	szDefinition += "\treturn std::holds_alternative<%2>(%3);" CRLF;
+	szDefinition += "}" CRLF;
+	szDefinition = szDefinition.arg(szClassName).arg(szFuncName).arg(szParamType).arg(szMemberName);
 	os << szDefinition << CRLF;
 }
 

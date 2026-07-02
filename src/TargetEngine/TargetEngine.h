@@ -52,6 +52,7 @@ protected:
 	virtual bool doBuildType(const TypeSharedPtr& pType);
 
 	TypeSharedPtr findTypeByName(const QString& szLocalName, const QString& szNamespace, const TypeListSharedPtr& pListIgnoredTypes = TypeListSharedPtr()) const;
+	TypeSharedPtr findOrCreateTypeByName(const QString& szLocalName, const QString& szNamespace, const TypeListSharedPtr& pListIgnoredTypes = TypeListSharedPtr()) const;
 
 	bool openFile(QFile& file, bool bCleanFirst = true) const;
 	void closeFile(QFile& file) const;

@@ -1747,10 +1747,26 @@ bool QWSDLParser::readUnion(QXmlStreamReader& xmlReader, Section::Name iParentSe
 		if(xmlAttrs.hasAttribute(ATTR_MEMBER_TYPES)){
 			QString szMemberTypes = xmlAttrs.value(ATTR_MEMBER_TYPES).toString();
 			QStringList listTypes = szMemberTypes.split(" ");
+			/*
 			for(int i = 0; i < listTypes.size(); ++i){
 				if(listTypes[i].startsWith(m_szCurrentSchemaNamespacePrefix + ":")){
 					SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pCurrentType);
 					pSimpleType->setVariableTypeFromString(m_szCurrentSchemaNamespacePrefix, listTypes[i]);
+				}
+			}*/
+			if(listTypes.size() > 0) {
+				SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pCurrentType);
+				pSimpleType->setIsUnion(true);
+				for(const auto& szType : listTypes)
+				{
+					const auto& listTokens = szType.split(":");
+					QString szNamespace = (listTokens.count() > 1 ? listTokens[0] : QString());
+					QString szLocalName = (listTokens.count() > 1 ? listTokens[1] : listTokens[0]);
+
+					TypeRefSharedPtr pUnionType = TypeRef::create();
+					pUnionType->setNamespace(szNamespace);
+					pUnionType->setTypeName(szLocalName);
+					pSimpleType->addUnionType(pUnionType);
 				}
 			}
 		}
