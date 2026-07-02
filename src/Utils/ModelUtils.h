@@ -16,6 +16,8 @@ public:
 	static QString getCapitalizedName(const QString& szName);
 	static QString getUncapitalizedName(const QString& szName);
 	static QString getCPPTypeName(const QString& szNamespace, const QString& szLocalName);
+
+	static QString getNormalizedMemberName(const QString& szName);
 };
 
 

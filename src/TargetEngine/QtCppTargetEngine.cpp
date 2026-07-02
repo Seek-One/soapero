@@ -1179,8 +1179,10 @@ void QtCppTargetEngine::doWriteDefinitionSerializer(QTextStream& os, const Compl
 					szDefinition += "\t\tszValue +=\"\\\"\";" CRLF;
 					szDefinition += "\t}" CRLF;
 				}else{
-					szDefinition += "\tif(!" + pSimpleType->getVariableName() + ".isNull()) {" CRLF;
-					szDefinition += "\t\tszValue += \" " + pAttribute->getName() + "=\\\"\" + " + pSimpleType->getVariableName() + ".serialize() + \"\\\"\";" CRLF;
+					const auto& szAttributeName = (pAttribute->getName().isEmpty() ? pSimpleType->getVariableName() : pAttribute->getName());
+					const auto& szMemberName = ModelUtils::getNormalizedMemberName(szAttributeName);
+					szDefinition += "\tif(!" + szMemberName + ".isNull()) {" CRLF;
+					szDefinition += "\t\tszValue += \" " + szAttributeName + "=\\\"\" + " + szMemberName + ".serialize() + \"\\\"\";" CRLF;
 					szDefinition += "\t}" CRLF;
 				}
 			}else if(pAttribute->getType()->getTypeMode() == Type::TypeComplex){
@@ -1198,9 +1200,10 @@ void QtCppTargetEngine::doWriteDefinitionSerializer(QTextStream& os, const Compl
 					szDefinition += "\t\tszValue +=\"\\\"\";" CRLF;
 					szDefinition += "\t}" CRLF;
 				}else{
-					QString szVariableName = "_" + ModelUtils::getUncapitalizedName(pAttribute->getName());
-					szDefinition += "\tif(!" + szVariableName + ".isNull()) {" CRLF;
-					szDefinition += "\t\tszValue += \" " + pAttribute->getName() + "=\\\"\" + " + szVariableName + ".serialize() + \"\\\"\";" CRLF;
+					const auto& szAttributeName = pAttribute->getName();
+					const auto& szMemberName = ModelUtils::getNormalizedMemberName(szAttributeName);
+					szDefinition += "\tif(!" + szMemberName + ".isNull()) {" CRLF;
+					szDefinition += "\t\tszValue += \" " + szAttributeName + "=\\\"\" + " + szMemberName + ".serialize() + \"\\\"\";" CRLF;
 					szDefinition += "\t}" CRLF;
 				}
 			}
@@ -1376,8 +1379,10 @@ void QtCppTargetEngine::doWriteDefinitionDeserializer(QTextStream& os, const Com
 				szDefinition += "\t\t}" CRLF;
 				szDefinition += "\t}" CRLF;
 			}else{
-				szDefinition += "\tif(!element.attributeNode(\"" + pAttribute->getName() + "\").isNull()) {" CRLF;
-				szDefinition += "\t\t" + pSimpleType->getVariableName() + ".deserialize(element.attributeNode(\"" + pAttribute->getName() + "\"));" CRLF;
+				const auto& szAttributeName = (pAttribute->getName().isEmpty() ? pSimpleType->getVariableName() : pAttribute->getName());
+				const auto& szMemberName = ModelUtils::getNormalizedMemberName(szAttributeName);
+				szDefinition += "\tif(!element.attributeNode(\"" + szAttributeName + "\").isNull()) {" CRLF;
+				szDefinition += "\t\t" + szMemberName + ".deserialize(element.attributeNode(\"" + szAttributeName + "\"));" CRLF;
 				szDefinition += "\t}" CRLF;
 			}
 		}
@@ -1507,7 +1512,9 @@ void QtCppTargetEngine::doWriteDefinitionIsNull(QTextStream& os, const ComplexTy
 				if(pAttribute->isList()){
 					szCond += "(_" + pAttribute->getName() + "List.size() > 0) && ";
 				}else{
-					szCond += pSimpleType->getVariableName() + ".isNull() && ";
+					const auto& szAttributeName = (pAttribute->getName().isEmpty() ? pSimpleType->getVariableName() : pAttribute->getName());
+					const auto& szMemberName = ModelUtils::getNormalizedMemberName(szAttributeName);
+					szCond += szMemberName + ".isNull() && ";
 				}
 
 			}else if( pAttribute->getType()->getTypeMode() == Type::TypeComplex) {
@@ -1819,7 +1826,7 @@ void QtCppTargetEngine::doWriteDeclarationGetterSetter(QTextStream& os, const At
 			doWriteDeclarationGetter(os, szFuncName, szParamType, GetterReturnModeConst);
 		} else {
 			//os << "\t//simple test" << CRLF;
-			QString szLocalName = pSimpleType->getLocalName();
+			QString szLocalName = (szAttributeName.isEmpty() ? pSimpleType->getLocalName() : szAttributeName);
 			szFuncName = ModelUtils::getCapitalizedName(szLocalName);
 			szParamType = pSimpleType->getCPPTypeNameValuesString();
 			szParamName = ModelUtils::getUncapitalizedName(szLocalName);
@@ -1868,14 +1875,20 @@ void QtCppTargetEngine::doWriteDefinitionGetterSetter(QTextStream& os, const Att
 			doWriteDefinitionSetterList(os, szClassName, szFuncName, szParamType, szParamName, szMemberName, SetterParamModeConst);
 			doWriteDefinitionAddList(os, szClassName, szFuncName, szParamType, szParamName, szMemberName, SetterParamModeConst);
 			doWriteDefinitionGetterList(os, szClassName, szFuncName, szMemberType, szMemberName, GetterReturnModeConst);
-		}else if(!pSimpleType->isEnumeration()) {
-			doWriteDefinitionGetterSetter(os, pSimpleType, szClassName);
-		} else {
+		}else if(pSimpleType->isEnumeration()) {
 			QString szLocalName = pSimpleType->getLocalName();
 			szFuncName = ModelUtils::getCapitalizedName(szLocalName);
 			szParamType = pSimpleType->getCPPTypeNameString();
 			szParamName = ModelUtils::getUncapitalizedName(szLocalName);
 			szMemberName = pSimpleType->getVariableName();
+			doWriteDefinitionSetter(os, szClassName, szFuncName, szParamType, szParamName, szMemberName, SetterParamModeConst);
+			doWriteDefinitionGetter(os, szClassName, szFuncName, szMemberType, szMemberName, GetterReturnModeConst);
+		} else {
+			QString szLocalName = (szAttributeName.isEmpty() ? pSimpleType->getLocalName() : szAttributeName);
+			szFuncName = ModelUtils::getCapitalizedName(szLocalName);
+			szParamType = pSimpleType->getCPPTypeNameValuesString();
+			szParamName = ModelUtils::getUncapitalizedName(szLocalName);
+			szMemberName = pAttribute->getVariableName();
 			doWriteDefinitionSetter(os, szClassName, szFuncName, szParamType, szParamName, szMemberName, SetterParamModeConst);
 			doWriteDefinitionGetter(os, szClassName, szFuncName, szMemberType, szMemberName, GetterReturnModeConst);
 		}
@@ -1914,7 +1927,8 @@ void QtCppTargetEngine::doWriteDeclarationVariable(QTextStream& os, const Attrib
 		if(bIsList){
 			langWriter.writeDeclarationVariableList(pSimpleType->getCPPTypeNameString(), pAttribute->getVariableName()+"List");
 		}else{
-			langWriter.writeDeclarationVariable(pSimpleType->getCPPTypeNameString(), pSimpleType->getVariableName());
+			const auto& szVariableName = pAttribute->getVariableName();
+			langWriter.writeDeclarationVariable(pSimpleType->getCPPTypeNameString(), szVariableName);
 		}
 	}else if(pType->getTypeMode() == Type::TypeComplex) {
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pType);

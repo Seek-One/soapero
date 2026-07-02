@@ -41,3 +41,8 @@ QString ModelUtils::getCPPTypeName(const QString& szNamespace, const QString& sz
 
 	return szTypeName;
 }
+
+QString ModelUtils::getNormalizedMemberName(const QString& szName)
+{
+	return "_" + getUncapitalizedName(szName);
+}

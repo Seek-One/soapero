@@ -27,7 +27,7 @@ public:
 	QWSDLParser();
 	virtual ~QWSDLParser();
 
-	void initXMLAttributes();		// https://www.w3.org/2001/xml.xsd
+	void init();
 	void setLogIndent(int iIdent);
 
 	void setSchemaURI(const QString& szSchemaURI);
@@ -120,6 +120,9 @@ private:
 	bool readFacet(QXmlStreamReader& xmlReader, const QString& szTagName);
 
 private:
+	void initXMLSchema(); // https://www.w3.org/2001/XMLSchema.xsd
+	void initXMLAttributes(); // https://www.w3.org/2001/xml.xsd
+
 	ElementSharedPtr getElementByRef(const QString& szRef);
 	TypeSharedPtr getTypeByName(const QString& szLocalName, const QString& szNamespace = QString(), const TypeListSharedPtr& pListIgnoredTypes = TypeList::create());
 	TypeRefSharedPtr getTypeRefByTypeName(const QString& szTypeName, const QString& szNamespace = QString());

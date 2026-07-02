@@ -35,7 +35,7 @@ QWSDLParser::QWSDLParser()
 	m_pListAttributes = AttributeList::create();
 	m_pListElements = ElementList::create();
 
-	initXMLAttributes();
+	init();
 
 	m_iLogIndent = 0;
 }
@@ -45,7 +45,51 @@ QWSDLParser::~QWSDLParser()
 
 }
 
-void QWSDLParser::initXMLAttributes()		// https://www.w3.org/2001/xml.xsd
+void QWSDLParser::init()
+{
+	initXMLSchema();
+	initXMLAttributes();
+}
+
+void QWSDLParser::initXMLSchema()
+{
+	// Add basic type from https://www.w3.org/2001/XMLSchema.xsd
+	QStringList listBaseType;
+	listBaseType << "boolean";
+	//listBaseType << "byte";
+	//listBaseType << "short";
+	listBaseType << "integer";
+	listBaseType << "unsignedInt";
+	//listBaseType << "nonPositiveInteger";
+	//listBaseType << "long";
+	listBaseType << "unsignedLong";
+	listBaseType << "nonNegativeInteger";
+	listBaseType << "float";
+	listBaseType << "double";
+	listBaseType << "string";
+	listBaseType << "token";
+	listBaseType << "QName";
+	listBaseType << "NCName";
+	listBaseType << "dateTime";
+	listBaseType << "duration";
+	listBaseType << "anyURI";
+	listBaseType << "hexBinary";
+	listBaseType << "base64Binary";
+
+	listBaseType << "anyType";
+	listBaseType << "anySimpleType";
+
+	for (const QString& szBaseType : listBaseType){
+		SimpleTypeSharedPtr pSimpleType = SimpleType::create();
+		pSimpleType->setVariableTypeFromString("xs", "xs:" + szBaseType);
+		pSimpleType->setNamespace("xs");
+		pSimpleType->setName(szBaseType);
+		pSimpleType->setNamespaceUri("https://www.w3.org/2001/XMLSchema.xsd");
+		m_pListTypes->add(pSimpleType);
+	}
+}
+
+void QWSDLParser::initXMLAttributes()
 {
 	// https://www.w3.org/2001/xml.xsd#att_lang
 

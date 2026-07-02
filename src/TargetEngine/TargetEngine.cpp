@@ -94,6 +94,10 @@ bool TargetEngine::doBuildTypeList(const TypeListSharedPtr& pTypeList)
 	bool bRes = true;
 	for(const auto& pType :  *m_pTypeList)
 	{
+		if (pType->getNamespace().toLower() == "xs") {
+			qDebug("[Builder] Skip basic type creation type: %s:%s", qPrintable(pType->getNamespace()), qPrintable(pType->getLocalName()));
+			continue;
+		}
 		if(!pType->getLocalName().isEmpty()) {
 			bRes = doBuildType(pType) && bRes;
 		}
