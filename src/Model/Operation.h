@@ -41,9 +41,6 @@ public:
 	void setSoapAction(const QString& szSoapAction);
 	QString getSoapAction() const;
 
-	QString getOperationDeclaration() const;
-	QString getOperationDefinition(const QString& szClassname, const QString& szNamespace) const;
-
 private:
 	QString m_szName;
 	QString m_szSoapAction;
