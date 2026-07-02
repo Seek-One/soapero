@@ -187,7 +187,7 @@ void QtCppTargetEngine::doWriteDeclarationClass(QTextStream& os, const ServiceSh
 		if(!(*operation)->getInputMessage()) {
 			continue;
 		}
-		os << "\t" << (*operation)->getOperationDeclaration() << CRLF;
+		doWriteDeclarationOperation(os, *operation);
 	}
 
 	os << CRLF;
@@ -270,7 +270,7 @@ void QtCppTargetEngine::doWriteDefinitionClass(QTextStream& os, const ServiceSha
 		if(!(*operation)->getInputMessage()) {
 			continue;
 		}
-		os << (*operation)->getOperationDefinition(szClassname, m_szNamespace) << CRLF;
+		doWriteDefinitionOperation(os, *operation, szClassname, m_szNamespace);
 	}
 
 	os << "QMap<QString, QString> " << szClassname << "::buildNamespaceRoutingMap(const QDomDocument& doc) const" CRLF;
@@ -1927,6 +1927,129 @@ void QtCppTargetEngine::doWriteDeclarationVariable(QTextStream& os, const Attrib
 			langWriter.writeDeclarationVariable(pComplexType->getNameWithNamespace(), szVarName);
 		}
 	}
+}
+
+void QtCppTargetEngine::doWriteDeclarationOperation(QTextStream& os, const OperationSharedPtr& pOperation) const
+{
+	QString szDeclaration;
+
+	const auto& szName = pOperation->getName();
+	const auto& pInputMessage = pOperation->getInputMessage();
+	const auto& pOutputMessage = pOperation->getOutputMessage();
+
+	const auto& pSoapEnvFaultType = pOperation->getSoapEnvelopeFaultType();
+
+	if(pInputMessage->getParameter() && pOutputMessage->getParameter())
+	{
+		szDeclaration += "bool ";
+		szDeclaration += szName;
+		szDeclaration += "(const ";
+		szDeclaration += pInputMessage->getParameter()->getNameWithNamespace();
+		szDeclaration += "& ";
+		szDeclaration += pInputMessage->getParameter()->getLocalName();
+		szDeclaration += ", ";
+		szDeclaration += pOutputMessage->getParameter()->getNameWithNamespace();
+		szDeclaration += "& ";
+		szDeclaration += pOutputMessage->getParameter()->getLocalName();
+		if(pSoapEnvFaultType){
+			szDeclaration += ", ";
+			szDeclaration += pSoapEnvFaultType->getNameWithNamespace();
+			szDeclaration += "& ";
+			szDeclaration += pSoapEnvFaultType->getLocalName();
+		}
+		szDeclaration += ");";
+	}
+
+	os << "\t" << szDeclaration << CRLF;
+}
+
+void QtCppTargetEngine::doWriteDefinitionOperation(QTextStream& os, const OperationSharedPtr& pOperation, const QString& szClassname, const QString& szNamespace) const
+{
+	const auto& szName = pOperation->getName();
+	const auto& pInputMessage = pOperation->getInputMessage();
+	const auto& pOutputMessage = pOperation->getOutputMessage();
+
+	if(!pInputMessage->getParameter() || !pOutputMessage->getParameter()){
+		return;
+	}
+
+	const auto& pSoapEnvFaultType = pOperation->getSoapEnvelopeFaultType();
+	const auto& szSoapAction = pOperation->getSoapAction();
+
+	QString szInputName = ModelUtils::getUncapitalizedName(pInputMessage->getParameter()->getLocalName());
+	QString szOutputName = ModelUtils::getUncapitalizedName(pOutputMessage->getParameter()->getLocalName());
+
+	QString szDefinition;
+	szDefinition += "bool " + szClassname + "::" + szName + "(const " + pInputMessage->getParameter()->getNameWithNamespace() +
+			"& " + szInputName + ", " + pOutputMessage->getParameter()->getNameWithNamespace() +
+			"& " + szOutputName;
+
+	if(pSoapEnvFaultType){
+		szDefinition += ", " + pSoapEnvFaultType->getNameWithNamespace() + "& " + pSoapEnvFaultType->getLocalName() + ")" CRLF;
+	}else{
+		szDefinition += ")" CRLF;
+	}
+	szDefinition += "{" CRLF;
+	szDefinition += "\tbool bGoOn = true;" CRLF;
+	szDefinition += CRLF;
+	szDefinition += "\tQNetworkRequest request = buildNetworkRequest();" CRLF;
+	szDefinition += "\trequest.setRawHeader(QString(\"Content-Type\").toLatin1(), QString(\"application/soap+xml; charset=utf-8; action=\\\"" + szSoapAction + "\\\"\").toLatin1());" CRLF;
+	szDefinition += "\trequest.setRawHeader(QString(\"Accept-Encoding\").toLatin1(), QString(\"gzip, deflate\").toLatin1());" CRLF;
+	szDefinition += "\trequest.setRawHeader(QString(\"SoapAction\").toLatin1(), QString(\"" + szSoapAction + "\").toLatin1());" CRLF;
+	szDefinition += CRLF;
+	szDefinition += "\tQByteArray soapMessage = buildSoapMessage(" + szInputName + ".serialize(), " + pInputMessage->getParameter()->getNameWithNamespace() + "::getNamespaceDeclaration());" CRLF;
+
+	// Debug request
+	szDefinition += "\tif(m_bDebug){" CRLF;
+	szDefinition += "\t\tqWarning(\"Message:\\n%s\", qPrintable(QString::fromUtf8(soapMessage)));" CRLF;
+	szDefinition += "\t}" CRLF;
+	szDefinition += CRLF;
+
+	szDefinition += CRLF;
+	szDefinition += "\tIQueryExecutorResponse response = m_pQueryExecutor->execQuery(request, soapMessage);" CRLF;
+	szDefinition += "\tQString szErrorMsg;" CRLF;
+	szDefinition += "\tint iErrorLine = -1;" CRLF;
+	szDefinition += "\tint iErrorColumn = -1;" CRLF;
+	szDefinition += "\tQDomDocument doc;" CRLF;
+	szDefinition += "\tQMap<QString, QString> namespaceRoutingMap;" CRLF;
+	szDefinition += CRLF;
+	szDefinition += "\tif(doc.setContent(response.getResponse(), &szErrorMsg, &iErrorLine, &iErrorColumn)){" CRLF;
+	szDefinition += "\t\tnamespaceRoutingMap = buildNamespaceRoutingMap(doc);" CRLF;
+	szDefinition += CRLF;
+	if(pSoapEnvFaultType){
+		szDefinition += "\t\tQString szNamespace = namespaceRoutingMap.value(SOAP_ENV_URI, " + szNamespace + "::" + pSoapEnvFaultType->getNameWithNamespace() + "_TargetNamespace);" CRLF;
+		szDefinition += "\t\tQString szFaultTagName = szNamespace + \":Fault\";" CRLF;
+		szDefinition += "\t\tif(doc.elementsByTagName(szFaultTagName).size() > 0){" CRLF;
+		szDefinition += "\t\t\tQDomElement root = doc.elementsByTagName(szFaultTagName).at(0).toElement();" CRLF;
+		szDefinition += "\t\t\tFault.deserialize(root);" CRLF;
+		szDefinition += "\t\t\tbGoOn = false;" CRLF;
+		szDefinition += "\t\t}else{" CRLF;
+	}
+	szDefinition += "\t\t" + QString(pSoapEnvFaultType ? "\t" : "") + "QDomElement root = doc.elementsByTagName(namespaceRoutingMap.value(SOAP_ENV_URI, DEFAULT_SOAP_ENV_NAMESPACE) + \":Body\").at(0).firstChildElement();" CRLF;
+	szDefinition += "\t\t" + QString(pSoapEnvFaultType ? "\t" : "") + szOutputName + ".deserialize(root);" CRLF;
+	if(pSoapEnvFaultType){
+		szDefinition += "\t\t}" CRLF;
+	}
+	szDefinition += "\t}else{" CRLF;
+	szDefinition += "\t\tbGoOn = false;" CRLF;
+	szDefinition += "\t\tqWarning(\"[" + szNamespace + "::" + szName + "] Error during parsing response : %s (%d:%d)\", qPrintable(szErrorMsg), iErrorLine, iErrorColumn);" CRLF;
+	szDefinition += "\t}" CRLF;
+	szDefinition += CRLF;
+	szDefinition += "\tif(response.getHttpStatusCode() != 200){" CRLF;
+	szDefinition += "\t\tbGoOn = false;" CRLF;
+	szDefinition += "\t\tqWarning(\"[" + szNamespace + "::" + szName + "] Error with HTTP status code: %d\", response.getHttpStatusCode());" CRLF;
+	szDefinition += "\t}" CRLF;
+	szDefinition += CRLF;
+
+	szDefinition += "\tif(m_bDebug){" CRLF;
+	szDefinition += "\t\tqWarning(\"Response:\\n%s\", qPrintable(QString::fromUtf8(response.getResponse())));" CRLF;
+	szDefinition += "\t}" CRLF;
+	szDefinition += CRLF;
+
+	szDefinition += "\treturn bGoOn;" CRLF;
+	szDefinition += "}" CRLF;
+
+	os << szDefinition << CRLF;
 }
 
 void QtCppTargetEngine::startCppClass(QTextStream& os, const QString& szClassName, const ComplexTypeSharedPtr& pComplexType) const

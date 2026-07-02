@@ -75,6 +75,11 @@ private:
 	void doWriteDefinitionGetterSetter(QTextStream& os, const AttributeSharedPtr& pAttribute, const QString& szClassName) const;
 	void doWriteDeclarationVariable(QTextStream& os, const AttributeSharedPtr& pAttribute) const;
 
+	// Operation
+	void doWriteDeclarationOperation(QTextStream& os, const OperationSharedPtr& pOperation) const;
+	void doWriteDefinitionOperation(QTextStream& os, const OperationSharedPtr& pOperation, const QString& szClassname, const QString& szNamespace) const;
+
+
 	void startCppClass(QTextStream& os, const QString& szClassName, const ComplexTypeSharedPtr& pComplexType) const;
 	void endCppClass(QTextStream& os, const QString& szClassName) const;
 
