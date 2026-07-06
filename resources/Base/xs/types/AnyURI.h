@@ -20,6 +20,7 @@ public:
 	virtual ~AnyURI();
 
 	AnyURI& operator= (const AnyURI& other);
+	AnyURI& operator= (const char* szValue);
 	AnyURI& operator= (const QString& szValue);
 };
 

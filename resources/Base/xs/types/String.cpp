@@ -14,9 +14,14 @@ String::String()
 
 }
 
-String::String(const QString& value)
+String::String(const char* szValue)
 {
-	m_szValue = value;
+	m_szValue = szValue;
+}
+
+String::String(const QString& szValue)
+{
+	m_szValue = szValue;
 }
 
 String::~String()
@@ -47,7 +52,23 @@ bool String::operator== (const String& other) const
 
 bool String::operator!= (const String& other) const
 {
-return (m_szValue != other.m_szValue);
+	return (m_szValue != other.m_szValue);
+}
+
+String& String::operator= (const char* szValue)
+{
+	m_szValue = szValue;
+	return (*this);
+}
+
+bool String::operator== (const char* szValue) const
+{
+	return (m_szValue == szValue);
+}
+
+bool String::operator!= (const char* szValue) const
+{
+	return (m_szValue != szValue);
 }
 
 String& String::operator= (const QString& szValue)

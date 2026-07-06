@@ -20,6 +20,7 @@ public:
 	virtual ~QName();
 
 	QName& operator= (const QName& other);
+	QName& operator= (const char* szValue);
 	QName& operator= (const QString& szValue);
 };
 

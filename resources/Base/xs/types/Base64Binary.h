@@ -20,6 +20,7 @@ public:
 	virtual ~Base64Binary();
 
 	Base64Binary& operator= (const Base64Binary& other);
+	Base64Binary& operator= (const char* szValue);
 	Base64Binary& operator= (const QString& szValue);
 };
 

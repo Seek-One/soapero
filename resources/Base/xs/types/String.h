@@ -17,15 +17,20 @@ class String
 {
 public:
 	String();
-	String(const QString& value);
+	String(const char* szValue);
+	String(const QString& szValue);
 	virtual ~String();
 
-	void setValue(const QString& value);
+	void setValue(const QString& szValue);
 	const QString& getValue() const;
 
 	String& operator= (const String& other);
 	bool operator== (const String& other) const;
 	bool operator!= (const String& other) const;
+
+	String& operator= (const char* szValue);
+	bool operator== (const char* szValue) const;
+	bool operator!= (const char* szValue) const;
 
 	String& operator= (const QString& szValue);
 	bool operator== (const QString& szValue) const;

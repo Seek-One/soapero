@@ -65,6 +65,25 @@ bool Duration::operator!= (const Duration& other) const
 	return !(*this == other);
 }
 
+Duration& Duration::operator= (const char* szValue)
+{
+	setValue(szValue);
+	return *this;
+}
+
+bool Duration::operator== (const char* szValue) const
+{
+	if (m_bIsNull) {
+		return false;
+	}
+	return (m_szValue == szValue);
+}
+
+bool Duration::operator!= (const char* szValue) const
+{
+	return !(*this == szValue);
+}
+
 Duration& Duration::operator= (const QString& szValue)
 {
 	setValue(szValue);

@@ -20,6 +20,7 @@ public:
 	virtual ~AnyType();
 
 	AnyType& operator= (const AnyType& other);
+	AnyType& operator= (const char* szValue);
 	AnyType& operator= (const QString& szValue);
 };
 

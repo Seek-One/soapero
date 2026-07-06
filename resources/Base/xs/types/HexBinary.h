@@ -20,6 +20,7 @@ public:
 	virtual ~HexBinary();
 
 	HexBinary& operator= (const HexBinary& other);
+	HexBinary& operator= (const char* szValue);
 	HexBinary& operator= (const QString& szValue);
 };
 

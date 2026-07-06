@@ -15,6 +15,12 @@ Token::Token()
 
 }
 
+Token& Token::operator= (const char* szValue)
+{
+	String::operator=(szValue);
+	return *this;
+}
+
 Token::Token(const QString& szValue)
 	: String(szValue)
 {

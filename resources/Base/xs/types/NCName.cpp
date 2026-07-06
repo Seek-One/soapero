@@ -15,6 +15,12 @@ NCName::NCName()
 
 }
 
+NCName& NCName::operator= (const char* szValue)
+{
+	String::operator=(szValue);
+	return *this;
+}
+
 NCName::NCName(const QString& szValue)
 	: String(szValue)
 {

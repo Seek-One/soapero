@@ -28,6 +28,10 @@ public:
 	bool operator== (const Duration& other) const;
 	bool operator!= (const Duration& other) const;
 
+	Duration& operator= (const char* szValue);
+	bool operator== (const char* szValue) const;
+	bool operator!= (const char* szValue) const;
+
 	Duration& operator= (const QString& szValue);
 	bool operator== (const QString& szValue) const;
 	bool operator!= (const QString& szValue) const;

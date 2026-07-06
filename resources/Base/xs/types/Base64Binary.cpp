@@ -15,6 +15,12 @@ Base64Binary::Base64Binary()
 
 }
 
+Base64Binary& Base64Binary::operator= (const char* szValue)
+{
+	String::operator=(szValue);
+	return *this;
+}
+
 Base64Binary::Base64Binary(const QString& szValue)
 	: String(szValue)
 {

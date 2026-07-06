@@ -20,6 +20,7 @@ public:
 	virtual ~Token();
 
 	Token& operator= (const Token& other);
+	Token& operator= (const char* szValue);
 	Token& operator= (const QString& szValue);
 };
 

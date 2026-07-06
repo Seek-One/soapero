@@ -20,6 +20,7 @@ public:
 	virtual ~NCName();
 
 	NCName& operator= (const NCName& other);
+	NCName& operator= (const char* szValue);
 	NCName& operator= (const QString& szValue);
 };
 

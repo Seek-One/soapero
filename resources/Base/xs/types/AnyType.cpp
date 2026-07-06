@@ -38,6 +38,12 @@ AnyType& AnyType::operator= (const AnyType& other)
 	return *this;
 }
 
+AnyType& AnyType::operator= (const char* szValue)
+{
+	String::operator=(szValue);
+	return *this;
+}
+
 AnyType& AnyType::operator= (const QString& szValue)
 {
 	String::operator=(szValue);

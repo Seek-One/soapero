@@ -15,6 +15,12 @@ HexBinary::HexBinary()
 
 }
 
+HexBinary& HexBinary::operator= (const char* szValue)
+{
+	String::operator=(szValue);
+	return *this;
+}
+
 HexBinary::HexBinary(const QString& szValue)
 	: String(szValue)
 {
