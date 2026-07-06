@@ -126,7 +126,7 @@ void QtCppTargetEngine::doWriteDeclarationIncludes(QTextStream& os, const Servic
 	langWriter.writeIncludeFileSystem("QMap");
 	langWriter.writeIncludeFileSystem("QDomDocument");
 	os << CRLF;
-	langWriter.writeIncludeFileLocal("Service.h");
+	langWriter.writeIncludeFileLocal("./Service.h");
 	os << CRLF;
 
 	QString szTmpFileName;

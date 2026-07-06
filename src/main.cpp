@@ -162,6 +162,7 @@ bool processWSDLFile(const QString& szFilename, const QString& szFilePath, const
 							fileData = fileSrc.readAll();
 							QString text(fileData);
 							text.replace(QString("namespace SOAPERO"), QString("namespace %0").arg(szNamespace));
+							text.replace(QString("SOAPERO_SERVICE_H_"), QString("%0_SERVICE_H_").arg(szNamespace));
 
 							QFile fileDst(szDstPath);
 							bRes = fileDst.open(QIODevice::ReadWrite);

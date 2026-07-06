@@ -5,8 +5,8 @@
  *      Author: lgruber
  */
 
-#ifndef SERVICE_H_
-#define SERVICE_H_
+#ifndef SOAPERO_SERVICE_H_
+#define SOAPERO_SERVICE_H_
 
 #include <QDateTime>
 #include <QString>
@@ -91,4 +91,4 @@ private:
 }
 
 
-#endif /* SERVICE_H_ */
+#endif /* SOAPERO_SERVICE_H_ */
