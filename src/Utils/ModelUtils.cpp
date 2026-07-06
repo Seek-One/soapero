@@ -46,3 +46,13 @@ QString ModelUtils::getNormalizedMemberName(const QString& szName)
 {
 	return "_" + getUncapitalizedName(szName);
 }
+
+QString ModelUtils::getNormalizedParamName(const QString& szName)
+{
+	QString szTmp = ModelUtils::getUncapitalizedName(szName);
+	// C++ reserved keywork
+	if (szTmp == "signed") {
+		return "signed_";
+	}
+	return szTmp;
+}

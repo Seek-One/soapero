@@ -18,6 +18,7 @@ public:
 	static QString getCPPTypeName(const QString& szNamespace, const QString& szLocalName);
 
 	static QString getNormalizedMemberName(const QString& szName);
+	static QString getNormalizedParamName(const QString& szName);
 };
 
 

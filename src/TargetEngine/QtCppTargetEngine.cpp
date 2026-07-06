@@ -2041,32 +2041,27 @@ void QtCppTargetEngine::doWriteDeclarationGetterSetter(QTextStream& os, const At
 	const auto& bIsList = pAttribute->isList();
 
 	if(pType->getTypeMode() == Type::TypeSimple) {
-		//os << "\t//simple" << CRLF;
 		SimpleTypeSharedPtr pSimpleType = qSharedPointerCast<SimpleType>(pType);
 		if(bIsList){
 			szParamType = pSimpleType->getCPPTypeNameString();
 			doWriteDeclarationSetterList(os, szFuncName, szParamType, szParamName, SetterParamModeConst);
 			doWriteDeclarationAddList(os, szFuncName, szParamType, szParamName, SetterParamModeConst);
 			doWriteDeclarationGetterList(os, szFuncName, szParamType, GetterReturnModeConst);
-		}else if(pSimpleType->isEnumeration()) {
-			//os << "\t//simple enum" << CRLF;
-			QString szLocalName = pSimpleType->getLocalName();
+		}else {
+			QString szLocalName;
+			if(pSimpleType->isEnumeration()) {
+				szLocalName = pSimpleType->getLocalName();
+				szParamType = pSimpleType->getCPPTypeNameString();
+			}else {
+				szLocalName = (szAttributeName.isEmpty() ? pSimpleType->getLocalName() : szAttributeName);
+				szParamType = pSimpleType->getCPPTypeNameValuesString();
+			}
 			szFuncName = ModelUtils::getCapitalizedName(szLocalName);
-			szParamType = pSimpleType->getCPPTypeNameString();
-			szParamName = ModelUtils::getUncapitalizedName(szLocalName);
-			doWriteDeclarationSetter(os, szFuncName, szParamType, szParamName, SetterParamModeConst);
-			doWriteDeclarationGetter(os, szFuncName, szParamType, GetterReturnModeConst);
-		} else {
-			//os << "\t//simple test" << CRLF;
-			QString szLocalName = (szAttributeName.isEmpty() ? pSimpleType->getLocalName() : szAttributeName);
-			szFuncName = ModelUtils::getCapitalizedName(szLocalName);
-			szParamType = pSimpleType->getCPPTypeNameValuesString();
-			szParamName = ModelUtils::getUncapitalizedName(szLocalName);
+			szParamName = ModelUtils::getNormalizedParamName(szLocalName);
 			doWriteDeclarationSetter(os, szFuncName, szParamType, szParamName, SetterParamModeConst);
 			doWriteDeclarationGetter(os, szFuncName, szParamType, GetterReturnModeConst);
 		}
 	}else if(pType->getTypeMode() == Type::TypeComplex) {
-		//os << "\t//complex" << CRLF;
 		ComplexTypeSharedPtr pComplexType = qSharedPointerCast<ComplexType>(pType);
 		if(bIsList){
 			szParamType = pComplexType->getNameWithNamespace();
@@ -2107,19 +2102,17 @@ void QtCppTargetEngine::doWriteDefinitionGetterSetter(QTextStream& os, const Att
 			doWriteDefinitionSetterList(os, szClassName, szFuncName, szParamType, szParamName, szMemberName, SetterParamModeConst);
 			doWriteDefinitionAddList(os, szClassName, szFuncName, szParamType, szParamName, szMemberName, SetterParamModeConst);
 			doWriteDefinitionGetterList(os, szClassName, szFuncName, szMemberType, szMemberName, GetterReturnModeConst);
-		}else if(pSimpleType->isEnumeration()) {
-			QString szLocalName = pSimpleType->getLocalName();
+		}else{
+			QString szLocalName;
+			if(pSimpleType->isEnumeration()) {
+				szLocalName = pSimpleType->getLocalName();
+				szParamType = pSimpleType->getCPPTypeNameString();
+			}else {
+				szLocalName = (szAttributeName.isEmpty() ? pSimpleType->getLocalName() : szAttributeName);
+				szParamType = pSimpleType->getCPPTypeNameValuesString();
+			}
 			szFuncName = ModelUtils::getCapitalizedName(szLocalName);
-			szParamType = pSimpleType->getCPPTypeNameString();
-			szParamName = ModelUtils::getUncapitalizedName(szLocalName);
-			szMemberName = pSimpleType->getVariableName();
-			doWriteDefinitionSetter(os, szClassName, szFuncName, szParamType, szParamName, szMemberName, SetterParamModeConst);
-			doWriteDefinitionGetter(os, szClassName, szFuncName, szMemberType, szMemberName, GetterReturnModeConst);
-		} else {
-			QString szLocalName = (szAttributeName.isEmpty() ? pSimpleType->getLocalName() : szAttributeName);
-			szFuncName = ModelUtils::getCapitalizedName(szLocalName);
-			szParamType = pSimpleType->getCPPTypeNameValuesString();
-			szParamName = ModelUtils::getUncapitalizedName(szLocalName);
+			szParamName = ModelUtils::getNormalizedParamName(szLocalName);
 			szMemberName = pAttribute->getVariableName();
 			doWriteDefinitionSetter(os, szClassName, szFuncName, szParamType, szParamName, szMemberName, SetterParamModeConst);
 			doWriteDefinitionGetter(os, szClassName, szFuncName, szMemberType, szMemberName, GetterReturnModeConst);
