@@ -15,7 +15,12 @@ namespace XS {
 class QName : public String {
 public:
 	QName();
+	QName(const QString& szValue);
+	QName(const QName& other);
 	virtual ~QName();
+
+	QName& operator= (const QName& other);
+	QName& operator= (const QString& szValue);
 };
 
 }

@@ -15,6 +15,18 @@ Integer::Integer()
 	m_bIsNull = true;
 }
 
+Integer::Integer(int iValue)
+{
+	m_iValue = iValue;
+	m_bIsNull = false;
+}
+
+Integer::Integer(const Integer& other)
+{
+	m_iValue = other.m_iValue;
+	m_bIsNull = other.m_bIsNull;
+}
+
 Integer::~Integer()
 {
 
@@ -29,6 +41,40 @@ void Integer::setValue(int iValue)
 int Integer::getValue() const
 {
 	return m_iValue;
+}
+
+Integer& Integer::operator= (const Integer& other)
+{
+	m_bIsNull = other.m_bIsNull;
+	m_iValue = other.m_iValue;
+	return (*this);
+}
+
+bool Integer::operator== (const Integer& other) const
+{
+	return (m_bIsNull == other.m_bIsNull) && (m_iValue == other.m_iValue);
+}
+
+bool Integer::operator!= (const Integer& other) const
+{
+	return (m_bIsNull != other.m_bIsNull) || (m_iValue != other.m_iValue);
+}
+
+Integer& Integer::operator= (int iValue)
+{
+	m_bIsNull = false;
+	m_iValue = iValue;
+	return (*this);
+}
+
+bool Integer::operator== (int iValue) const
+{
+	return (m_bIsNull == false) && (m_iValue == iValue);
+}
+
+bool Integer::operator!= (int iValue) const
+{
+	return (m_bIsNull != false) || (m_iValue != iValue);
 }
 
 QString Integer::serialize() const

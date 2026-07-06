@@ -15,6 +15,18 @@ Boolean::Boolean()
 	m_bIsNull = true;
 }
 
+Boolean::Boolean(bool bValue)
+{
+	m_bValue = bValue;
+	m_bIsNull = false;
+}
+
+Boolean::Boolean(const Boolean& other)
+{
+	m_bValue = other.m_bValue;
+	m_bIsNull = other.m_bIsNull;
+}
+
 Boolean::~Boolean()
 {
 
@@ -29,6 +41,40 @@ void Boolean::setValue(bool bValue)
 bool Boolean::getValue() const
 {
 	return m_bValue;
+}
+
+Boolean& Boolean::operator= (const Boolean& other)
+{
+	m_bIsNull = other.m_bIsNull;
+	m_bValue = other.m_bValue;
+	return (*this);
+}
+
+bool Boolean::operator== (const Boolean& other) const
+{
+	return (m_bIsNull == other.m_bIsNull) && (m_bValue == other.m_bValue);
+}
+
+bool Boolean::operator!= (const Boolean& other) const
+{
+	return (m_bIsNull != other.m_bIsNull) || (m_bValue != other.m_bValue);
+}
+
+Boolean& Boolean::operator= (bool bValue)
+{
+	m_bIsNull = false;
+	m_bValue = bValue;
+	return (*this);
+}
+
+bool Boolean::operator== (bool bValue) const
+{
+	return (m_bIsNull == false) && (m_bValue == bValue);
+}
+
+bool Boolean::operator!= (bool bValue) const
+{
+	return (m_bIsNull != false) || (m_bValue != bValue);
 }
 
 QString Boolean::serialize() const

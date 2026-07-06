@@ -17,10 +17,20 @@ class UnsignedInteger
 {
 public:
 	UnsignedInteger();
+	UnsignedInteger(unsigned int iValue);
+	UnsignedInteger(const UnsignedInteger& other);
 	virtual ~UnsignedInteger();
 
 	void setValue(unsigned int iValue);
 	unsigned int getValue() const;
+
+	UnsignedInteger& operator= (const UnsignedInteger& other);
+	bool operator== (const UnsignedInteger& other) const;
+	bool operator!= (const UnsignedInteger& other) const;
+
+	UnsignedInteger& operator= (unsigned int iValue);
+	bool operator== (unsigned int iValue) const;
+	bool operator!= (unsigned int iValue) const;
 
 	QString serialize() const;
 	void deserialize(const QDomElement& element);

@@ -15,7 +15,12 @@ namespace XS {
 class HexBinary : public String {
 public:
 	HexBinary();
+	HexBinary(const QString& szValue);
+	HexBinary(const HexBinary& other);
 	virtual ~HexBinary();
+
+	HexBinary& operator= (const HexBinary& other);
+	HexBinary& operator= (const QString& szValue);
 };
 
 }

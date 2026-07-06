@@ -15,10 +15,20 @@ namespace XS {
 class UnsignedLong {
 public:
 	UnsignedLong();
+	UnsignedLong(unsigned long iValue);
+	UnsignedLong(const UnsignedLong& other);
 	virtual ~UnsignedLong();
 
 	void setValue(unsigned long iValue);
 	unsigned long getValue() const;
+
+	UnsignedLong& operator= (const UnsignedLong& other);
+	bool operator== (const UnsignedLong& other) const;
+	bool operator!= (const UnsignedLong& other) const;
+
+	UnsignedLong& operator= (unsigned long iValue);
+	bool operator== (unsigned long iValue) const;
+	bool operator!= (unsigned long iValue) const;
 
 	QString serialize() const;
 	void deserialize(const QDomElement& element);

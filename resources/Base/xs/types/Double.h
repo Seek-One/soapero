@@ -15,10 +15,20 @@ namespace XS {
 class Double {
 public:
 	Double();
+	Double(double fValue);
+	Double(const Double& other);
 	virtual ~Double();
 
 	void setValue(double fValue);
 	double getValue() const;
+
+	Double& operator= (const Double& other);
+	bool operator== (const Double& other) const;
+	bool operator!= (const Double& other) const;
+
+	Double& operator= (double fValue);
+	bool operator== (double fValue) const;
+	bool operator!= (double fValue) const;
 
 	QString serialize() const;
 	void deserialize(const QDomElement& element);

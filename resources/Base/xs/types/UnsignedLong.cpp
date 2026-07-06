@@ -15,6 +15,18 @@ UnsignedLong::UnsignedLong()
 	m_bIsNull = true;
 }
 
+UnsignedLong::UnsignedLong(unsigned long iValue)
+{
+	m_iValue = iValue;
+	m_bIsNull = false;
+}
+
+UnsignedLong::UnsignedLong(const UnsignedLong& other)
+{
+	m_iValue = other.m_iValue;
+	m_bIsNull = other.m_bIsNull;
+}
+
 UnsignedLong::~UnsignedLong()
 {
 
@@ -29,6 +41,48 @@ void UnsignedLong::setValue(unsigned long iValue)
 unsigned long UnsignedLong::getValue() const
 {
 	return m_iValue;
+}
+
+UnsignedLong& UnsignedLong::operator= (const UnsignedLong& other)
+{
+	m_iValue = other.m_iValue;
+	m_bIsNull = other.m_bIsNull;
+	return *this;
+}
+
+bool UnsignedLong::operator== (const UnsignedLong& other) const
+{
+	if (m_bIsNull && other.m_bIsNull) {
+		return true;
+	}
+	if (m_bIsNull || other.m_bIsNull) {
+		return false;
+	}
+	return (m_iValue == other.m_iValue);
+}
+
+bool UnsignedLong::operator!= (const UnsignedLong& other) const
+{
+	return !(*this == other);
+}
+
+UnsignedLong& UnsignedLong::operator= (unsigned long iValue)
+{
+	setValue(iValue);
+	return *this;
+}
+
+bool UnsignedLong::operator== (unsigned long iValue) const
+{
+	if (m_bIsNull) {
+		return false;
+	}
+	return (m_iValue == iValue);
+}
+
+bool UnsignedLong::operator!= (unsigned long iValue) const
+{
+	return !(*this == iValue);
 }
 
 QString UnsignedLong::serialize() const

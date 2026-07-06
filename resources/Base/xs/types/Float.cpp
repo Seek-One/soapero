@@ -15,6 +15,18 @@ Float::Float()
 	m_bIsNull = true;
 }
 
+Float::Float(float fValue)
+{
+	m_fValue = fValue;
+	m_bIsNull = false;
+}
+
+Float::Float(const Float& other)
+{
+	m_fValue = other.m_fValue;
+	m_bIsNull = other.m_bIsNull;
+}
+
 Float::~Float()
 {
 
@@ -29,6 +41,48 @@ void Float::setValue(float fValue)
 float Float::getValue() const
 {
 	return m_fValue;
+}
+
+Float& Float::operator= (const Float& other)
+{
+	m_fValue = other.m_fValue;
+	m_bIsNull = other.m_bIsNull;
+	return *this;
+}
+
+bool Float::operator== (const Float& other) const
+{
+	if (m_bIsNull && other.m_bIsNull) {
+		return true;
+	}
+	if (m_bIsNull || other.m_bIsNull) {
+		return false;
+	}
+	return (m_fValue == other.m_fValue);
+}
+
+bool Float::operator!= (const Float& other) const
+{
+	return !(*this == other);
+}
+
+Float& Float::operator= (float fValue)
+{
+	setValue(fValue);
+	return *this;
+}
+
+bool Float::operator== (float fValue) const
+{
+	if (m_bIsNull) {
+		return false;
+	}
+	return (m_fValue == fValue);
+}
+
+bool Float::operator!= (float fValue) const
+{
+	return !(*this == fValue);
 }
 
 QString Float::serialize() const

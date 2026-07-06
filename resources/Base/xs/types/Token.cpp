@@ -15,9 +15,33 @@ Token::Token()
 
 }
 
+Token::Token(const QString& szValue)
+	: String(szValue)
+{
+
+}
+
+Token::Token(const Token& other)
+	: String(other)
+{
+
+}
+
 Token::~Token()
 {
 
+}
+
+Token& Token::operator= (const Token& other)
+{
+	String::operator=(other);
+	return *this;
+}
+
+Token& Token::operator= (const QString& szValue)
+{
+	String::operator=(szValue);
+	return *this;
 }
 
 }

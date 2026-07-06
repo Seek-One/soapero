@@ -15,7 +15,12 @@ namespace XS {
 class NonNegativeInteger : public UnsignedInteger {
 public:
 	NonNegativeInteger();
+	NonNegativeInteger(unsigned int iValue);
+	NonNegativeInteger(const NonNegativeInteger& other);
 	virtual ~NonNegativeInteger();
+
+	NonNegativeInteger& operator= (const NonNegativeInteger& other);
+	NonNegativeInteger& operator= (unsigned int iValue);
 };
 
 }

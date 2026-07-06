@@ -15,6 +15,18 @@ UnsignedInteger::UnsignedInteger()
 	m_bIsNull = true;
 }
 
+UnsignedInteger::UnsignedInteger(unsigned int iValue)
+{
+	m_iValue = iValue;
+	m_bIsNull = false;
+}
+
+UnsignedInteger::UnsignedInteger(const UnsignedInteger& other)
+{
+	m_iValue = other.m_iValue;
+	m_bIsNull = other.m_bIsNull;
+}
+
 UnsignedInteger::~UnsignedInteger()
 {
 
@@ -29,6 +41,48 @@ void UnsignedInteger::setValue(unsigned int iValue)
 unsigned int UnsignedInteger::getValue() const
 {
 	return m_iValue;
+}
+
+UnsignedInteger& UnsignedInteger::operator= (const UnsignedInteger& other)
+{
+	m_iValue = other.m_iValue;
+	m_bIsNull = other.m_bIsNull;
+	return *this;
+}
+
+bool UnsignedInteger::operator== (const UnsignedInteger& other) const
+{
+	if (m_bIsNull && other.m_bIsNull) {
+		return true;
+	}
+	if (m_bIsNull || other.m_bIsNull) {
+		return false;
+	}
+	return (m_iValue == other.m_iValue);
+}
+
+bool UnsignedInteger::operator!= (const UnsignedInteger& other) const
+{
+	return !(*this == other);
+}
+
+UnsignedInteger& UnsignedInteger::operator= (unsigned int iValue)
+{
+	setValue(iValue);
+	return *this;
+}
+
+bool UnsignedInteger::operator== (unsigned int iValue) const
+{
+	if (m_bIsNull) {
+		return false;
+	}
+	return (m_iValue == iValue);
+}
+
+bool UnsignedInteger::operator!= (unsigned int iValue) const
+{
+	return !(*this == iValue);
 }
 
 QString UnsignedInteger::serialize() const

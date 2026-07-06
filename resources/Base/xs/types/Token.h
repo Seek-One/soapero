@@ -15,7 +15,12 @@ namespace XS {
 class Token : public String {
 public:
 	Token();
+	Token(const QString& szValue);
+	Token(const Token& other);
 	virtual ~Token();
+
+	Token& operator= (const Token& other);
+	Token& operator= (const QString& szValue);
 };
 
 }

@@ -17,10 +17,20 @@ class Integer
 {
 public:
 	Integer();
+	Integer(int iValue);
+	Integer(const Integer& other);
 	virtual ~Integer();
 
 	void setValue(int iValue);
 	int getValue() const;
+
+	Integer& operator= (const Integer& other);
+	bool operator== (const Integer& other) const;
+	bool operator!= (const Integer& other) const;
+
+	Integer& operator= (int iValue);
+	bool operator== (int iValue) const;
+	bool operator!= (int iValue) const;
 
 	QString serialize() const;
 	void deserialize(const QDomElement& element);

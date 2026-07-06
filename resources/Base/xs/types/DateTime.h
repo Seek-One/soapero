@@ -16,10 +16,20 @@ namespace XS {
 class DateTime {
 public:
 	DateTime();
+	DateTime(const QDateTime& value);
+	DateTime(const DateTime& other);
 	virtual ~DateTime();
 
 	void setValue(const QDateTime& dateTime);
 	const QDateTime& getValue() const;
+
+	DateTime& operator= (const DateTime& other);
+	bool operator== (const DateTime& other) const;
+	bool operator!= (const DateTime& other) const;
+
+	DateTime& operator= (const QDateTime& value);
+	bool operator== (const QDateTime& value) const;
+	bool operator!= (const QDateTime& value) const;
 
 	QString serialize() const;
 	void deserialize(const QDomElement& element);

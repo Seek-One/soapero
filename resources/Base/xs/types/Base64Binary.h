@@ -15,7 +15,12 @@ namespace XS {
 class Base64Binary : public String {
 public:
 	Base64Binary();
+	Base64Binary(const QString& szValue);
+	Base64Binary(const Base64Binary& other);
 	virtual ~Base64Binary();
+
+	Base64Binary& operator= (const Base64Binary& other);
+	Base64Binary& operator= (const QString& szValue);
 };
 
 }

@@ -15,7 +15,12 @@ namespace XS {
 class AnySimpleType : public String {
 public:
 	AnySimpleType();
+	AnySimpleType(const QString& szValue);
+	AnySimpleType(const AnySimpleType& other);
 	virtual ~AnySimpleType();
+
+	AnySimpleType& operator= (const AnySimpleType& other);
+	AnySimpleType& operator= (const QString& szValue);
 };
 
 }

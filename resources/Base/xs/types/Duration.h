@@ -17,10 +17,20 @@ class Duration
 {
 public:
 	Duration();
+	Duration(const QString& szValue);
+	Duration(const Duration& other);
 	virtual ~Duration();
 
 	void setValue(const QString& szValue);
 	const QString& getValue() const;
+
+	Duration& operator= (const Duration& other);
+	bool operator== (const Duration& other) const;
+	bool operator!= (const Duration& other) const;
+
+	Duration& operator= (const QString& szValue);
+	bool operator== (const QString& szValue) const;
+	bool operator!= (const QString& szValue) const;
 
 	QString serialize() const;
 	void deserialize(const QDomElement& element);

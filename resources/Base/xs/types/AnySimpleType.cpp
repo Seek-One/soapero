@@ -15,9 +15,33 @@ AnySimpleType::AnySimpleType()
 
 }
 
+AnySimpleType::AnySimpleType(const QString& szValue)
+	: String(szValue)
+{
+
+}
+
+AnySimpleType::AnySimpleType(const AnySimpleType& other)
+	: String(other)
+{
+
+}
+
 AnySimpleType::~AnySimpleType()
 {
 
+}
+
+AnySimpleType& AnySimpleType::operator= (const AnySimpleType& other)
+{
+	String::operator=(other);
+	return *this;
+}
+
+AnySimpleType& AnySimpleType::operator= (const QString& szValue)
+{
+	String::operator=(szValue);
+	return *this;
 }
 
 }

@@ -14,6 +14,11 @@ String::String()
 
 }
 
+String::String(const QString& value)
+{
+	m_szValue = value;
+}
+
 String::~String()
 {
 
@@ -27,6 +32,38 @@ void String::setValue(const QString& szValue)
 const QString& String::getValue() const
 {
 	return m_szValue;
+}
+
+String& String::operator= (const String& other)
+{
+	m_szValue = other.m_szValue;
+	return (*this);
+}
+
+bool String::operator== (const String& other) const
+{
+	return (m_szValue == other.m_szValue);
+}
+
+bool String::operator!= (const String& other) const
+{
+return (m_szValue != other.m_szValue);
+}
+
+String& String::operator= (const QString& szValue)
+{
+	m_szValue = szValue;
+	return (*this);
+}
+
+bool String::operator== (const QString& szValue) const
+{
+	return (m_szValue == szValue);
+}
+
+bool String::operator!= (const QString& szValue) const
+{
+	return (m_szValue != szValue);
 }
 
 QString String::serialize() const

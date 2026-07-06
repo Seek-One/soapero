@@ -18,10 +18,20 @@ class Boolean
 {
 public:
 	Boolean();
+	Boolean(bool bValue);
+	Boolean(const Boolean& other);
 	virtual ~Boolean();
 
 	void setValue(bool bValue);
 	bool getValue() const;
+
+	Boolean& operator= (const Boolean& other);
+	bool operator== (const Boolean& other) const;
+	bool operator!= (const Boolean& other) const;
+
+	Boolean& operator= (bool bValue);
+	bool operator== (bool bValue) const;
+	bool operator!= (bool bValue) const;
 
 	QString serialize() const;
 	void deserialize(const QDomElement& element);

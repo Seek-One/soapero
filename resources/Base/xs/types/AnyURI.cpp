@@ -15,9 +15,33 @@ AnyURI::AnyURI()
 
 }
 
+AnyURI::AnyURI(const QString& szValue)
+	: String(szValue)
+{
+
+}
+
+AnyURI::AnyURI(const AnyURI& other)
+	: String(other)
+{
+
+}
+
 AnyURI::~AnyURI()
 {
 
+}
+
+AnyURI& AnyURI::operator= (const AnyURI& other)
+{
+	String::operator=(other);
+	return *this;
+}
+
+AnyURI& AnyURI::operator= (const QString& szValue)
+{
+	String::operator=(szValue);
+	return *this;
 }
 
 }

@@ -15,10 +15,20 @@ namespace XS {
 class Float {
 public:
 	Float();
+	Float(float fValue);
+	Float(const Float& other);
 	virtual ~Float();
 
 	void setValue(float fValue);
 	float getValue() const;
+
+	Float& operator= (const Float& other);
+	bool operator== (const Float& other) const;
+	bool operator!= (const Float& other) const;
+
+	Float& operator= (float fValue);
+	bool operator== (float fValue) const;
+	bool operator!= (float fValue) const;
 
 	QString serialize() const;
 	void deserialize(const QDomElement& element);

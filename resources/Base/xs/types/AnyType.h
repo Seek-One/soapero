@@ -15,7 +15,12 @@ namespace XS {
 class AnyType : public String {
 public:
 	AnyType();
+	AnyType(const QString& szValue);
+	AnyType(const AnyType& other);
 	virtual ~AnyType();
+
+	AnyType& operator= (const AnyType& other);
+	AnyType& operator= (const QString& szValue);
 };
 
 }

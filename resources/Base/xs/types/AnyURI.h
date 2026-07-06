@@ -15,7 +15,12 @@ namespace XS {
 class AnyURI : public String {
 public:
 	AnyURI();
+	AnyURI(const QString& szValue);
+	AnyURI(const AnyURI& other);
 	virtual ~AnyURI();
+
+	AnyURI& operator= (const AnyURI& other);
+	AnyURI& operator= (const QString& szValue);
 };
 
 }
