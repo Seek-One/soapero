@@ -266,6 +266,7 @@ int main(int argc, char **argv)
 			iSuccessCount++;
 		}else{
 			qDebug("[Main] Error to process: %s", qPrintable(szFilename));
+			break;
 		}
 	}
 
