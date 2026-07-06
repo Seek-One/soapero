@@ -5,6 +5,4 @@
 #define CRLF "\r\n"
 #endif
 
-#define USE_COMPAT_TEST
-
 #endif
