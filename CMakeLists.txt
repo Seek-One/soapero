@@ -142,6 +142,8 @@ set(APPLICATION_SOURCES
 	src/LanguageWriter/QtCppWriter.cpp
 	src/LanguageWriter/QtCppWriter.h
 
+	src/Loader/QServicesLoader.cpp
+	src/Loader/QServicesLoader.h
 	src/Loader/QWSDLLoader.cpp
 	src/Loader/QWSDLLoader.h
 

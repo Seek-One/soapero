@@ -18,12 +18,12 @@
 #include <QCoreApplication>
 
 #include "Loader/QWSDLLoader.h"
+#include "Loader/QServicesLoader.h"
 
 #include "Builder/FileBuilder.h"
 
 #include "Utils/UniqueStringList.h"
 
-QStringList getWSDLFileNames(const char* szPathSrc);
 void copyPath(QString src, QString dst);
 bool removeDir(const QString & dirName);
 
@@ -80,7 +80,6 @@ int main(int argc, char **argv)
 	}
 
 	const char* szWSDLFilesDirectory = argv[1];
-	QDir dirWDSLFiles(szWSDLFilesDirectory);
 
 	QString szOutputDirectory = argv[2];
 
@@ -90,34 +89,16 @@ int main(int argc, char **argv)
 
 	// Loading list of WSDL files
 	QSharedPointer<UniqueStringList> pListGeneratedFiles(new UniqueStringList());
-	QStringList listWSDLFileNames = getWSDLFileNames(szWSDLFilesDirectory);
-	qDebug("[Main] %d WSDL files have been found in directory '%s'", (int)listWSDLFileNames.count(), szWSDLFilesDirectory);
 
-	// Iterate over each WSDL files
-	QStringList::const_iterator iter;
-	int iSuccessCount = 0;
-	for(iter = listWSDLFileNames.constBegin(); iter != listWSDLFileNames.constEnd(); ++iter)
-	{
-		QString szFilename = *iter;
-		QString szFilePath = dirWDSLFiles.filePath(szFilename);
+	QServicesLoader servicesLoader;
+	servicesLoader.setSourceDirectory(szWSDLFilesDirectory);
+	servicesLoader.setServiceName(szServiceName);
+	servicesLoader.setNamespace(szNamespace);
+	servicesLoader.setResourcePath(szResourcePath);
+	servicesLoader.setOutputDirectory(szOutputDirectory);
+	bGoOn = servicesLoader.load(bFileGenerated, pListGeneratedFiles);
 
-		QWSDLLoader loader;
-		loader.setFileName(szFilename);
-		loader.setFilePath(szFilePath);
-		loader.setServiceName(szServiceName);
-		loader.setNamespace(szNamespace);
-		loader.setResourcePath(szResourcePath);
-		loader.setOutputDirectory(szOutputDirectory);
-		bGoOn = loader.processWSDLFile(bFileGenerated, pListGeneratedFiles);
-		if (bGoOn) {
-			iSuccessCount++;
-		}else{
-			qDebug("[Main] Error to process: %s", qPrintable(szFilename));
-			break;
-		}
-	}
-
-	if(bFileGenerated){
+	if(bGoOn && bFileGenerated){
 		FileBuilder::FileType fileType = FileBuilder::Default;
 		if(szOutputMode == "CMakeLists"){
 			fileType = FileBuilder::CMakeLists;
@@ -128,19 +109,11 @@ int main(int argc, char **argv)
 		}
 	}
 
-	qDebug("[Main] %d/%d WSDL files have been processed successfully '%s'", iSuccessCount, (int)listWSDLFileNames.count(), szWSDLFilesDirectory);
+	const auto& iSuccessCount = servicesLoader.getSuccessCount();
+	const auto& iWSDLFilesCount = servicesLoader.getWSDLFilesCount();
+	qDebug("[Main] %d/%d WSDL files have been processed successfully '%s'", iSuccessCount, iWSDLFilesCount, szWSDLFilesDirectory);
 
 	return iRes;
-}
-
-QStringList getWSDLFileNames(const char* szPathSrc)
-{
-	QStringList listFileNames;
-	QDir directory(szPathSrc);
-	if(directory.exists()){
-		listFileNames = directory.entryList(QStringList() << "*.wsdl" << "*.WSDL" << "*.xsd" << "*.XSD", QDir::Files);
-	}
-	return listFileNames;
 }
 
 void copyPath(QString src, QString dst)
