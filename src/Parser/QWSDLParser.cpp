@@ -5,11 +5,11 @@
  *      Author: lgruber
  */
 
+#include <QUrl>
 #include <QFile>
 #include <QBuffer>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
-#include <QEventLoop>
+
+#include "Utils/FileDownloader.h"
 
 #include "Model/ComplexType.h"
 #include "Model/SimpleType.h"
@@ -1399,19 +1399,30 @@ bool QWSDLParser::readInclude(QXmlStreamReader& xmlReader)
 		logParser("starting import: " + szLocation);
 		incrLogIndent();
 
-		if(szNamespaceUri.isEmpty()){
-			szNamespaceUri = m_szCurrentTargetNamespaceUri;
+		// Get the root namespace
+		QString szReferenceLocation;
+		if (!m_szSchemaURI.isEmpty() && isHttpURI(m_szSchemaURI)) {
+			QString szParentURI = m_szSchemaURI;
+			int iLastSlash = m_szSchemaURI.lastIndexOf('/');
+			if (iLastSlash > 0) {
+				szParentURI = m_szSchemaURI.left(iLastSlash);
+			}
+			szReferenceLocation = szParentURI;
+		}else if (!m_stackTargetNamespace.isEmpty()) {
+			szReferenceLocation = m_stackTargetNamespace.top();
+		}else if(szNamespaceUri.isEmpty()){
+			szReferenceLocation = m_szCurrentTargetNamespaceUri;
 		}
 
 		QString szRemoteLocation;
-		if(szLocation.startsWith("http://") || szLocation.startsWith("https://")) {
+		if(isHttpURI(szLocation)) {
 			// Use URL
 			szRemoteLocation = szLocation;
-		}else if(!szNamespaceUri.isEmpty()){
+		}else if (!szReferenceLocation.isEmpty()){
 			// Build URL from current namespace URI
-			if(szNamespaceUri.startsWith("http://") || szNamespaceUri.startsWith("https://"))
+			if(isHttpURI(szReferenceLocation))
 			{
-				szRemoteLocation = szNamespaceUri + (szNamespaceUri.endsWith("/") ? szLocation : ("/" + szLocation));
+				szRemoteLocation = szReferenceLocation + (szReferenceLocation.endsWith("/") ? szLocation : ("/" + szLocation));
 			}
 		}
 
@@ -1997,68 +2008,56 @@ bool QWSDLParser::loadFromHttp(const QString& szURL, const QString& szNamespaceU
 	qDebug("[QWSDLParser] Loading from http: %s", qPrintable(szURL));
 
 	// Download the file
-	QNetworkAccessManager manager;
-	QNetworkReply* reply = manager.get(QNetworkRequest(QUrl::fromUserInput(szURL)));
-	QEventLoop loop;
-	QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
-	loop.exec();
-
-	// Handle HTTP 301: redirected url
-	QVariant possibleRedirectUrl = reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
-	if(!possibleRedirectUrl.isNull()){
-		QUrl redirectedUrl = possibleRedirectUrl.toUrl();
-		if(!redirectedUrl.isEmpty()){
-			reply = manager.get(QNetworkRequest(redirectedUrl));
-			QEventLoop loop;
-			QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
-			loop.exec();
-		}
-	}
-
-	// Load response
-	QByteArray bytes(reply->readAll());
+	QByteArray bytes;
+	bRes = FileDownloader::downloadFile(szURL, bytes);
 
 	// Parse WSDL
-	QWSDLParser parser;
-	parser.setSchemaURI(szURL);
-	parser.setInitialNamespaceUri(szNamespaceUri);
-	parser.setLogIndent(m_iLogIndent);
-	parser.setWSDLData(m_pWSDLData);
-	m_pWSDLData->setTypeList(m_pListTypes);
-	QXmlStreamReader xmlReader;
-	xmlReader.addData(bytes);
-	bRes = parser.parse(xmlReader);
-	if(bRes)
-	{
-		m_pWSDLData->addLoadedURI(szURL);
+	if (bRes) {
+		QWSDLParser parser;
+		parser.setSchemaURI(szURL);
+		parser.setInitialNamespaceUri(szNamespaceUri);
+		parser.setLogIndent(m_iLogIndent);
+		parser.setWSDLData(m_pWSDLData);
+		m_pWSDLData->setTypeList(m_pListTypes);
+		QXmlStreamReader xmlReader;
+		xmlReader.addData(bytes);
+		bRes = parser.parse(xmlReader);
+		if(bRes)
+		{
+			m_pWSDLData->addLoadedURI(szURL);
 
-		TypeListSharedPtr pList = parser.getTypeList();
-		TypeList::const_iterator type;
-		for(type = pList->constBegin(); type != pList->constEnd(); ++type) {
-			m_pListTypes->add(*type);
+			TypeListSharedPtr pList = parser.getTypeList();
+			TypeList::const_iterator type;
+			for(type = pList->constBegin(); type != pList->constEnd(); ++type) {
+				m_pListTypes->add(*type);
+			}
+			AttributeListSharedPtr pListAttributes = parser.getAttributeList();
+			AttributeList::const_iterator attribute;
+			for(attribute = pListAttributes->constBegin(); attribute != pListAttributes->constEnd(); ++attribute){
+				m_pListAttributes->append(*attribute);
+			}
+			ElementListSharedPtr pListElements = parser.getElementList();
+			ElementList::const_iterator element;
+			for(element = pListElements->constBegin(); element != pListElements->constEnd(); ++element){
+				m_pListElements->append(*element);
+			}
+			RequestResponseElementListSharedPtr pListRequestResponseElement = parser.getRequestResponseElementList();;
+			RequestResponseElementList::const_iterator iter_rre;
+			for(iter_rre = pListRequestResponseElement->constBegin(); iter_rre != pListRequestResponseElement->constEnd(); ++iter_rre){
+				m_pListRequestResponseElements->append(*iter_rre);
+			}
+		}else{
+			qWarning("[QWSDLParser] Error to parse file %s (error: %s)",
+					qPrintable(szURL),
+					qPrintable(xmlReader.errorString()));
 		}
-		AttributeListSharedPtr pListAttributes = parser.getAttributeList();
-		AttributeList::const_iterator attribute;
-		for(attribute = pListAttributes->constBegin(); attribute != pListAttributes->constEnd(); ++attribute){
-			m_pListAttributes->append(*attribute);
-		}
-		ElementListSharedPtr pListElements = parser.getElementList();
-		ElementList::const_iterator element;
-		for(element = pListElements->constBegin(); element != pListElements->constEnd(); ++element){
-			m_pListElements->append(*element);
-		}
-		RequestResponseElementListSharedPtr pListRequestResponseElement = parser.getRequestResponseElementList();;
-		RequestResponseElementList::const_iterator iter_rre;
-		for(iter_rre = pListRequestResponseElement->constBegin(); iter_rre != pListRequestResponseElement->constEnd(); ++iter_rre){
-			m_pListRequestResponseElements->append(*iter_rre);
-		}
-	}else{
-		qWarning("[QWSDLParser] Error to parse file %s (error: %s)",
-				qPrintable(szURL),
-				qPrintable(xmlReader.errorString()));
 	}
 
-	qDebug("[QWSDLParser] End of loading from http: %s", qPrintable(szURL));
+	if (bRes) {
+		qDebug("[QWSDLParser] End of loading from http: %s", qPrintable(szURL));
+	}else {
+		qDebug("[QWSDLParser] Error to load from http: %s", qPrintable(szURL));
+	}
 
 	return bRes;
 }
@@ -2211,4 +2210,9 @@ void QWSDLParser::incrLogIndent()
 void QWSDLParser::decrLogIndent()
 {
 	m_iLogIndent--;
+}
+
+bool QWSDLParser::isHttpURI(const QString& szURI)
+{
+	return szURI.startsWith("http://") || szURI.startsWith("https://");
 }

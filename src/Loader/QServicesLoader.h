@@ -8,6 +8,8 @@
 #include <QString>
 #include <QSharedPointer>
 
+#include "Model/ServiceDescriptor.h"
+
 #include "Utils/UniqueStringList.h"
 
 class QServicesLoader
@@ -28,6 +30,12 @@ public:
 	int getWSDLFilesCount() const;
 
 	static QStringList getWSDLFileNames(const QString& szPath);
+
+private:
+	bool loadFromServiceJSON(bool& bFileGenerated, QSharedPointer<UniqueStringList>& pListGeneratedFiles);
+	bool loadFromFiles(bool& bFileGenerated, QSharedPointer<UniqueStringList>& pListGeneratedFiles);
+
+	bool loadServiceDescriptorFromJSON(const QString& szJsonFilePath, QString& szNamespace, QList<ServiceDescriptor>& listServiceDescriptor);
 
 private:
 	QString m_szSourceDirectory;

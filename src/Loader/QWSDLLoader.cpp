@@ -61,8 +61,6 @@ bool QWSDLLoader::processWSDLFile(bool& bFileGenerated, QSharedPointer<UniqueStr
 {
 	bool bRes;
 
-	QString szServiceName;
-
 	// Open current WSDL file
 	qDebug("[Main] Processing file '%s'", qPrintable(m_szFileName));
 
@@ -81,7 +79,11 @@ bool QWSDLLoader::processWSDLFile(bool& bFileGenerated, QSharedPointer<UniqueStr
 
 		// Parse WSDL file in XML format
 		QWSDLParser parser;
-		parser.setSchemaURI(m_szFileName);
+		if (!m_szOriginalURL.isEmpty()) {
+			parser.setSchemaURI(m_szOriginalURL);
+		}else {
+			parser.setSchemaURI(m_szFileName);
+		}
 		if(bRes){
 			QXmlStreamReader xmlReader;
 			xmlReader.addData(bytes);
@@ -100,7 +102,7 @@ bool QWSDLLoader::processWSDLFile(bool& bFileGenerated, QSharedPointer<UniqueStr
 				szCurrentServiceName = pService->getName();
 			}else{
 				szCurrentServiceName = m_szServiceName;
-				pService->setName(szServiceName);
+				pService->setName(m_szServiceName);
 			}
 			if(szCurrentServiceName.isNull()){
 				qDebug("[Main] Service name is not defined");

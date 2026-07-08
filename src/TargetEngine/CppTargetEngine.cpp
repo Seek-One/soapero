@@ -37,7 +37,7 @@ void CppTargetEngine::doWriteFileDescription(QTextStream& os, const QString& szF
 	os << " * " << szFilename << CRLF;
 	os << " * " << CRLF;
 	os << " * Created on: " << QDateTime::currentDateTime().toString("dd MMM yyyy") << " (Automatically generated)" << CRLF;
-	//os << " * Created on: 02 Jul 2026 (Automatically generated)" << CRLF;
+	//os << " * Created on: 06 Jul 2026 (Automatically generated)" << CRLF;
 	os << " * Author: " << QCoreApplication::applicationName() << " v" << QCoreApplication::applicationVersion() << CRLF;
 	os << " * License: MIT License" << CRLF;
 	os << " */" << CRLF;

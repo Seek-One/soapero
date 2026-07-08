@@ -152,6 +152,7 @@ private:
 	void incrLogIndent();
 	void decrLogIndent();
 
+	bool isHttpURI(const QString& szURI);
 
 private:
 	QString m_szSchemaURI;

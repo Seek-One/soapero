@@ -163,6 +163,8 @@ set(APPLICATION_SOURCES
 	src/Model/RequestResponseElement.cpp
 	src/Model/Service.h
 	src/Model/Service.cpp
+	src/Model/ServiceDescriptor.cpp
+	src/Model/ServiceDescriptor.h
 	src/Model/SimpleType.h
 	src/Model/SimpleType.cpp
 	src/Model/Type.h
@@ -184,8 +186,10 @@ set(APPLICATION_SOURCES
 	src/TargetEngine/TargetEngine.cpp
 	src/TargetEngine/TargetEngine.h
 
-	src/Utils/ModelUtils.h
+	src/Utils/FileDownloader.cpp
+	src/Utils/FileDownloader.h
 	src/Utils/ModelUtils.cpp
+	src/Utils/ModelUtils.h
 	src/Utils/StringUtils.h
 	src/Utils/UniqueStringList.cpp
 	src/Utils/UniqueStringList.h
