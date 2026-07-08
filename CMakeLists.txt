@@ -142,6 +142,9 @@ set(APPLICATION_SOURCES
 	src/LanguageWriter/QtCppWriter.cpp
 	src/LanguageWriter/QtCppWriter.h
 
+	src/Loader/QWSDLLoader.cpp
+	src/Loader/QWSDLLoader.h
+
 	src/Model/Attribute.h
 	src/Model/Attribute.cpp
 	src/Model/Classname.h
