@@ -41,6 +41,7 @@ bool FileDownloader::downloadFile(const QString& szURL, QByteArray& bytesFile)
 	if(!possibleRedirectUrl.isNull()){
 		QUrl redirectedUrl = possibleRedirectUrl.toUrl();
 		if(!redirectedUrl.isEmpty()){
+			qDebug("[File] Redirecting to: %s", qPrintable(redirectedUrl.toString()));
 			reply = manager.get(QNetworkRequest(redirectedUrl));
 			QEventLoop loop;
 			QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
