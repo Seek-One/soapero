@@ -187,6 +187,7 @@ bool QServicesLoader::loadServiceDescriptorFromJSON(const QString& szJsonFilePat
 		QString szServiceName = serviceObj.value("name").toString();
 		QString szURL = serviceObj.value("url").toString();
 		QString szFileName = serviceObj.value("filename").toString();
+		bool bDisabled = serviceObj.value("disabled").toBool();
 
 
 		qDebug("[Main] Processing service: %s (file: %s)", qPrintable(szServiceName), qPrintable(szFileName));
@@ -195,7 +196,9 @@ bool QServicesLoader::loadServiceDescriptorFromJSON(const QString& szJsonFilePat
 		serviceDescriptor.setServiceName(szServiceName);
 		serviceDescriptor.setURL(szURL);
 		serviceDescriptor.setFileName(szFileName);
-		listServiceDescriptor.append(serviceDescriptor);
+		if (!bDisabled) {
+			listServiceDescriptor.append(serviceDescriptor);
+		}
 	}
 
 	return bRes;
