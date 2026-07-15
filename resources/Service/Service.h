@@ -20,9 +20,16 @@
 #define USE_QRANDOMGENERATOR
 #endif
 
+// Added in Qt 6.5.0
+#if QT_VERSION >= QT_VERSION_CHECK(6,5,0)
+#define USE_QDOMDOCUMENT_PARSERRESULT
+#endif
+
 #ifdef USE_QRANDOMGENERATOR
 #include <QRandomGenerator>
 #endif
+
+#include <QDomDocument>
 
 namespace SOAPERO {
 
@@ -52,6 +59,16 @@ public:
 	virtual IQueryExecutorResponse execQuery(const QNetworkRequest& request, const QByteArray& bytes) = 0;
 };
 
+#ifdef USE_QDOMDOCUMENT_PARSERRESULT
+typedef QDomDocument::ParseResult QDomDocumentParseResult;
+#else
+struct QDomDocumentParseResult {
+	int errorColumn;
+	int errorLine;
+	QString errorMessage;
+};
+#endif
+
 class Service
 {
 public:
@@ -69,6 +86,8 @@ public:
 protected:
 	QNetworkRequest buildNetworkRequest() const;
 	QByteArray buildSoapMessage(const QString& szSerializedObject, const QList<QString>& listNamespaceDeclaration) const;
+
+	bool setContent(QDomDocument& doc, const QByteArray& bytesContent, QDomDocumentParseResult& parseResult);
 
 	QUrl m_url;
 	bool m_bUseWSUsernameToken;

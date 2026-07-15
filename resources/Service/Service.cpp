@@ -252,4 +252,14 @@ QString Service::buildNonce() const
 	return szRandomString;
 }
 
+bool Service::setContent(QDomDocument& doc, const QByteArray& bytesContent, QDomDocumentParseResult& parseResult)
+{
+#ifdef USE_QDOMDOCUMENT_PARSERRESULT
+	parseResult = setContent(bytesContent)
+	return parseResult;
+#else
+	return doc.setContent(bytesContent, &parseResult.errorMessage, &parseResult.errorLine, &parseResult.errorColumn);
+#endif
+}
+
 }

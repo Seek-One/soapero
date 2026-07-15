@@ -2249,13 +2249,11 @@ void QtCppTargetEngine::doWriteDefinitionOperation(QTextStream& os, const Operat
 
 	szDefinition += CRLF;
 	szDefinition += "\tIQueryExecutorResponse response = m_pQueryExecutor->execQuery(request, soapMessage);" CRLF;
-	szDefinition += "\tQString szErrorMsg;" CRLF;
-	szDefinition += "\tint iErrorLine = -1;" CRLF;
-	szDefinition += "\tint iErrorColumn = -1;" CRLF;
+	szDefinition += "\tQDomDocumentParseResult parseResult;" CRLF;
 	szDefinition += "\tQDomDocument doc;" CRLF;
 	szDefinition += "\tQMap<QString, QString> namespaceRoutingMap;" CRLF;
 	szDefinition += CRLF;
-	szDefinition += "\tif(doc.setContent(response.getResponse(), &szErrorMsg, &iErrorLine, &iErrorColumn)){" CRLF;
+	szDefinition += "\tif(setContent(doc, response.getResponse(), parseResult)){" CRLF;
 	szDefinition += "\t\tnamespaceRoutingMap = buildNamespaceRoutingMap(doc);" CRLF;
 	szDefinition += CRLF;
 	if(pSoapEnvFaultType){
@@ -2274,7 +2272,7 @@ void QtCppTargetEngine::doWriteDefinitionOperation(QTextStream& os, const Operat
 	}
 	szDefinition += "\t}else{" CRLF;
 	szDefinition += "\t\tbGoOn = false;" CRLF;
-	szDefinition += "\t\tqWarning(\"[" + szNamespace + "::" + szName + "] Error during parsing response : %s (%d:%d)\", qPrintable(szErrorMsg), iErrorLine, iErrorColumn);" CRLF;
+	szDefinition += "\t\tqWarning(\"[" + szNamespace + "::" + szName + "] Error during parsing response : %s (%d:%d)\", qPrintable(parseResult.errorMessage), (int)parseResult.errorLine, (int)parseResult.errorColumn);" CRLF;
 	szDefinition += "\t}" CRLF;
 	szDefinition += CRLF;
 	szDefinition += "\tif(response.getHttpStatusCode() != 200){" CRLF;

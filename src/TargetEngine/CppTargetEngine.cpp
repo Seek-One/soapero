@@ -348,7 +348,9 @@ bool CppTargetEngine::doBuildCppFile(const ServiceSharedPtr& pService)
 			os << "namespace " << m_szNamespace << " {" << CRLF;
 		}
 
+		os << CRLF;
 		doWriteDefinitionClass(os, pService);
+		os << CRLF;
 
 		if(!m_szNamespace.isEmpty()) {
 			os << "}" << CRLF;
