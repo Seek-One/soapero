@@ -94,7 +94,7 @@ bool QServicesLoader::loadFromServiceJSON(bool& bFileGenerated, QSharedPointer<U
 		}
 
 		// Display count of files
-		m_iWSDLFilesCount = listServiceDescriptor.count();
+		m_iWSDLFilesCount = (int)listServiceDescriptor.count();
 		qDebug("[Main] %d services have been found in services.json", m_iWSDLFilesCount);
 
 		for (const auto& serviceDescriptor: listServiceDescriptor)
