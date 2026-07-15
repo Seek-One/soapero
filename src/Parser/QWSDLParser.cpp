@@ -1403,7 +1403,7 @@ bool QWSDLParser::readInclude(QXmlStreamReader& xmlReader)
 		QString szReferenceLocation;
 		if (!m_szSchemaURI.isEmpty() && isHttpURI(m_szSchemaURI)) {
 			QString szParentURI = m_szSchemaURI;
-			int iLastSlash = m_szSchemaURI.lastIndexOf('/');
+			int iLastSlash = (int)m_szSchemaURI.lastIndexOf('/');
 			if (iLastSlash > 0) {
 				szParentURI = m_szSchemaURI.left(iLastSlash);
 			}
