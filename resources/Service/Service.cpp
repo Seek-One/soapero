@@ -256,7 +256,7 @@ bool Service::setContent(QDomDocument& doc, const QByteArray& bytesContent, QDom
 {
 #ifdef USE_QDOMDOCUMENT_PARSERRESULT
 	parseResult = doc.setContent(bytesContent);
-	return parseResult;
+	return (bool)parseResult;
 #else
 	return doc.setContent(bytesContent, &parseResult.errorMessage, &parseResult.errorLine, &parseResult.errorColumn);
 #endif
